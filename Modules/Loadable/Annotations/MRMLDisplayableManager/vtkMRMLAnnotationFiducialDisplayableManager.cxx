@@ -330,6 +330,69 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
     }
 
   vtkOrientedPolygonalHandleRepresentation3D *handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
+  // might be in lightbox mode where using a 2d point handle
+  vtkPointHandleRepresentation2D *pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
+  // double check that if switch in and out of light box mode, the handle rep
+  // is updated
+  if (this->IsInLightboxMode())
+    {
+    if (handleRep)
+      {
+      vtkDebugMacro("PropagateMRMLToWidget: have a 3d handle representation in 2d light box, resetting it.");
+      // unset the wrong one
+      handleRep = NULL;
+      // have a 3d handle representation in 2d, reset it
+      vtkNew<vtkPointHandleRepresentation2D> newHandle2D;
+      seedRepresentation->SetHandleRepresentation(newHandle2D.GetPointer());
+      // remove the old one
+      seedWidget->DeleteSeed(0);
+      // create a new one
+      vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
+      if (!newhandle)
+        {
+        vtkErrorMacro("PropagateMRMLToWidget: error creaing a new 2D handle!");
+        }
+      pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
+      if (!pointHandleRep)
+        {
+        vtkErrorMacro("PropagateMRMLToWidget: FAILED to reset fiducial to a 2d one for light box mode.");
+        }
+      }
+    }
+  else
+    {
+    if (pointHandleRep)
+      {
+      vtkDebugMacro("Not in light box, but have a point handle.");
+      // unset the wrong one
+      pointHandleRep = NULL;
+      // remove the old seed
+      seedWidget->DeleteSeed(0);
+      // create a new 3d one
+      vtkNew<vtkOrientedPolygonalHandleRepresentation3D> newHandle3D;
+      // default glyph (CreateNewHandle needs polydata),
+      // update further down
+      vtkNew<vtkAnnotationGlyphSource2D> glyphSource;
+      glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::StarBurst2D);
+      glyphSource->Update();
+      glyphSource->SetScale(1.0);
+      newHandle3D->SetHandle(glyphSource->GetOutput());
+      seedRepresentation->SetHandleRepresentation(newHandle3D.GetPointer());
+      // have to reset the glyph type in the array so it can get changed if necessary
+      this->NodeGlyphTypes[displayNode] = vtkMRMLAnnotationPointDisplayNode::StarBurst2D;
+      // create a new one
+      vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
+      if (!newhandle)
+        {
+        vtkErrorMacro("PropagateMRMLToWidget: error creaing a new 3D handle!");
+        }
+      handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
+      if (!handleRep)
+        {
+        vtkErrorMacro("PropagateMRMLToWidget: FAILED to reset fiducial to a 3d one now that not in light box mode.");
+        }
+      }
+    }
   if (handleRep)
     {
     if (displayNode)
@@ -472,23 +535,20 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
       handleRep->LabelVisibilityOff();
       }
     }//if (handleRep)
-  else
+  else if (pointHandleRep)
     {
-    // might be in lightbox mode where using a 2d point handle
-    vtkPointHandleRepresentation2D *handleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
     if (displayNode)
       {
       if (fiducialNode->GetSelected())
         {
         // use the selected color
-        handleRep->GetProperty()->SetColor(displayNode->GetSelectedColor());
+        pointHandleRep->GetProperty()->SetColor(displayNode->GetSelectedColor());
         }
       else
         {
         // use the unselected color
-        handleRep->GetProperty()->SetColor(displayNode->GetColor());
+        pointHandleRep->GetProperty()->SetColor(displayNode->GetColor());
         }
-      // set a scale?
       }
     }
   // now update the position
