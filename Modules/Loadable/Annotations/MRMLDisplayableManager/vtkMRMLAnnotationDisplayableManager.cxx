@@ -895,7 +895,7 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
     if (!strcmp(this->m_Focus, "vtkMRMLAnnotationFiducialNode") ||
         !strcmp(this->m_Focus, "vtkMRMLAnnotationRulerNode"))
       {
-      return false;
+//      return false;
       }
     }
 
@@ -937,64 +937,49 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
       else
         {
         // get the right renderer index by checking the z coordinate
-        int rendererIndex = lightboxIndex;
+        vtkRenderer* currentRenderer = this->GetRenderer(lightboxIndex);
+        
+        // now we get the widget..
+        vtkAbstractWidget* widget = this->GetWidget(node);
 
-        // get all renderers associated with this renderWindow
-        // when lightbox mode is enabled, there will be different renderers
-        // associated with the renderWindow of the sliceView (there may also
-        // be more renderers than light boxes)
-        vtkRendererCollection* rendererCollection = this->GetInteractor()->GetRenderWindow()->GetRenderers();
-
-        // check if the rendererIndex is valid for the current lightbox view
-        if (rendererIndex >= 0 && rendererIndex < rendererCollection->GetNumberOfItems())
+        // TODO this code blocks the movement of the widget in lightbox mode
+        if (widget &&
+            (widget->GetCurrentRenderer() != currentRenderer ||
+             widget->GetRepresentation()->GetRenderer() != currentRenderer))
           {
-
-          vtkRenderer* currentRenderer = vtkRenderer::SafeDownCast(rendererCollection->GetItemAsObject(rendererIndex));
-
-          // now we get the widget..
-          vtkAbstractWidget* widget = this->GetWidget(node);
-
-          // TODO this code blocks the movement of the widget in lightbox mode
-          if (widget &&
-              (widget->GetCurrentRenderer() != currentRenderer ||
-               widget->GetRepresentation()->GetRenderer() != currentRenderer))
+          // if the widget is on, need to turn it off to set the renderer
+          bool toggleOffOn = false;
+          if (widget->GetEnabled())
             {
-            // if the widget is on, need to turn it off to set the renderer
-            bool toggleOffOn = false;
-            if (widget->GetEnabled())
-              {
-              // turn it off..
-              widget->Off();
-              toggleOffOn = true;
-              }
-            // ..place it and its representation to the right renderer..
-            widget->SetCurrentRenderer(currentRenderer);
-            widget->GetRepresentation()->SetRenderer(currentRenderer);
-            if (toggleOffOn)
-              {
-              // ..and turn it on again!
-              widget->On();
-              }
-            // if it's a seed widget, go to complete interaction state
-            vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
-            if (seedWidget)
-              {
-              vtkDebugMacro("SeedWidget: Complete interaction");
-              seedWidget->CompleteInteraction();
-              }
+            // turn it off..
+            widget->Off();
+            toggleOffOn = true;
+            }
+          // ..place it and its representation to the right renderer..
+          
+          widget->SetCurrentRenderer(currentRenderer);
+          widget->GetRepresentation()->SetRenderer(currentRenderer);
+          
+          if (toggleOffOn)
+            {
+            // ..and turn it on again!
+            widget->On();
+            }
+          // if it's a seed widget, go to complete interaction state
+          vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
+          if (seedWidget)
+            {
+            vtkDebugMacro("SeedWidget: Complete interaction");
+            seedWidget->CompleteInteraction();
+            }
 
-            // we need to render again
-            if (currentRenderer)
-              {
-              currentRenderer->Render();
-              }
+          // we need to render again
+          if (currentRenderer)
+            {
+            currentRenderer->Render();
             }
           }
-        else
-          {
-          // it's out of range of the current collection of renderers
-          showWidget = false;
-          }
+        
         }
       //
       // End of Lightbox specific code
