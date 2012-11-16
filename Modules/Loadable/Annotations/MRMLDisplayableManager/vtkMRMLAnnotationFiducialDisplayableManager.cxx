@@ -181,17 +181,25 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
     }
 
   vtkNew<vtkSeedRepresentation> rep;
-  vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
+  if (!this->IsInLightboxMode())
+    {
+    vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
 
-  // default to a starburst glyph, update in propagate mrml to widget
-  vtkNew<vtkAnnotationGlyphSource2D> glyphSource;
-  glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::StarBurst2D);
-  glyphSource->Update();
-  glyphSource->SetScale(1.0);
-  handle->SetHandle(glyphSource->GetOutput());
+    // default to a starburst glyph, update in propagate mrml to widget
+    vtkNew<vtkAnnotationGlyphSource2D> glyphSource;
+    glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::StarBurst2D);
+    glyphSource->Update();
+    glyphSource->SetScale(1.0);
+    handle->SetHandle(glyphSource->GetOutput());
+    rep->SetHandleRepresentation(handle.GetPointer());
+    }
+  else
+    {
+    vtkNew<vtkPointHandleRepresentation2D> handle;
+    rep->SetHandleRepresentation(handle.GetPointer());
+    }
 
-
-  rep->SetHandleRepresentation(handle.GetPointer());
+  
 
 
   //seed widget
@@ -464,7 +472,25 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
       handleRep->LabelVisibilityOff();
       }
     }//if (handleRep)
-
+  else
+    {
+    // might be in lightbox mode where using a 2d point handle
+    vtkPointHandleRepresentation2D *handleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
+    if (displayNode)
+      {
+      if (fiducialNode->GetSelected())
+        {
+        // use the selected color
+        handleRep->GetProperty()->SetColor(displayNode->GetSelectedColor());
+        }
+      else
+        {
+        // use the unselected color
+        handleRep->GetProperty()->SetColor(displayNode->GetColor());
+        }
+      // set a scale?
+      }
+    }
   // now update the position
   this->UpdatePosition(widget, node);
 
