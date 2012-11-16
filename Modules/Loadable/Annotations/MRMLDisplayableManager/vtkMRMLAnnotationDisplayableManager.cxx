@@ -736,8 +736,10 @@ void vtkMRMLAnnotationDisplayableManager::OnMRMLSliceNodeModifiedEvent(vtkMRMLSl
     
     if (visibleOnSlice)
       {
-      // it's visible, just update the position
-      this->UpdatePosition(this->Helper->GetWidget(annotationNode), annotationNode);
+      // it's visible, but if just update the position, don't get updates
+      //necessary when switch into and out of lightbox
+      vtkDebugMacro("OnMRMLSliceNodeModifiedEvent: visible, propagate mrml to widget");
+      this->PropagateMRMLToWidget(annotationNode, this->Helper->GetWidget(annotationNode));
       }
 
     else
