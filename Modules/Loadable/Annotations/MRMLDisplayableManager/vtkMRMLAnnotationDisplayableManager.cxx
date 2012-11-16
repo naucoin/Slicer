@@ -928,7 +928,7 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
       // get the corresponding lightbox index for this display coordinate and
       // check if it's in the range of the current number of light boxes being
       // displayed in the grid rows/columns.
-      int lightboxIndex = (int)(displayCoordinates[2]+0.5);
+      int lightboxIndex = this->GetLightboxIndex(controlPointsNode);
       int numberOfLightboxes = sliceNode->GetLayoutGridColumns() * sliceNode->GetLayoutGridRows();
       //std::cout << "IsWidgetDisplayable: " << sliceNode->GetName() << ": lightbox mode, index = " << lightboxIndex << ", rows = " << sliceNode->GetLayoutGridRows() << ", cols = " << sliceNode->GetLayoutGridColumns() << ", number of light boxes = " << numberOfLightboxes << std::endl;
       if (lightboxIndex < 0 ||
@@ -1645,8 +1645,28 @@ int vtkMRMLAnnotationDisplayableManager::GetLightboxIndex(vtkMRMLAnnotationNode 
   controlPointsNode->GetControlPointWorldCoordinates(controlPointIndex, transformedWorldCoordinates);
   double displayCoordinates[4];
   this->GetWorldToDisplayCoordinates(transformedWorldCoordinates,displayCoordinates);
-  
-  index = (int)(displayCoordinates[2]+0.5);
 
+  // get the volume's spacing to determine the mapping between the slice
+  // location and the light box index
+  double spacing = 1.0;
+  vtkMRMLSliceLogic *sliceLogic = NULL;
+  vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
+  if (mrmlAppLogic)
+    {
+    sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetSliceNode());
+    }
+  if (sliceLogic)
+    {
+    double *volumeSliceSpacing = sliceLogic->GetLowestVolumeSliceSpacing();
+    if (volumeSliceSpacing)
+      {
+      std::cout << "volumeSliceSpacing = " << volumeSliceSpacing[0] << ", " << volumeSliceSpacing[1] << ", " << volumeSliceSpacing[2] << std::endl;
+      //spacing = volumeSliceSpacing[2];
+      }
+    }
+  
+  index = (int)((displayCoordinates[2]/spacing)+0.5);
+
+  std::cout << "GetLightboxIndex: " << index << ", spacing = " << spacing << std::endl;
   return index;
 }
