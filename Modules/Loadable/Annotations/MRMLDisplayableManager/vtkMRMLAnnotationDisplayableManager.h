@@ -88,6 +88,12 @@ public:
   /// grid columns or rows > 1
   bool IsInLightboxMode();
 
+  /// Gets the world coordinate of the annotation node, transforms it to
+  /// display coordinates.
+  /// Defaults to returning the 0th control point's light box index. Returns
+  /// -1 if not in lightbox mode.
+  int GetLightboxIndex(vtkMRMLAnnotationNode *node, int controlPointIndex = 0);
+  
 protected:
 
   vtkMRMLAnnotationDisplayableManager();

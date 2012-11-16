@@ -1610,3 +1610,43 @@ bool vtkMRMLAnnotationDisplayableManager::IsInLightboxMode()
   return flag;
 }
 
+
+
+//---------------------------------------------------------------------------
+int vtkMRMLAnnotationDisplayableManager::GetLightboxIndex(vtkMRMLAnnotationNode *node, int controlPointIndex)
+{
+  int index = -1;
+
+  if (!node)
+    {
+    return index;
+    }
+  if (!this->IsInLightboxMode())
+    {
+    return index;
+    }
+
+  // down cast the node as a controlpoints node to get the coordinates
+  vtkMRMLAnnotationControlPointsNode * controlPointsNode = vtkMRMLAnnotationControlPointsNode::SafeDownCast(node);
+
+  if (!controlPointsNode)
+    {
+    vtkErrorMacro("GetLightboxIndex: Could not get the controlpoints node.")
+    return index;
+    }
+
+  if (controlPointIndex < 0 ||
+      controlPointIndex >= controlPointsNode->GetNumberOfControlPoints())
+    {
+    return index;
+    }
+  
+  double transformedWorldCoordinates[4];
+  controlPointsNode->GetControlPointWorldCoordinates(controlPointIndex, transformedWorldCoordinates);
+  double displayCoordinates[4];
+  this->GetWorldToDisplayCoordinates(transformedWorldCoordinates,displayCoordinates);
+  
+  index = (int)(displayCoordinates[2]+0.5);
+
+  return index;
+}

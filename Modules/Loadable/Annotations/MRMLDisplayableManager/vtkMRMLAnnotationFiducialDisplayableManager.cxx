@@ -104,7 +104,11 @@ public:
         // only if we had to restrict the coordinates aka. if the coordinates changed, we update the positions
         if (this->m_DisplayableManager->GetDisplayCoordinatesChanged(displayCoordinates1,restrictedDisplayCoordinates1))
           {
-          representation->SetSeedDisplayPosition(0,restrictedDisplayCoordinates1);
+          if (representation->GetRenderer() &&
+              representation->GetRenderer()->GetActiveCamera())
+            {
+            representation->SetSeedDisplayPosition(0,restrictedDisplayCoordinates1);
+            }
           }
 
         }
@@ -209,7 +213,18 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
   seedWidget->SetRepresentation(rep.GetPointer());
 
   seedWidget->SetInteractor(this->GetInteractor());
-  seedWidget->SetCurrentRenderer(this->GetRenderer());
+  // set the renderer on the widget and representation
+  if (!this->IsInLightboxMode())
+    {
+    seedWidget->SetCurrentRenderer(this->GetRenderer());
+    seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer());
+    }
+  else
+    {
+    int lightboxIndex = this->GetLightboxIndex(fiducialNode);
+    seedWidget->SetCurrentRenderer(this->GetRenderer(lightboxIndex));
+    seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer(lightboxIndex));
+    }
 
   //seedWidget->ProcessEventsOff();
 
@@ -848,7 +863,13 @@ void vtkMRMLAnnotationFiducialDisplayableManager::UpdatePosition(vtkAbstractWidg
       {
       // only update when really changed
       vtkDebugMacro("UpdatePosition: " << this->GetSliceNode()->GetName() << ": display coordinates changed:\n\tseed display = " << displayCoordinatesBuffer1[0] << ", " << displayCoordinatesBuffer1[1] << "\n\tfid display =  " << displayCoordinates1[0] << ", " << displayCoordinates1[1] );
-      seedRepresentation->SetSeedDisplayPosition(0,displayCoordinates1);
+      // make sure the representation has a renderer and an active camera to
+      // avoid a crash in vtkRenderer::ViewToWorld
+      if (seedRepresentation->GetRenderer() &&
+          seedRepresentation->GetRenderer()->GetActiveCamera())
+        {
+        seedRepresentation->SetSeedDisplayPosition(0,displayCoordinates1);
+        }
       positionChanged = true;
       }
     else
