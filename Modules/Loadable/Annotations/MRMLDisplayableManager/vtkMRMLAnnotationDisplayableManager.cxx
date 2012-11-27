@@ -1646,27 +1646,7 @@ int vtkMRMLAnnotationDisplayableManager::GetLightboxIndex(vtkMRMLAnnotationNode 
   double displayCoordinates[4];
   this->GetWorldToDisplayCoordinates(transformedWorldCoordinates,displayCoordinates);
 
-  // get the volume's spacing to determine the mapping between the slice
-  // location and the light box index
-  double spacing = 1.0;
-  vtkMRMLSliceLogic *sliceLogic = NULL;
-  vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
-  if (mrmlAppLogic)
-    {
-    sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetSliceNode());
-    }
-  if (sliceLogic)
-    {
-    double *volumeSliceSpacing = sliceLogic->GetLowestVolumeSliceSpacing();
-    if (volumeSliceSpacing)
-      {
-      std::cout << "volumeSliceSpacing = " << volumeSliceSpacing[0] << ", " << volumeSliceSpacing[1] << ", " << volumeSliceSpacing[2] << std::endl;
-      //spacing = volumeSliceSpacing[2];
-      }
-    }
-  
-  index = (int)((displayCoordinates[2]/spacing)+0.5);
+  index = (int)(floor(displayCoordinates[2]+0.5));
 
-  std::cout << "GetLightboxIndex: " << index << ", spacing = " << spacing << std::endl;
   return index;
 }
