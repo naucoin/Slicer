@@ -892,15 +892,12 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
 
   if (this->IsInLightboxMode())
     {
-    /// BUG mantis issue 1690: if in lightbox mode, don't show fiducials or
-    /// rulers
-    if (!strcmp(this->m_Focus, "vtkMRMLAnnotationFiducialNode") ||
-        !strcmp(this->m_Focus, "vtkMRMLAnnotationRulerNode"))
+    /// BUG mantis issue 1690: if in lightbox mode, don't show rulers
+    if (!strcmp(this->m_Focus, "vtkMRMLAnnotationRulerNode"))
       {
-//      return false;
+      return false;
       }
     }
-
   
   int numberOfControlPoints =  controlPointsNode->GetNumberOfControlPoints();
   // the text node saves it's second control point in viewport coordinates, so
@@ -987,21 +984,77 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
       // End of Lightbox specific code
       //
       }
-    else
+
+    // check if the annotation is close enough to the slice to be shown
+    if (showWidget)
       {
-      // the third coordinate of the displayCoordinates is the distance to the slice
-      float distanceToSlice = displayCoordinates[2];
-      float maxDistance = 0.5 + (sliceNode->GetDimensions()[2] - 1);
-      if (distanceToSlice < -0.5 || distanceToSlice >= maxDistance)
+      if (this->IsInLightboxMode())
         {
-        // if the distance to the slice is more than 0.5mm, we know that at least one coordinate of the widget is outside the current activeSlice
-        // hence, we do not want to show this widget
-        showWidget = false;
-        // we don't even need to continue parsing the controlpoints, because we know the widget will not be shown
-        break;
+        // get the volume's spacing to determine the distance between the slice
+        // location and the annotation
+        double spacing = 1.0;
+        vtkMRMLSliceLogic *sliceLogic = NULL;
+        vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
+        if (mrmlAppLogic)
+          {
+          sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetSliceNode());
+          }
+        if (sliceLogic)
+          {
+          double *volumeSliceSpacing = sliceLogic->GetLowestVolumeSliceSpacing();
+          if (volumeSliceSpacing)
+            {
+            vtkDebugMacro("Slice node " << this->GetSliceNode()->GetName() << ": volumeSliceSpacing = " << volumeSliceSpacing[0] << ", " << volumeSliceSpacing[1] << ", " << volumeSliceSpacing[2]);
+            spacing = volumeSliceSpacing[2];
+            }
+          }
+        vtkDebugMacro("displayCoordinates: " << displayCoordinates[0] << "," << displayCoordinates[1] << "," << displayCoordinates[2] << "\n\tworld coords: " << transformedWorldCoordinates[0] << "," << transformedWorldCoordinates[1] << "," << transformedWorldCoordinates[2]);
+        // calculate the distance from the annotation in world space to the
+        // plane defined by the slice node normal and origin (using same
+        // convention as the vtkMRMLThreeDReformatDisplayableManager)
+        vtkMatrix4x4 *sliceToRAS = this->GetSliceNode()->GetSliceToRAS();
+        double slicePlaneNormal[3], slicePlaneOrigin[3];
+        slicePlaneNormal[0] = sliceToRAS->GetElement(0,2);
+        slicePlaneNormal[1] = sliceToRAS->GetElement(1,2);
+        slicePlaneNormal[2] = sliceToRAS->GetElement(2,2);
+        slicePlaneOrigin[0] = sliceToRAS->GetElement(0,3);
+        slicePlaneOrigin[1] = sliceToRAS->GetElement(1,3);
+        slicePlaneOrigin[2] = sliceToRAS->GetElement(2,3);
+        double distanceToPlane = slicePlaneNormal[0]*(transformedWorldCoordinates[0]-slicePlaneOrigin[0]) +
+          slicePlaneNormal[1]*(transformedWorldCoordinates[1]-slicePlaneOrigin[1]) + 
+          slicePlaneNormal[2]*(transformedWorldCoordinates[2]-slicePlaneOrigin[2]);
+        // this gives the distance to light box plane 0, but have to offset by
+        // number of light box planes (as determined by the light box index) times the volume
+        // slice spacing
+        int lightboxIndex = this->GetLightboxIndex(controlPointsNode);
+        double lightboxOffset = lightboxIndex * spacing;
+        double distanceToSlice = distanceToPlane - lightboxOffset;
+        double maxDistance = 0.5;
+        vtkDebugMacro("\n\tdistance to plane = " << distanceToPlane << "\n\tlightboxIndex = " << lightboxIndex << "\n\tlightboxOffset = " << lightboxOffset << "\n\tdistance to slice = " << distanceToSlice);
+        // check that it's within 0.5mm
+        if (distanceToSlice < -0.5 || distanceToSlice >= maxDistance)
+          {
+          vtkDebugMacro("Distance to slice is greater than max distance, not showing the widget");
+          showWidget = false;
+          break;
+          }
+        }
+      else
+        {
+        // the third coordinate of the displayCoordinates is the distance to the slice
+        float distanceToSlice = displayCoordinates[2];
+        float maxDistance = 0.5 + (sliceNode->GetDimensions()[2] - 1);
+        vtkDebugMacro("Slice node " << this->GetSliceNode()->GetName() << ": distance to slice = " << distanceToSlice << ", maxDistance = " << maxDistance << "\n\tslice node dimenions[2] = " << sliceNode->GetDimensions()[2]);
+        if (distanceToSlice < -0.5 || distanceToSlice >= maxDistance)
+          {
+          // if the distance to the slice is more than 0.5mm, we know that at least one coordinate of the widget is outside the current activeSlice
+          // hence, we do not want to show this widget
+          showWidget = false;
+          // we don't even need to continue parsing the controlpoints, because we know the widget will not be shown
+          break;
+          }
         }
       }
-
     // -----------------------------------------
     // special cases when the slices get panned:
 
