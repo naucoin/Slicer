@@ -187,7 +187,7 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
   vtkNew<vtkSeedRepresentation> rep;
   if (!this->IsInLightboxMode())
     {
-    vtkWarningMacro("CreateWidget: not in light box mode, making a 3d handle");
+    vtkDebugMacro("CreateWidget: not in light box mode, making a 3d handle");
     vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
 
     // default to a sphere glyph, update in propagate mrml to widget
@@ -200,7 +200,7 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
     }
   else
     {
-    vtkWarningMacro("CreateWidget: in light box mode, making a 2d handle");
+    vtkDebugMacro("CreateWidget: in light box mode, making a 2d handle");
     vtkNew<vtkPointHandleRepresentation2D> handle;
     rep->SetHandleRepresentation(handle.GetPointer());
     }
@@ -360,7 +360,7 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
     {
     if (handleRep)
       {
-      vtkWarningMacro("PropagateMRMLToWidget: have a 3d handle representation in 2d light box, resetting it.");
+      vtkDebugMacro("PropagateMRMLToWidget: have a 3d handle representation in 2d light box, resetting it.");
       updateHandleType = true;
       }
     }
@@ -368,7 +368,7 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
     {
     if (pointHandleRep)
       {
-      vtkWarningMacro("PropagateMRMLToWidget: Not in light box, but have a point handle.");
+      vtkDebugMacro("PropagateMRMLToWidget: Not in light box, but have a point handle.");
       updateHandleType = true;     
       }
     }

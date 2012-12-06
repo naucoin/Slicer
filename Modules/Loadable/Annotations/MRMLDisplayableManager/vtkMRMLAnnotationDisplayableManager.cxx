@@ -898,7 +898,7 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
             (widget->GetCurrentRenderer() != currentRenderer ||
              widget->GetRepresentation()->GetRenderer() != currentRenderer))
           {
-          vtkWarningMacro("IsWidgetDisplayable: updating renderer on widget and representation");
+          vtkDebugMacro("IsWidgetDisplayable: updating renderer on widget and representation");
           // if the widget is on, need to turn it off to set the renderer
           bool toggleOffOn = false;
           if (widget->GetEnabled())
@@ -945,6 +945,8 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
         {
         // get the volume's spacing to determine the distance between the slice
         // location and the annotation
+        // default to spacing 1.0 in case can't get volume slice spacing from
+        // the logic as that will be a multiplicative no-op
         double spacing = 1.0;
         vtkMRMLSliceLogic *sliceLogic = NULL;
         vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
@@ -955,7 +957,7 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
         if (sliceLogic)
           {
           double *volumeSliceSpacing = sliceLogic->GetLowestVolumeSliceSpacing();
-          if (volumeSliceSpacing)
+          if (volumeSliceSpacing != NULL)
             {
             vtkDebugMacro("Slice node " << this->GetSliceNode()->GetName() << ": volumeSliceSpacing = " << volumeSliceSpacing[0] << ", " << volumeSliceSpacing[1] << ", " << volumeSliceSpacing[2]);
             spacing = volumeSliceSpacing[2];
