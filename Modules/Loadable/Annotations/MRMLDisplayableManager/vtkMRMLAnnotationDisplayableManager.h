@@ -93,6 +93,12 @@ public:
   /// Defaults to returning the 0th control point's light box index. Returns
   /// -1 if not in lightbox mode.
   int GetLightboxIndex(vtkMRMLAnnotationNode *node, int controlPointIndex = 0);
+
+  /// Set up data structures for an annotation node.
+  /// Returns false on failure (or if it's
+  /// already set up?). Can be called to reinit a node's widgets after calling
+  /// Helper RemoveWidgetAndNode
+  bool AddAnnotation(vtkMRMLAnnotationNode *node);
   
 protected:
 

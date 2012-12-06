@@ -187,11 +187,12 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
   vtkNew<vtkSeedRepresentation> rep;
   if (!this->IsInLightboxMode())
     {
+    vtkWarningMacro("CreateWidget: not in light box mode, making a 3d handle");
     vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
 
-    // default to a starburst glyph, update in propagate mrml to widget
+    // default to a sphere glyph, update in propagate mrml to widget
     vtkNew<vtkAnnotationGlyphSource2D> glyphSource;
-    glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::StarBurst2D);
+    glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::Sphere3D);
     glyphSource->Update();
     glyphSource->SetScale(1.0);
     handle->SetHandle(glyphSource->GetOutput());
@@ -199,6 +200,7 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
     }
   else
     {
+    vtkWarningMacro("CreateWidget: in light box mode, making a 2d handle");
     vtkNew<vtkPointHandleRepresentation2D> handle;
     rep->SetHandleRepresentation(handle.GetPointer());
     }
@@ -335,7 +337,11 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
 
   // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
-
+  if (!seedRepresentation)
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: Could not get seed representation from widget!")
+    return;
+    }
 
   vtkMRMLAnnotationPointDisplayNode *displayNode = fiducialNode->GetAnnotationPointDisplayNode();
 
@@ -349,64 +355,49 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
   vtkPointHandleRepresentation2D *pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
   // double check that if switch in and out of light box mode, the handle rep
   // is updated
+  bool updateHandleType = false;
   if (this->IsInLightboxMode())
     {
     if (handleRep)
       {
-      vtkDebugMacro("PropagateMRMLToWidget: have a 3d handle representation in 2d light box, resetting it.");
-      // unset the wrong one
-      handleRep = NULL;
-      // have a 3d handle representation in 2d, reset it
-      vtkNew<vtkPointHandleRepresentation2D> newHandle2D;
-      seedRepresentation->SetHandleRepresentation(newHandle2D.GetPointer());
-      // remove the old one
-      seedWidget->DeleteSeed(0);
-      // create a new one
-      vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
-      if (!newhandle)
-        {
-        vtkErrorMacro("PropagateMRMLToWidget: error creaing a new 2D handle!");
-        }
-      pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
-      if (!pointHandleRep)
-        {
-        vtkErrorMacro("PropagateMRMLToWidget: FAILED to reset fiducial to a 2d one for light box mode.");
-        }
+      vtkWarningMacro("PropagateMRMLToWidget: have a 3d handle representation in 2d light box, resetting it.");
+      updateHandleType = true;
       }
     }
   else
     {
     if (pointHandleRep)
       {
-      vtkDebugMacro("Not in light box, but have a point handle.");
-      // unset the wrong one
-      pointHandleRep = NULL;
-      // remove the old seed
-      seedWidget->DeleteSeed(0);
-      // create a new 3d one
-      vtkNew<vtkOrientedPolygonalHandleRepresentation3D> newHandle3D;
-      // default glyph (CreateNewHandle needs polydata),
-      // update further down
-      vtkNew<vtkAnnotationGlyphSource2D> glyphSource;
-      glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::StarBurst2D);
-      glyphSource->Update();
-      glyphSource->SetScale(1.0);
-      newHandle3D->SetHandle(glyphSource->GetOutput());
-      seedRepresentation->SetHandleRepresentation(newHandle3D.GetPointer());
-      // have to reset the glyph type in the array so it can get changed if necessary
-      this->NodeGlyphTypes[displayNode] = vtkMRMLAnnotationPointDisplayNode::StarBurst2D;
-      // create a new one
-      vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
-      if (!newhandle)
-        {
-        vtkErrorMacro("PropagateMRMLToWidget: error creaing a new 3D handle!");
-        }
-      handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(0));
-      if (!handleRep)
-        {
-        vtkErrorMacro("PropagateMRMLToWidget: FAILED to reset fiducial to a 3d one now that not in light box mode.");
-        }
+      vtkWarningMacro("PropagateMRMLToWidget: Not in light box, but have a point handle.");
+      updateHandleType = true;     
       }
+    }
+  if (updateHandleType)
+    {
+    vtkDebugMacro("PropagateMRMLToWidget: removing widget...");
+    // clean it out
+    this->Helper->RemoveWidgetAndNode(node); 
+    // recreate it
+    vtkMRMLAnnotationNode *annotationNode = vtkMRMLAnnotationNode::SafeDownCast(node);
+    if (annotationNode)
+      {
+      this->AddAnnotation(annotationNode);
+      }
+    // did it come back in here
+    vtkDebugMacro("PropagateMRMLToWidget: did it end up calling this method already?");
+    // probably not, so call and return
+    vtkAbstractWidget * widget = this->Helper->GetWidget(annotationNode);
+    if (widget)
+      {
+      this->PropagateMRMLToWidget(annotationNode, widget);
+      }
+    else
+      {
+      vtkWarningMacro("PropagateMRMLToWidget: failed to add a new widget for node " << node->GetName());
+      return;
+      }
+    vtkDebugMacro("PropagateMRMLToWidget: NOW returning after calling self from self");
+    return;
     }
   if (handleRep)
     {
@@ -554,6 +545,34 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
     {
     if (displayNode)
       {
+      // glyph type
+      /*
+      std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+      if (iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
+        {
+        // map the 3d sphere to a filled circle, the 3d diamond to a filled
+        // diamond
+        vtkNew<vtkAnnotationGlyphSource2D> glyphSource;
+        if (displayNode->GetGlyphType() == vtkMRMLAnnotationPointDisplayNode::Sphere3D)
+          {
+          glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::Circle2D);
+          }
+        else if (displayNode->GetGlyphType() == vtkMRMLAnnotationPointDisplayNode::Diamond3D)
+          {
+          glyphSource->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::Diamond2D);
+          }
+        else
+          {
+          glyphSource->SetGlyphType(displayNode->GetGlyphType());
+          }
+        glyphSource->Update();
+        glyphSource->SetScale(1.0);
+        std::cout << "PropagateMRMLToWidget: " << this->GetSliceNode()->GetName() << ": setting point handle rep cursor shape " << glyphSource->GetOutput() << std::endl;
+        pointHandleRep->SetCursorShape(glyphSource->GetOutput());
+        this->NodeGlyphTypes[displayNode] = displayNode->GetGlyphType();
+        }
+      */
+      // set the color
       if (fiducialNode->GetSelected())
         {
         // use the selected color

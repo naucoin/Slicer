@@ -262,24 +262,11 @@ void vtkMRMLAnnotationDisplayableManager::UpdateFromMRML()
       // do we  have a widget for it?
       if (this->GetWidget(annotationNode) == NULL)
         {
-        vtkDebugMacro("UpdateFromMRML: creating a widget for node " << annotationNode->GetID());
-        vtkAbstractWidget *widget = this->CreateWidget(annotationNode);
-        if (widget)
+        vtkDebugMacro("UpdateFromMRML: adding node " << annotationNode->GetID());
+        if (this->AddAnnotation(annotationNode))
           {
-          // Add widget to the list
-          this->Helper->Widgets[annotationNode] = widget;
-
-          // Add the node to the list.
-          this->Helper->AnnotationNodeList.push_back(annotationNode);
-
-          // Refresh observers
-          this->SetAndObserveNode(annotationNode);
-
-          // tear down widget creation
-          this->OnWidgetCreated(widget, annotationNode);
-
           // update the new widget from the node
-          this->PropagateMRMLToWidget(annotationNode, widget);
+          this->PropagateMRMLToWidget(annotationNode, this->GetWidget(annotationNode));
           }
         }
       }
@@ -418,46 +405,11 @@ void vtkMRMLAnnotationDisplayableManager::OnMRMLSceneNodeAdded(vtkMRMLNode* node
 
   vtkDebugMacro("OnMRMLSceneNodeAddedEvent:  node " << node->GetID());
 
-  // Node added should not be already managed
-  vtkMRMLAnnotationDisplayableManagerHelper::AnnotationNodeListIt it = std::find(
-      this->Helper->AnnotationNodeList.begin(),
-      this->Helper->AnnotationNodeList.end(),
-      annotationNode);
-  if (it != this->Helper->AnnotationNodeList.end())
+  if (!this->AddAnnotation(annotationNode))
     {
-      vtkErrorMacro("OnMRMLSceneNodeAddedEvent: This node is already associated to the displayable manager!")
-      return;
-    }
-
-  // There should not be a widget for the new node
-  if (this->Helper->GetWidget(annotationNode) != 0)
-    {
-    vtkErrorMacro("OnMRMLSceneNodeAddedEvent: A widget is already associated to this node!");
+    vtkErrorMacro("OnMRMLSceneNodeAddedEvent: failed to add annotation node " << node->GetName());
     return;
     }
-
-  //std::cout << "OnMRMLSceneNodeAddedEvent ThreeD -> CreateWidget" << std::endl;
-
-  // Create the Widget and add it to the list.
-  vtkAbstractWidget* newWidget = this->CreateWidget(annotationNode);
-  if (!newWidget)
-    {
-    vtkErrorMacro("OnMRMLSceneNodeAddedEvent: Widget was not created!")
-    return;
-    }
-  this->Helper->Widgets[annotationNode] = newWidget;
-
-  // Add the node to the list.
-  this->Helper->AnnotationNodeList.push_back(annotationNode);
-
-  // Refresh observers
-  this->SetAndObserveNode(annotationNode);
-
-  // TODO do we need this render call?
-  this->RequestRender();
-
-  // tear down widget creation
-  this->OnWidgetCreated(newWidget, annotationNode);
 
   // Remove all placed seeds
   this->Helper->RemoveSeeds();
@@ -946,6 +898,7 @@ bool vtkMRMLAnnotationDisplayableManager::IsWidgetDisplayable(vtkMRMLSliceNode* 
             (widget->GetCurrentRenderer() != currentRenderer ||
              widget->GetRepresentation()->GetRenderer() != currentRenderer))
           {
+          vtkWarningMacro("IsWidgetDisplayable: updating renderer on widget and representation");
           // if the widget is on, need to turn it off to set the renderer
           bool toggleOffOn = false;
           if (widget->GetEnabled())
@@ -1701,5 +1654,58 @@ int vtkMRMLAnnotationDisplayableManager::GetLightboxIndex(vtkMRMLAnnotationNode 
 
   index = (int)(floor(displayCoordinates[2]+0.5));
 
+
   return index;
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLAnnotationDisplayableManager::AddAnnotation(vtkMRMLAnnotationNode *annotationNode)
+{
+  if (!annotationNode || !this->GetMRMLScene())
+    {
+    return false;
+    }
+
+    // Node added should not be already managed
+  vtkMRMLAnnotationDisplayableManagerHelper::AnnotationNodeListIt it = std::find(
+      this->Helper->AnnotationNodeList.begin(),
+      this->Helper->AnnotationNodeList.end(),
+      annotationNode);
+  if (it != this->Helper->AnnotationNodeList.end())
+    {
+    vtkErrorMacro("AddAnnotation: This node is already associated to the displayable manager!");
+    return false;
+    }
+
+  // There should not be a widget for the new node
+  if (this->Helper->GetWidget(annotationNode) != 0)
+    {
+    vtkErrorMacro("AddAnnotation: A widget is already associated to this node!");
+    return false;
+    }
+
+  vtkDebugMacro("AddAnnotation: ThreeD -> CreateWidget");
+
+  // Create the Widget and add it to the list.
+  vtkAbstractWidget* newWidget = this->CreateWidget(annotationNode);
+  if (!newWidget)
+    {
+    vtkErrorMacro("AddAnnotation: Widget was not created!")
+    return false;
+    }
+  this->Helper->Widgets[annotationNode] = newWidget;
+
+  // Add the node to the list.
+  this->Helper->AnnotationNodeList.push_back(annotationNode);
+
+  // Refresh observers
+  this->SetAndObserveNode(annotationNode);
+
+  // TODO do we need this render call?
+  this->RequestRender();
+
+  // tear down widget creation
+  this->OnWidgetCreated(newWidget, annotationNode);
+
+  return true;
 }
