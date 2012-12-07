@@ -184,6 +184,13 @@ vtkAbstractWidget * vtkMRMLAnnotationFiducialDisplayableManager::CreateWidget(vt
     std::cout<<"No DisplayNode!"<<std::endl;
     }
 
+  // unset the glyph type which can be necessary when recreating a widget due to 2d/3d swap
+  std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  if (iter != this->NodeGlyphTypes.end())
+    {
+    vtkDebugMacro("CreateWidget: found a glyph type already defined for this node: " << iter->second);
+    this->NodeGlyphTypes[displayNode] = vtkMRMLAnnotationPointDisplayNode::GlyphMin - 1;
+    }
   vtkNew<vtkSeedRepresentation> rep;
   if (!this->IsInLightboxMode())
     {
@@ -322,7 +329,7 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
     vtkErrorMacro("PropagateMRMLToWidget: Could not get seed widget!")
     return;
     }
-
+  
   // cast to the specific mrml node
   vtkMRMLAnnotationFiducialNode* fiducialNode = vtkMRMLAnnotationFiducialNode::SafeDownCast(node);
 
@@ -376,7 +383,7 @@ void vtkMRMLAnnotationFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLA
     {
     vtkDebugMacro("PropagateMRMLToWidget: removing widget...");
     // clean it out
-    this->Helper->RemoveWidgetAndNode(node); 
+    this->Helper->RemoveWidgetAndNode(node);
     // recreate it
     vtkMRMLAnnotationNode *annotationNode = vtkMRMLAnnotationNode::SafeDownCast(node);
     if (annotationNode)
