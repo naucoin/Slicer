@@ -94,10 +94,10 @@ public:
   /// -1 if not in lightbox mode.
   int GetLightboxIndex(vtkMRMLAnnotationNode *node, int controlPointIndex = 0);
 
-  /// Set up data structures for an annotation node.
-  /// Returns false on failure (or if it's
-  /// already set up?). Can be called to reinit a node's widgets after calling
-  /// Helper RemoveWidgetAndNode
+  /// Set up data structures for an annotation node.  Returns false on failure
+  /// or if it's already set up. Can be called to reinitialise a node's widgets
+  /// after calling RemoveWidgetAndNode on the Helper
+  /// \sa vtkMRMLAnnotationDisplayableManagerHelper::RemoveWidgetAndNode()
   bool AddAnnotation(vtkMRMLAnnotationNode *node);
   
 protected:
