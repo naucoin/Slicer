@@ -1156,8 +1156,8 @@
   </action>
   <action name="actionViewLayoutThreeOverThreeQuantitative">
    <property name="icon">
-    <iconset resource="../../../../Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc">
-     <normaloff>:/Icons/LayoutThreeOverThreeView.png</normaloff>:/Icons/LayoutThreeOverThreeView.png</iconset>
+   <iconset resource="../../../../Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc">
+    <normaloff>:/Icons/LayoutThreeOverThreeView.png</normaloff>:/Icons/LayoutThreeOverThreeView.png</iconset>
    </property>
    <property name="text">
     <string>Three Over Three Quantitative</string>
