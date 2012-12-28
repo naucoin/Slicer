@@ -62,7 +62,7 @@ public:
   {
     if (event ==  vtkCommand::PlacePointEvent)
       {
-      std::cout << "Warning: PlacePointEvent not supported" << std::endl;
+      // std::cout << "Warning: PlacePointEvent not supported" << std::endl;
       }
     else if ((event == vtkCommand::EndInteractionEvent) || (event == vtkCommand::InteractionEvent))
       {
@@ -188,7 +188,7 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager::CreateWidget(vtkMR
 
   if (!displayNode)
     {
-    std::cout<<"No DisplayNode!"<<std::endl;
+    // std::cout<<"No DisplayNode!"<<std::endl;
     }
 
   vtkNew<vtkSeedRepresentation> rep;
@@ -222,7 +222,7 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager::CreateWidget(vtkMR
     {
     vtkErrorMacro("CreateWidget: error creaing a new handle!");
     }
-  vtkWarningMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
+  vtkDebugMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
   
   // init the widget from the mrml node
   //this->PropagateMRMLToWidget(fiducialNode, seedWidget);
@@ -355,7 +355,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
     }
 
   int numberOfHandles = seedRepresentation->GetNumberOfSeeds();
-  vtkWarningMacro("SetNthSeed, n = " << n << ", number of handles = " << numberOfHandles);
+  vtkDebugMacro("SetNthSeed, n = " << n << ", number of handles = " << numberOfHandles);
   
   // does this handle need to be created?
   bool createdNewHandle = false;
@@ -369,12 +369,12 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
       }
     else
       {
-      std::cout << "SetNthSeed: created a new handle,number of seeds = " << seedRepresentation->GetNumberOfSeeds() << std::endl;
+      // std::cout << "SetNthSeed: created a new handle,number of seeds = " << seedRepresentation->GetNumberOfSeeds() << std::endl;
       createdNewHandle = true;
       newhandle->ManagesCursorOff();
       if (newhandle->GetEnabled() == 0)
         {
-        vtkWarningMacro("turning on the new handle");
+        vtkDebugMacro("turning on the new handle");
         newhandle->EnabledOn();
         }
       }
@@ -382,7 +382,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
 
   // update the postion
   bool positionChanged = this->UpdateNthMarkupPosition(n, seedWidget, fiducialNode);
-  std::cout << "Position changed? " << (positionChanged ? "yes" : "no") << std::endl;
+  // std::cout << "Position changed? " << (positionChanged ? "yes" : "no") << std::endl;
   
   vtkOrientedPolygonalHandleRepresentation3D *handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
   if (!handleRep)
@@ -405,7 +405,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
       fiducialNode->GetNthFiducialVisibility(n) == 0 ||
       this->IsWidgetDisplayableOnSlice(fiducialNode, n) == 0)
     {
-    std::cout << "fidVisible set to FALSE (disp node visib = " << displayNode->GetVisibility() << ", nth fid visib = " << fiducialNode->GetNthFiducialVisibility(n) << ", visb on slice = " << this->IsWidgetDisplayableOnSlice(fiducialNode, n) << ")" << std::endl;
+    // std::cout << "fidVisible set to FALSE (disp node visib = " << displayNode->GetVisibility() << ", nth fid visib = " << fiducialNode->GetNthFiducialVisibility(n) << ", visb on slice = " << this->IsWidgetDisplayableOnSlice(fiducialNode, n) << ")" << std::endl;
     fidVisible = false;
     }
   if (fidVisible)
@@ -437,7 +437,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
       iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
     {
     vtkDebugMacro("DisplayNode glyph type = " << displayNode->GetGlyphType() << " = " << displayNode->GetGlyphTypeAsString() << ", is 3d glyph = " << (displayNode->GlyphTypeIs3D() ? "true" : "false") << ", is 2d disp manager = " << this->Is2DDisplayableManager());
-    std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
+    // std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
     if (displayNode->GlyphTypeIs3D())
       {
       if (this->Is2DDisplayableManager())
@@ -447,7 +447,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
         vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
         if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
           {
-          std::cout << "using circle 2d for sphere 3d" << std::endl;
+          // std::cout << "using circle 2d for sphere 3d" << std::endl;
           glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Circle2D);
           }
         else if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Diamond3D)
@@ -457,7 +457,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
         else
           {
           glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::StarBurst2D);
-          std::cout << "2d starburst" << std::endl;
+          // std::cout << "2d starburst" << std::endl;
           }
         glyphSource->Update();
         glyphSource->SetScale(1.0);
@@ -467,7 +467,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
         {
         if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
           {
-          std::cout << "3d sphere" << std::endl;
+          // std::cout << "3d sphere" << std::endl;
           vtkNew<vtkSphereSource> sphereSource;
           sphereSource->SetRadius(0.5);
           sphereSource->SetPhiResolution(10);
@@ -523,13 +523,13 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
         {
         double *color = displayNode->GetSelectedColor();
         handleRep->GetLabelTextActor()->GetProperty()->SetColor(color);
-        std::cout << "Set label text actor property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        // std::cout << "Set label text actor property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
         }
       else
         {
         double *color = displayNode->GetColor();
         handleRep->GetLabelTextActor()->GetProperty()->SetColor(color);
-        std::cout << "Set label text actor property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        // std::cout << "Set label text actor property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
         }
 
       handleRep->GetLabelTextActor()->GetProperty()->SetOpacity(displayNode->GetOpacity());
@@ -545,14 +545,14 @@ void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsF
       // use the selected color
       double *color = displayNode->GetSelectedColor();
       prop->SetColor(color);
-      std::cout << "Set glyph property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+      // std::cout << "Set glyph property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
       }
     else
       {
       // use the unselected color
       double *color = displayNode->GetColor();
       prop->SetColor(color);
-      std::cout << "Set glyph property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+      // std::cout << "Set glyph property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
       }
     
     // material properties
@@ -628,11 +628,11 @@ void vtkMRMLMarkupsFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLMark
   // iterate over the fiducials in this markup
   int numberOfFiducials = fiducialNode->GetNumberOfMarkups();
   
-  vtkWarningMacro("Fids PropagateMRMLToWidget, node num markups = " << numberOfFiducials);
+  vtkDebugMacro("Fids PropagateMRMLToWidget, node num markups = " << numberOfFiducials);
   
   for (int n = 0; n < numberOfFiducials; n++)
     {
-    std::cout << "Fids PropagateMRMLToWidget: n = " << n << std::endl;
+    // std::cout << "Fids PropagateMRMLToWidget: n = " << n << std::endl;
     this->SetNthSeed(n, fiducialNode, seedWidget);
     }
 
@@ -643,7 +643,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLMark
   this->Helper->UpdateLocked(node);
 
   // update visibility of widget as a whole
-  std::cout << "PropagateMRMLToWidget: calling UpdateWidgetVisibility" << std::endl;
+  // std::cout << "PropagateMRMLToWidget: calling UpdateWidgetVisibility" << std::endl;
   this->UpdateWidgetVisibility(node);
 
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
@@ -755,7 +755,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::PropagateWidgetToMRML(vtkAbstract
   // did any of the positions change?
   if (positionChanged)
     {
-    vtkWarningMacro("PropagateWidgetToMRML: position changed, calling point modified on the fiducial node");
+    vtkDebugMacro("PropagateWidgetToMRML: position changed, calling point modified on the fiducial node");
     fiducialNode->Modified();
     //fiducialNode->GetScene()->InvokeEvent(vtkCommand::ModifiedEvent,fiducialNode);
     fiducialNode->GetScene()->InvokeEvent(vtkMRMLMarkupsNode::PointModifiedEvent,fiducialNode);
@@ -829,9 +829,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager::OnClickInRenderWindow(double x, d
     }
   // set values on it
   activeFiducialNode->SetNthFiducialWorldCoordinates(fiducialIndex,worldCoordinates1);
-  std::cout << "OnClickInRenderWindow: Setting " << fiducialIndex << "th fiducial label from " << activeFiducialNode->GetNthFiducialLabel(fiducialIndex);
+  // std::cout << "OnClickInRenderWindow: Setting " << fiducialIndex << "th fiducial label from " << activeFiducialNode->GetNthFiducialLabel(fiducialIndex);
   activeFiducialNode->SetNthFiducialLabel(fiducialIndex,this->GetMRMLScene()->GetUniqueNameByString("M"));
-  std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
+  // std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
   
   // reset updating state
   this->Updating = 0;
@@ -1014,7 +1014,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::OnMRMLMarkupsNodeNthMarkupModifie
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsFiducialDisplayableManager::OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * markupsNode)
 {
-  vtkWarningMacro("OnMRMLMarkupsNodeMarkupAddedEvent");
+  vtkDebugMacro("OnMRMLMarkupsNodeMarkupAddedEvent");
 
   if (!markupsNode)
     {
