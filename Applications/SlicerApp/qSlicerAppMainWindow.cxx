@@ -184,6 +184,7 @@ void qSlicerAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   // MouseMode ToolBar
   //----------------------------------------------------------------------------
   // MouseMode toolBar should listen the MRML scene
+
   this->MouseModeToolBar->setApplicationLogic(
     qSlicerApplication::application()->applicationLogic());
   this->MouseModeToolBar->setMRMLScene(qSlicerApplication::application()->mrmlScene());
@@ -191,6 +192,7 @@ void qSlicerAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
                    SIGNAL(mrmlSceneChanged(vtkMRMLScene*)),
                    this->MouseModeToolBar,
                    SLOT(setMRMLScene(vtkMRMLScene*)));
+
   //----------------------------------------------------------------------------
   // Capture tool bar
   //----------------------------------------------------------------------------
@@ -768,7 +770,6 @@ void qSlicerAppMainWindow::setupMenuActions()
   d->actionViewLayoutCompareWidescreen->setData(vtkMRMLLayoutNode::SlicerLayoutCompareWidescreenView);
   d->actionViewLayoutCompareGrid->setData(vtkMRMLLayoutNode::SlicerLayoutCompareGridView);
   d->actionViewLayoutThreeOverThree->setData(vtkMRMLLayoutNode::SlicerLayoutThreeOverThreeView);
-  d->actionViewLayoutThreeOverThreeQuantitative->setData(vtkMRMLLayoutNode::SlicerLayoutThreeOverThreeQuantitativeView);
   d->actionViewLayoutFourOverFour->setData(vtkMRMLLayoutNode::SlicerLayoutFourOverFourView);
   d->actionViewLayoutTwoOverTwo->setData(vtkMRMLLayoutNode::SlicerLayoutTwoOverTwoView);
 

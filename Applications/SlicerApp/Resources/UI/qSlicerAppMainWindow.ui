@@ -24,7 +24,7 @@
      <x>0</x>
      <y>0</y>
      <width>1011</width>
-     <height>27</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -85,7 +85,6 @@
      <addaction name="actionViewLayoutCompareWidescreen"/>
      <addaction name="actionViewLayoutCompareGrid"/>
      <addaction name="actionViewLayoutThreeOverThree"/>
-     <addaction name="actionViewLayoutThreeOverThreeQuantitative"/>
      <addaction name="actionViewLayoutFourOverFour"/>
      <addaction name="actionViewLayoutTwoOverTwo"/>
     </widget>
@@ -262,7 +261,6 @@
    <addaction name="actionViewLayoutCompareWidescreen"/>
    <addaction name="actionViewLayoutCompareGrid"/>
    <addaction name="actionViewLayoutThreeOverThree"/>
-   <addaction name="actionViewLayoutThreeOverThreeQuantitative"/>
    <addaction name="actionViewLayoutFourOverFour"/>
   </widget>
   <widget class="qSlicerMouseModeToolBar" name="MouseModeToolBar">
@@ -1154,18 +1152,6 @@
     <bool>false</bool>
    </property>
   </action>
-  <action name="actionViewLayoutThreeOverThreeQuantitative">
-   <property name="icon">
-    <iconset resource="../../../../Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc">
-     <normaloff>:/Icons/LayoutThreeOverThreeView.png</normaloff>:/Icons/LayoutThreeOverThreeView.png</iconset>
-   </property>
-   <property name="text">
-    <string>Three Over Three Quantitative</string>
-   </property>
-   <property name="toolTip">
-    <string>Three Over Three Quantitative</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1190,6 +1176,12 @@
    <class>qSlicerMouseModeToolBar</class>
    <extends>QToolBar</extends>
    <header>qSlicerMouseModeToolBar.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleButton</class>
+   <extends>QWidget</extends>
+   <header>ctkCollapsibleButton.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>qSlicerViewersToolBar</class>

@@ -84,15 +84,15 @@ void vtkMRMLDisplayableNode::PrintSelf(ostream& os, vtkIndent indent)
 {
 
   Superclass::PrintSelf(os,indent);
-  
+
   int numDisplayNodes = this->GetNumberOfNodeReferences(this->GetDisplayNodeReferenceRole());
 
-  for (unsigned int i=0; i<numDisplayNodes; i++)
+  for (int i=0; i<numDisplayNodes; i++)
     {
     const char * id = this->GetNthNodeReferenceID(this->GetDisplayNodeReferenceRole(), i);
 
-    os << indent << "DisplayNodeIDs[" << i << "]: " <<
-     id << "\n";
+    os << indent << "DisplayNodeIDs[" << i << "]: "
+       << id << "\n";
     }
 }
 
