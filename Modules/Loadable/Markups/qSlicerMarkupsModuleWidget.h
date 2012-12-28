@@ -40,6 +40,8 @@ public:
 
   /// Set up the GUI from mrml when entering
   virtual void enter();
+  /// disconnect from scene when exiting
+  virtual void exit();
   
   /// refresh the gui from the currently active markup node as determined by
   /// the selection node
@@ -50,6 +52,10 @@ public:
 
 public slots:
 
+  /// respond to the scene  node added/removed events
+  void onNodeAddedEvent(vtkObject* scene, vtkObject* node);
+  void onNodeRemovedEvent(vtkObject* scene, vtkObject* node);
+
   /// update the selection node from the combo box
   void onActiveMarkupMRMLNodeChanged(vtkMRMLNode *markupsNode);
   /// update the combo box from the selection node
@@ -59,11 +65,11 @@ public slots:
   void onActiveMarkupsNodeLockModifiedEvent();//vtkMRMLNode *markupsNode);
   /// update the table with the modified point information if the node is
   /// active
-  void onActiveMarkupsNodePointModifiedEvent();//vtkMRMLNode *markupsNode);
+  void onActiveMarkupsNodePointModifiedEvent(vtkObject *caller, vtkObject *callData);
   /// update the table with the new markup if the node is active
   void onActiveMarkupsNodeMarkupAddedEvent();//vtkMRMLNode *markupsNode);
   /// update a table row from a modified markup
-  void onActiveMarkupsNodeNthMarkupModifiedEvent();
+  void onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject *caller, vtkObject *callData);
   
 protected:
   QScopedPointer<qSlicerMarkupsModuleWidgetPrivate> d_ptr;
