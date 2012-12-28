@@ -44,6 +44,7 @@
 #include <vtkMRMLScene.h>
 
 // VTK includes
+#include <vtkCollection.h>
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
 
@@ -329,4 +330,18 @@ void qMRMLThreeDView::resetFocalPoint()
     // update the box/labels bounds.
     d->MRMLViewNode->InvokeEvent(vtkMRMLViewNode::ResetFocalPointRequestedEvent);
     }
+}
+
+//------------------------------------------------------------------------------
+vtkCollection *qMRMLThreeDView::getDisplayableManagers()
+{
+  Q_D(qMRMLThreeDView);
+
+  vtkCollection *col = vtkCollection::New();
+  int num = d->DisplayableManagerGroup->GetDisplayableManagerCount();
+  for (int n = 0; n < num; n++)
+    {
+    col->AddItem(d->DisplayableManagerGroup->GetNthDisplayableManager(n));
+    }
+  return col;
 }

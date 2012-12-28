@@ -1252,6 +1252,9 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
           vtkMRMLFiducialListNode *fiducials
             = vtkMRMLFiducialListNode::SafeDownCast(node);
           vtkMRMLDisplayableHierarchyNode *points = vtkMRMLDisplayableHierarchyNode::SafeDownCast(node);
+          //vtkMRMLMarkupsFiducialNode *markups =
+          //vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
+          vtkMRMLDisplayableNode *markups = vtkMRMLDisplayableNode::SafeDownCast(node);
           if (fiducials)
             {
             // check to see if module can handle more than one point
@@ -1289,6 +1292,13 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
               vtkErrorMacro("Module does not support multiple fiducials.");
               }
             }
+          else if (markups && markups->IsA("vtkMRMLMarkupsNode"))
+            {
+            std::ostringstream ss;
+            markups->WriteCLI(ss, prefix+flag);
+            vtkDebugMacro("WriteCL markups output = " << ss.str());
+            commandLineAsString.push_back(ss.str());             
+            }
           else if (points)
             {
             // find the children of this hierarchy node
@@ -1320,7 +1330,7 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
                   vtkDebugMacro("Found displayable node with id " << displayableNode->GetID());
                   std::ostringstream ss;
                   displayableNode->WriteCLI(ss, prefix+flag);
-                  vtkDebugMacro("WriteCL output = " << ss.str());
+                  vtkDebugMacro("WriteCL annots output = " << ss.str());
                   commandLineAsString.push_back(ss.str());
                   }
                 }

@@ -31,13 +31,15 @@ int vtkMRMLSelectionNodeTest1(int , char * [] )
   TEST_SET_GET_STRING(node1, SecondaryVolumeID);
   TEST_SET_GET_STRING(node1, ActiveLabelVolumeID);
   TEST_SET_GET_STRING(node1, ActiveFiducialListID);
+  TEST_SET_GET_STRING(node1, ActiveMarkupsID);
+  TEST_SET_GET_STRING(node1, ActiveMarkupsNodeType);
   TEST_SET_GET_STRING(node1, ActiveAnnotationID);
   TEST_SET_GET_STRING(node1, ActiveROIListID);
   TEST_SET_GET_STRING(node1, ActiveCameraID);
   TEST_SET_GET_STRING(node1, ActiveViewID);
   TEST_SET_GET_STRING(node1, ActiveLayoutID);
 
-
+  // annotations
   node1->AddNewAnnotationIDToList(NULL, NULL);
   node1->AddNewAnnotationIDToList("invalid string", NULL);
   node1->AddNewAnnotationIDToList("vtkMRMLAnnotationFiducialNode", NULL);
@@ -82,6 +84,9 @@ int vtkMRMLSelectionNodeTest1(int , char * [] )
     }
 
   node1->Print(std::cout);
+
+  // markups
+  
   return EXIT_SUCCESS;
 }
 

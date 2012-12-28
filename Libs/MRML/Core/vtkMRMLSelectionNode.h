@@ -35,31 +35,31 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
 
   virtual vtkMRMLNode* CreateNodeInstance();
 
-  /// 
-  /// Set node attributes
+  ///
+  ///Set node attributes
   virtual void ReadXMLAttributes( const char** atts);
 
-  /// 
+  ///
   /// Write this node's information to a MRML file in XML format.
   virtual void WriteXML(ostream& of, int indent);
 
-  /// 
+  ///
   /// Copy the node's attributes to this object
   virtual void Copy(vtkMRMLNode *node);
 
-  /// 
+  ///
   /// Get node XML tag name (like Volume, Model)
   virtual const char* GetNodeTagName() {return "Selection";};
 
   /// Set the nodes as references to the current scene.
   virtual void SetSceneReferences();
 
-  /// 
+  ///
   /// Update the stored reference to another node in the scene
   virtual void UpdateReferenceID(const char *oldID, const char *newID);
 
-  /// 
-  /// Updates this node if it depends on other nodes 
+  ///
+  /// Updates this node if it depends on other nodes
   /// when the node is deleted in the scene
   virtual void UpdateReferences();
 
@@ -67,33 +67,32 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
   /// the vtkSetReferenceStringMacro is not wrapped (vtkSetStringMacro
   /// on which it is based is a special case in vtk's parser).
 
-  /// 
+  ///
   /// the ID of a MRMLVolumeNode (typically background)
   vtkGetStringMacro (ActiveVolumeID);
   void SetActiveVolumeID(const char* id);
   void SetReferenceActiveVolumeID (const char *id) { this->SetActiveVolumeID(id); };
 
-  /// 
+  ///
   /// the ID of a MRMLVolumeNode (typically foreground)
   vtkGetStringMacro (SecondaryVolumeID);
   void SetSecondaryVolumeID(const char* id);
   void SetReferenceSecondaryVolumeID (char *id) { this->SetSecondaryVolumeID(id); };
 
-  /// 
+  ///
   /// the ID of a MRMLVolumeNode
   vtkGetStringMacro (ActiveLabelVolumeID);
   void SetActiveLabelVolumeID(const char* id);
   void SetReferenceActiveLabelVolumeID (const char *id) { this->SetActiveLabelVolumeID(id); };
 
-  /// 
+  ///
   /// the ID of a MRMLFiducialList
   vtkGetStringMacro (ActiveFiducialListID);
   void SetActiveFiducialListID(const char* id);
   void SetReferenceActiveFiducialListID (const char *id) { this->SetActiveFiducialListID(id); };
 
-  /// Set/Get the classname of the active annotation type.
-  /// The active annotation is used to control what annotation is being
-  /// dropped by the user.
+  ///
+  /// the ID of a MRMLAnnotationNode
   vtkGetStringMacro (ActiveAnnotationID);
   void SetActiveAnnotationID(const char* id);
   /// Set the active annotation id and fire the event
@@ -101,23 +100,36 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
   void SetReferenceActiveAnnotationID (const char *id);
 
 
+  ///
+  /// the type of MRMLMarkupsNode that is currently being placed
+  vtkGetStringMacro (ActiveMarkupsNodeType);
+  void SetActiveMarkupsNodeType(const char* type);
+  void SetReferenceActiveMarkupsNodeType (const char *type) { this->SetActiveMarkupsNodeType(type); this->InvokeEvent(vtkMRMLSelectionNode::ActiveMarkupsNodeTypeChangedEvent); };
+
+  ///
+  /// the ID of the currently active MRMLMarkupsNode (new markups are added to
+  /// this node)
+  vtkGetStringMacro (ActiveMarkupsID);
+  void SetActiveMarkupsID(const char* id);
+  void SetReferenceActiveMarkupsID (const char *id) { this->SetActiveMarkupsID(id); this->InvokeEvent(vtkMRMLSelectionNode::ActiveMarkupsIDChangedEvent); };
+
   /// the ID of a MRMLROIList
   vtkGetStringMacro (ActiveROIListID);
   void SetActiveROIListID(const char* id);
   void SetReferenceActiveROIListID (const char *id) { this->SetActiveROIListID(id); };
 
-  /// 
+  ///
   /// the ID of a MRMLCameraNode
   vtkGetStringMacro (ActiveCameraID );
   void SetActiveCameraID(const char* id);
   void SetReferenceActiveCameraID (const char *id) { this->SetActiveCameraID(id); };
-  
+
   /// Description
   /// the ID of a MRMLViewNode
   vtkGetStringMacro (ActiveViewID );
   void SetActiveViewID(const char* id );
   void SetReferenceActiveViewID (const char *id) { this->SetActiveViewID(id); };
-  
+
   /// Description
   /// the ID of a MRMLLayoutNode
   vtkGetStringMacro (ActiveLayoutID );
@@ -134,6 +146,9 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
     ActiveAnnotationIDChangedEvent = 19001,
     AnnotationIDListModifiedEvent,
     UnitModifiedEvent,
+    ActiveMarkupsNodeTypeChangedEvent,
+    MarkupsIDListModifiedEvent,
+    ActiveMarkupsIDChangedEvent,
   };
 
   /// Description:
@@ -189,6 +204,26 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
   /// \sa UnitModifiedEvent
   void ProcessMRMLEvents(vtkObject *caller, unsigned long event, void *callData);
 
+  /// Markups
+  /// Add a new valid markups id to the list, with optional qt resource
+  /// reference string for updating GUI elements
+  void AddNewMarkupsIDToList(const char *newID, const char *resource = NULL);
+  /// remove a markup from the list
+  void RemoveMarkupsIDFromList(const char *id);
+  /// Return nth markups id/resource string from the list, empty string if
+  /// out of bounds
+  std::string GetMarkupsIDByIndex(int n);
+  std::string GetMarkupsResourceByIndex(int n);
+  /// Check for an id in the list, returning it's index, -1 if not in list
+  int MarkupsIDInList(std::string id);
+  /// Return the markups resource associated with this id, empty string if
+  /// not found
+  /// \sa vtkMRMLSelectionNode::MarkupsIDInList
+  /// \sa vtkMRMLSelectionNode::GetMarkupsResourceFromList
+  std::string GetMarkupsResourceByID(std::string id);
+  /// Get the number of ids in the list
+  int GetNumberOfMarkupsIDsInList() { return static_cast<int>(this->MarkupsIDList.size()); };
+
 protected:
   vtkMRMLSelectionNode();
   ~vtkMRMLSelectionNode();
@@ -205,7 +240,9 @@ protected:
   char *SecondaryVolumeID;
   char *ActiveLabelVolumeID;
   char *ActiveFiducialListID;
+  char *ActiveMarkupsID;
   char *ActiveAnnotationID;
+  char *ActiveMarkupsNodeType;
   char *ActiveROIListID;
   char *ActiveCameraID;
   char *ActiveViewID;
@@ -213,6 +250,9 @@ protected:
 
   std::vector<std::string> AnnotationIDList;
   std::vector<std::string> AnnotationResourceList;
+
+  std::vector<std::string> MarkupsIDList;
+  std::vector<std::string> MarkupsResourceList;
 };
 
 #endif

@@ -42,7 +42,7 @@ class vtkMRMLSliceCompositeNode;
 class vtkImageData;
 class vtkInteractorObserver;
 class vtkCornerAnnotation;
-
+class vtkCollection;
 class QMRML_WIDGETS_EXPORT qMRMLSliceWidget : public qMRMLWidget
 {
   Q_OBJECT
@@ -55,6 +55,17 @@ public:
   explicit qMRMLSliceWidget(QWidget* parent = 0);
   virtual ~qMRMLSliceWidget();
 
+
+  /// Add a displayable manager to the view,
+  /// the displayable manager is proper to the slice view and is not shared
+  /// with other views.
+  /// If you want to register a displayable manager with all the slice
+  /// views (existing or future), you need to do it via
+  /// vtkMRMLThreeDViewDisplayableManagerFactory::RegisterDisplayableManager()
+  /// By default: vtkMRMLSliceModelDisplayableManager is  already registered.
+//  void addDisplayableManager(const QString& displayableManager);
+//  Q_INVOKABLE vtkCollection *getDisplayableManagers();
+  
   /// Get slice controller
   Q_INVOKABLE qMRMLSliceControllerWidget* sliceController()const;
 
