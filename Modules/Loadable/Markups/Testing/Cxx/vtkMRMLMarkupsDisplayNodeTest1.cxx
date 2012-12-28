@@ -1,0 +1,109 @@
+// MRML includes
+#include "vtkMRMLCoreTestingMacros.h"
+#include "vtkMRMLMarkupsDisplayNode.h"
+
+// VTK includes
+#include <vtkNew.h>
+
+int vtkMRMLMarkupsDisplayNodeTest1(int , char * [] )
+{
+  vtkNew<vtkMRMLMarkupsDisplayNode> node1;
+
+  EXERCISE_BASIC_DISPLAY_MRML_METHODS( vtkMRMLMarkupsDisplayNode, node1 );
+
+  TEST_SET_GET_DOUBLE_RANGE(node1, TextScale, 0.0, 100.0);
+  
+  TEST_SET_GET_INT_RANGE(node1, GlyphType, -1, 10);
+
+  // min glyph type
+  if (node1->GetMinimumGlyphType() != vtkMRMLMarkupsDisplayNode::GlyphMin)
+    {
+    std::cerr << "Error: GetMinimumGlyphType " << node1->GetMinimumGlyphType() << " != vtkMRMLMarkupsDisplayNode::GlyphMin " << vtkMRMLMarkupsDisplayNode::GlyphMin << std::endl;
+    return EXIT_FAILURE;
+    }
+  else
+    {
+    std::cout << "GlyphMin = " << node1->GetMinimumGlyphType() << ", as string = " << node1->GetGlyphTypeAsString(node1->GetMinimumGlyphType()) << std::endl;
+    }
+
+  // max glyph type
+  if (node1->GetMaximumGlyphType() != vtkMRMLMarkupsDisplayNode::GlyphMax)
+    {
+    std::cerr << "Error: GetMaximumGlyphType " << node1->GetMaximumGlyphType() << " != vtkMRMLMarkupsDisplayNode::GlyphMax " << vtkMRMLMarkupsDisplayNode::GlyphMax << std::endl;
+    return EXIT_FAILURE;
+    }
+  else
+    {
+    std::cout << "GlyphMax = " << node1->GetMaximumGlyphType() << ", as string = " << node1->GetGlyphTypeAsString(node1->GetMaximumGlyphType()) << std::endl;
+    }
+  for (int i = vtkMRMLMarkupsDisplayNode::GlyphMin;
+       i < vtkMRMLMarkupsDisplayNode::GlyphMax;
+       i++)
+    {
+    node1->SetGlyphType(i);
+    std::cout << i << " GetGlyphType = " << node1->GetGlyphType() << ", as string = " << node1->GetGlyphTypeAsString() << ", GetGlyphTypeAsString(" << i << ") = " << node1->GetGlyphTypeAsString(i) << std::endl;
+    }
+
+  // print out the enums
+  std::cout << "Enum GlyphShapes:" << std::endl;
+  std::cout << "    GlyphMin = " << vtkMRMLMarkupsDisplayNode::GlyphMin << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::GlyphMin) << std::endl;
+  std::cout << "    Vertex2D = " << vtkMRMLMarkupsDisplayNode::Vertex2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Vertex2D) << std::endl;
+  std::cout << "    Dash2D = " << vtkMRMLMarkupsDisplayNode::Dash2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Dash2D) << std::endl;
+  std::cout << "    Cross2D = " << vtkMRMLMarkupsDisplayNode::Cross2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Cross2D) << std::endl;
+  std::cout << "    ThickCross2D = " << vtkMRMLMarkupsDisplayNode::ThickCross2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::ThickCross2D) << std::endl;
+  std::cout << "    Triangle2D = " << vtkMRMLMarkupsDisplayNode::Triangle2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Triangle2D) << std::endl;
+  std::cout << "    Square2D = " << vtkMRMLMarkupsDisplayNode::Square2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Square2D) << std::endl;
+  std::cout << "    Circle2D = " << vtkMRMLMarkupsDisplayNode::Circle2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Circle2D) << std::endl;
+  std::cout << "    Diamond2D = " << vtkMRMLMarkupsDisplayNode::Diamond2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Diamond2D) << std::endl;
+  std::cout << "    Arrow2D = " << vtkMRMLMarkupsDisplayNode::Arrow2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Arrow2D) << std::endl;
+  std::cout << "    ThickArrow2D = " << vtkMRMLMarkupsDisplayNode::ThickArrow2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::ThickArrow2D) << std::endl;
+  std::cout << "    HookedArrow2D = " << vtkMRMLMarkupsDisplayNode::HookedArrow2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::HookedArrow2D) << std::endl;
+  std::cout << "    StarBurst2D = " << vtkMRMLMarkupsDisplayNode::StarBurst2D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::StarBurst2D) << std::endl;
+  std::cout << "    Sphere3D = " << vtkMRMLMarkupsDisplayNode::Sphere3D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Sphere3D) << std::endl;
+  std::cout << "    Diamond3D = " << vtkMRMLMarkupsDisplayNode::Diamond3D << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::Diamond3D) << std::endl;
+  std::cout << "    GlyphMax = " << vtkMRMLMarkupsDisplayNode::GlyphMax << ", as string = " << node1->GetGlyphTypeAsString(vtkMRMLMarkupsDisplayNode::GlyphMax) << std::endl;
+
+  // semantic assumptions
+  if (node1->GetMinimumGlyphType() != vtkMRMLMarkupsDisplayNode::Vertex2D)
+    {
+    std::cerr << "Error: minimum glyph type " << node1->GetMinimumGlyphType() << " != Vertex2d: " << vtkMRMLMarkupsDisplayNode::Vertex2D << std::endl;
+    return EXIT_FAILURE;
+    }
+  if (vtkMRMLMarkupsDisplayNode::Vertex2D != 1)
+    {
+    std::cerr << "ERROR: Vertex2D (" << vtkMRMLMarkupsDisplayNode::Vertex2D << ") is not defined as 1! Setting glyph types on the source class won't work!" << std::endl;
+    return EXIT_FAILURE;
+    }
+
+  if (node1->GetMaximumGlyphType() != vtkMRMLMarkupsDisplayNode::Sphere3D)
+    {
+    std::cerr << "Error: maximum glyph type " << node1->GetMaximumGlyphType() << " != Sphere3D: " << vtkMRMLMarkupsDisplayNode::Sphere3D << std::endl;
+    return EXIT_FAILURE;
+    }
+  
+  // spot test int to string mapping
+  node1->SetGlyphType(vtkMRMLMarkupsDisplayNode::Sphere3D);
+  if (strcmp(node1->GetGlyphTypeAsString(), "Sphere3D") != 0)
+    {
+    std::cerr << "ERROR: set the glyph type to " << vtkMRMLMarkupsDisplayNode::Sphere3D << ", but get glyph type as string returned " << node1->GetGlyphTypeAsString() << " instead of Sphere3D" << std::endl;
+    return EXIT_FAILURE;
+    }
+
+  // test GlyphTypeIs3D
+  node1->SetGlyphTypeFromString("Triangle2D");
+  if (node1->GlyphTypeIs3D() == 1)
+    {
+    std::cerr << "ERROR: triangle 2d not recognised as a 2d glyph" << std::endl;
+    return EXIT_FAILURE;
+    }
+  node1->SetGlyphTypeFromString("Sphere3D");
+  if (node1->GlyphTypeIs3D() != 1)
+    {
+    std::cerr << "ERROR: sphere 3d not recognised as a 3d glyph" << std::endl;
+    return EXIT_FAILURE;
+    }
+
+  TEST_SET_GET_DOUBLE_RANGE(node1, GlyphScale, -1.0, 25.6);
+ 
+  return EXIT_SUCCESS;
+}

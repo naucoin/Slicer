@@ -85,7 +85,6 @@
      <addaction name="actionViewLayoutCompareWidescreen"/>
      <addaction name="actionViewLayoutCompareGrid"/>
      <addaction name="actionViewLayoutThreeOverThree"/>
-     <addaction name="actionViewLayoutThreeOverThreeQuantitative"/>
      <addaction name="actionViewLayoutFourOverFour"/>
      <addaction name="actionViewLayoutTwoOverTwo"/>
      <addaction name="actionViewLayoutSideBySide"/>
@@ -263,7 +262,6 @@
    <addaction name="actionViewLayoutCompareWidescreen"/>
    <addaction name="actionViewLayoutCompareGrid"/>
    <addaction name="actionViewLayoutThreeOverThree"/>
-   <addaction name="actionViewLayoutThreeOverThreeQuantitative"/>
    <addaction name="actionViewLayoutFourOverFour"/>
    <addaction name="actionViewLayoutSideBySide"/>
   </widget>
@@ -273,6 +271,20 @@
    </property>
    <property name="windowTitle">
     <string>Mouse Interaction</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="qSlicerMarkupsToolBar" name="MarkupsToolBar">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Markups</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -1211,6 +1223,11 @@
    <class>qSlicerMouseModeToolBar</class>
    <extends>QToolBar</extends>
    <header>qSlicerMouseModeToolBar.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qSlicerMarkupsToolBar</class>
+   <extends>QToolBar</extends>
+   <header>qSlicerMarkupsToolBar.h</header>
   </customwidget>
   <customwidget>
    <class>ctkCollapsibleButton</class>

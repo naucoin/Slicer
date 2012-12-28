@@ -1,0 +1,678 @@
+1>------ Skipped Build: Project: RUN_TESTS, Configuration: Debug Win32 ------
+1>Project not selected to build for this solution configuration 
+2>------ Build started: Project: ZERO_CHECK, Configuration: Debug Win32 ------
+2>Checking Build System
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/CMake/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/vtkTeem/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/vtkTeem/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/vtkITK/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/vtkITK/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/FreeSurfer/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Core/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Core/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/CLI/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/RemoteIO/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Logic/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Logic/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/DisplayableManager/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/DisplayableManager/Python/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/DisplayableManager/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/DisplayableManager/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/IDImageIO/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MGHImageIO/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Widgets/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Widgets/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Libs/MRML/Widgets/DesignerPlugins/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/Logic/Resources/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/Logic/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTCore/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTCore/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTCore/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTCore/Testing/Python/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTGUI/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTGUI/DesignerPlugins/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTGUI/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTGUI/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTCLI/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/QTCLI/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/GUI/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/CLI/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/Python/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Base/Python/tpycl/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Resources/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Core/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Core/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/AtlasCreator/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/AtlasCreator/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Cameras/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Cameras/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Cameras/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Cameras/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Colors/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Colors/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Colors/Logic/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Colors/Logic/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Colors/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Colors/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Transforms/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Transforms/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Transforms/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/MRML/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/Widgets/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/Widgets/DesignerPlugins/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Annotations/Testing/Python/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/Widgets/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/Widgets/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/Widgets/DesignerPlugins/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Data/Testing/Cxx/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/FetchMI/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/FetchMI/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/MRML/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/Logic/CMakeFiles/generate.stamp is up-to-date.
+2>CMake does not need to re-run because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/Testing/CMakeFiles/generate.stamp is up-to-date.
+2>CMake is re-running because C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/Testing/Cxx/CMakeFiles/generate.stamp is out-of-date.
+2>  the file 'C:/PWS2012/Slicer4/Slicer/Modules/Loadable/Markups/Testing/Cxx/CMakeLists.txt'
+2>  is newer than 'C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/Testing/Cxx/CMakeFiles/generate.stamp.depend'
+2>  result='-1'
+2>-- Building Slicer version [4.1.0]
+2>-- Configuring Slicer for win-i386
+2>-- Found Qt4: C:/PWS2012/Slicer4/qt-everywhere-opensource-src-4.7.4/qt-everywhere-opensource-src-4.7.4/bin/qmake.exe (found version "4.7.4") 
+2>-- Found Qt4: C:/PWS2012/Slicer4/qt-everywhere-opensource-src-4.7.4/qt-everywhere-opensource-src-4.7.4/bin/qmake.exe (found version "4.7.4") 
+2>-- Configuring Slicer with Qt 4.7.4 (using modules: CORE, GUI, NETWORK, UITOOLS, XML, WEBKIT, SVG, SQL, SCRIPT, TEST, )
+2>-- Configuring Slicer with python 2.6
+2>-- Configuring library: vtkTeem
+2>-- Configuring library: vtkITK
+2>-- Configuring library: FreeSurfer
+2>-- Configuring library: MRML/Core
+2>-- Configuring library: MRML/CLI
+2>-- Configuring library: RemoteIO
+2>-- Configuring library: MRML/Logic
+2>-- Configuring library: MRML/DisplayableManager
+2>-- Configuring library: MRML/IDImageIO
+2>-- Configuring library: MGHImageIO
+2>-- Configuring library: MRML/Widgets
+2>-- Configuring Slicer Qt base library: qSlicerBaseQTCore
+2>-- Configuring Slicer Qt base library: qSlicerBaseQTGUI
+2>-- Configuring Slicer Qt base library: qSlicerBaseQTCLI
+2>-- Configuring SEM CLI module: CLIModule4Test
+2>-- Configuring Slicer Qt base library: qSlicerModulesCore
+2>-- Configuring Qt loadable module: Cameras [qSlicerCamerasModuleExport.h]
+2>-- Configuring Qt loadable module: Colors [qSlicerColorsModuleExport.h]
+2>-- Configuring Qt loadable module: Transforms [qSlicerTransformsModuleExport.h]
+2>-- Configuring Qt loadable module: Annotations [qSlicerAnnotationsModuleExport.h]
+2>-- Configuring Qt loadable module: Data [qSlicerDataModuleExport.h]
+2>-- Configuring Qt loadable module: Markups [qSlicerMarkupsModuleExport.h]
+2>-- kit names =  qSlicerMarkupsModuleGenericTest;qSlicerMarkupsModuleWidgetGenericTest, Tests= qSlicerMarkupsModuleCxxTests.cxx;vtkMRMLMarkupsDisplayNodeTest1.cxx;vtkSlicerMarkupsLogicTest1.cxx;vtkMRMLMarkupsNodeTest1.cxx;vtkMRMLMarkupsStorageNodeTest1.cxx;C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/Testing/Cxx/qSlicerMarkupsModuleGenericTest.cxx;C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/Modules/Loadable/Markups/Testing/Cxx/qSlicerMarkupsModuleWidgetGenericTest.cxx, kit cxx tests =  
+2>-- Adding test qSlicerMarkupsModuleGenericTest
+2>-- Adding test qSlicerMarkupsModuleWidgetGenericTest
+2>-- Configuring Qt loadable module: Models [qSlicerModelsModuleExport.h]
+2>-- Configuring Qt loadable module: SceneViews [qSlicerSceneViewsModuleExport.h]
+2>-- Configuring Qt loadable module: Welcome [qSlicerWelcomeModuleExport.h]
+2>-- Configuring Qt loadable module: TractographyDisplay [qSlicerTractographyDisplayModuleExport.h]
+2>-- Configuring Qt loadable module: Reformat [qSlicerReformatModuleExport.h]
+2>-- Configuring Qt loadable module: ViewControllers [qSlicerViewControllersModuleExport.h]
+2>-- Configuring Qt loadable module: Volumes [qSlicerVolumesModuleExport.h]
+2>-- Configuring Qt loadable module: TractographyFiducialSeeding [qSlicerTractographyFiducialSeedingModuleExport.h]
+2>-- Configuring Qt loadable module: VolumeRendering [qSlicerVolumeRenderingModuleExport.h]
+2>-- Configuring Qt loadable module: CropVolume [qSlicerCropVolumeModuleExport.h]
+2>-- Configuring Qt loadable module: ModuleTemplate [qSlicerModuleTemplateModuleExport.h]
+2>-- Configuring SEM CLI module: EMSegmentCommandLine
+2>-- Configuring SEM CLI module: EMSegmentTransformToNewFormat
+2>-- Configuring Qt loadable module: EMSegment [qSlicerEMSegmentModuleExport.h]
+2>-- Configuring Qt loadable module: EMSegmentQuick [qSlicerEMSegmentQuickModuleExport.h]
+2>-- Configuring Qt loadable module: MultiVolumeExplorer [qSlicerMultiVolumeExplorerModuleExport.h]
+2>-- Configuring SEM CLI module: ACPCTransform
+2>-- Configuring SEM CLI module: AddScalarVolumes
+2>-- Configuring SEM CLI module: CastScalarVolume
+2>-- Configuring SEM CLI module: CheckerBoardFilter
+2>-- Configuring SEM CLI module: ConnectedComponent
+2>-- Configuring SEM CLI module: CreateDICOMSeries
+2>-- Configuring SEM CLI module: CurvatureAnisotropicDiffusion
+2>-- Configuring SEM CLI module: DiffusionTensorScalarMeasurements
+2>-- Configuring SEM CLI module: DiffusionWeightedVolumeMasking
+2>-- Configuring SEM CLI module: DWIJointRicianLMMSEFilter
+2>CMake Warning at Modules/CLI/DWIJointRicianLMMSEFilter/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module DWIJointRicianLMMSEFilter doesn't have any test !
+2>-- Configuring SEM CLI module: DWIRicianLMMSEFilter
+2>CMake Warning at Modules/CLI/DWIRicianLMMSEFilter/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module DWIRicianLMMSEFilter doesn't have any test !
+2>-- Configuring SEM CLI module: DWIToDTIEstimation
+2>-- Configuring SEM CLI module: DWIUnbiasedNonLocalMeansFilter
+2>CMake Warning at Modules/CLI/DWIUnbiasedNonLocalMeansFilter/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module DWIUnbiasedNonLocalMeansFilter doesn't have any test !
+2>-- Configuring SEM CLI module: DTIimport
+2>-- Configuring SEM CLI module: DTIexport
+2>CMake Warning at Modules/CLI/DTIImportExport/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module DTIexport doesn't have any test !
+2>-- Configuring SEM CLI module: ExecutionModelTour
+2>-- Configuring SEM CLI module: ExtractSkeleton
+2>CMake Warning at Modules/CLI/ExtractSkeleton/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module ExtractSkeleton doesn't have any test !
+2>-- Configuring SEM CLI module: GaussianBlurImageFilter
+2>-- Configuring SEM CLI module: GradientAnisotropicDiffusion
+2>-- Configuring SEM CLI module: GrayscaleFillHoleImageFilter
+2>-- Configuring SEM CLI module: GrayscaleGrindPeakImageFilter
+2>-- Configuring SEM CLI module: GrayscaleModelMaker
+2>-- Configuring SEM CLI module: HistogramMatching
+2>-- Configuring SEM CLI module: ImageLabelCombine
+2>-- Configuring SEM CLI module: LabelMapSmoothing
+2>-- Configuring SEM CLI module: MaskScalarVolume
+2>-- Configuring SEM CLI module: MedianImageFilter
+2>-- Configuring SEM CLI module: MergeModels
+2>-- Configuring SEM CLI module: ModelMaker
+2>-- Configuring SEM CLI module: ModelToLabelMap
+2>-- Configuring SEM CLI module: MultiplyScalarVolumes
+2>-- Configuring SEM CLI module: N4ITKBiasFieldCorrection
+2>-- Configuring SEM CLI module: OrientScalarVolume
+2>-- Configuring SEM CLI module: ProbeVolumeWithModel
+2>CMake Warning at Modules/CLI/ProbeVolumeWithModel/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module ProbeVolumeWithModel doesn't have any test !
+2>-- Configuring SEM CLI module: ResampleDTIVolume
+2>CMake Warning at Modules/CLI/ResampleDTIVolume/Testing/CMakeLists.txt:113 (message):
+2>  warning: Test named 'itkTestMainExtendedScalarTest' associated with
+2>  ResampleDTI should be reviewed !
+2>-- Configuring SEM CLI module: ResampleScalarVectorDWIVolume
+2>-- Configuring SEM CLI module: RobustStatisticsSegmenter
+2>-- Configuring SEM CLI module: SimpleRegionGrowingSegmentation
+2>-- Configuring SEM CLI module: SubtractScalarVolumes
+2>-- Configuring SEM CLI module: ThresholdScalarVolume
+2>-- Configuring SEM CLI module: TractographyLabelMapSeeding
+2>-- Configuring SEM CLI module: VotingBinaryHoleFillingImageFilter
+2>-- Configuring SEM CLI module: AffineRegistration
+2>-- Configuring SEM CLI module: BSplineDeformableRegistration
+2>-- Configuring SEM CLI module: BSplineToDeformationField
+2>CMake Warning at Modules/CLI/BSplineToDeformationField/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module BSplineToDeformationField doesn't have any test !
+2>-- Configuring SEM CLI module: DiffusionTensorTest
+2>-- Configuring SEM CLI module: ExpertAutomatedRegistration
+2>CMake Warning at Modules/CLI/ExpertAutomatedRegistration/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module ExpertAutomatedRegistration doesn't have any test !
+2>-- Configuring SEM CLI module: FiducialRegistration
+2>CMake Warning at Modules/CLI/FiducialRegistration/Testing/CMakeLists.txt:1 (message):
+2>  warning: Module FiducialRegistration doesn't have any test !
+2>-- Configuring SEM CLI module: LinearRegistration
+2>-- Configuring SEM CLI module: MultiResolutionAffineRegistration
+2>-- Configuring SEM CLI module: OtsuThresholdImageFilter
+2>-- Configuring SEM CLI module: OtsuThresholdSegmentation
+2>-- Configuring SEM CLI module: ResampleScalarVolume
+2>-- Configuring SEM CLI module: RigidRegistration
+2>-- Configuring SEM CLI module: TestGridTransformRegistration
+2>-- Configuring SEM CLI module: DicomToNrrdConverter
+2>-- Configuring SEM CLI module: PETStandardUptakeValueComputation
+2>-- Configuring SEM CLI module: BRAINSFit
+2>-- Configuring SEM CLI module: BRAINSResample
+2>-- Configuring SEM CLI module: BRAINSROIAuto
+2>-- Configuring SEM CLI module: BRAINSDemonWarp
+2>-- Configuring SEM CLI module: VBRAINSDemonWarp
+2>-- Enabling Slicer launcher option: --VisualStudio
+2>-- Enabling Slicer launcher option: --cmd
+2>-- Configuring done
+2>-- Generating done
+2>-- Build files have been written to: C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build
+2>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\ZERO_CHECK.dir\Debug\BuildLog.htm"
+2>ZERO_CHECK - 0 error(s), 0 warning(s)
+3>------ Build started: Project: HelloWorld.jar.classes, Configuration: Debug Win32 ------
+3>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\CLI\Java\HelloWorld.jar.classes.dir\Debug\BuildLog.htm"
+3>HelloWorld.jar.classes - 0 error(s), 0 warning(s)
+4>------ Build started: Project: SlicerRemoveLauncherSettings, Configuration: Debug Win32 ------
+4>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Applications\SlicerApp\SlicerRemoveLauncherSettings.dir\Debug\BuildLog.htm"
+4>SlicerRemoveLauncherSettings - 0 error(s), 0 warning(s)
+5>------ Build started: Project: copytasks, Configuration: Debug Win32 ------
+6>------ Build started: Project: copytcl, Configuration: Debug Win32 ------
+6>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\EMSegment\copytcl.dir\Debug\BuildLog.htm"
+6>copytcl - 0 error(s), 0 warning(s)
+5>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\EMSegment\copytasks.dir\Debug\BuildLog.htm"
+5>copytasks - 0 error(s), 0 warning(s)
+7>------ Build started: Project: copytesting, Configuration: Debug Win32 ------
+8>------ Build started: Project: SlicerConfigureLauncher, Configuration: Debug Win32 ------
+8>Configuring application launcher: Slicer [SlicerSplashScreen.png]
+8>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Applications\SlicerApp\SlicerConfigureLauncher.dir\Debug\BuildLog.htm"
+8>SlicerConfigureLauncher - 0 error(s), 0 warning(s)
+7>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\EMSegment\copytesting.dir\Debug\BuildLog.htm"
+7>copytesting - 0 error(s), 0 warning(s)
+9>------ Build started: Project: qMRMLWidgetsPythonQt, Configuration: Debug Win32 ------
+9>PythonQt Light Wrapping - Generating org_slicer_libs_qMRMLWidgets_init.cpp
+10>------ Build started: Project: qSlicerBaseQTCorePythonQt, Configuration: Debug Win32 ------
+10>PythonQt Light Wrapping - Generating org_slicer_base_qSlicerBaseQTCore_init.cpp
+10>PythonQt Light Wrapping - Moc'ing org_slicer_base_qSlicerBaseQTCore wrapper headers
+10>Compiling...
+10>moc_org_slicer_base_qSlicerBaseQTCore_all.cpp
+9>PythonQt Light Wrapping - Moc'ing org_slicer_libs_qMRMLWidgets wrapper headers
+10>org_slicer_base_qSlicerBaseQTCore_module_init.cpp
+9>Compiling...
+9>moc_org_slicer_libs_qMRMLWidgets_all.cpp
+10>org_slicer_base_qSlicerBaseQTCore_init.cpp
+9>org_slicer_libs_qMRMLWidgets_module_init.cpp
+10>Generating Code...
+10>Linking...
+10>Embedding manifest...
+10>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Base\QTCore\qSlicerBaseQTCorePythonQt.dir\Debug\BuildLog.htm"
+10>qSlicerBaseQTCorePythonQt - 0 error(s), 0 warning(s)
+11>------ Build started: Project: qSlicerBaseQTGUIPythonQt, Configuration: Debug Win32 ------
+11>PythonQt Light Wrapping - Generating org_slicer_base_qSlicerBaseQTGUI_init.cpp
+9>org_slicer_libs_qMRMLWidgets_init.cpp
+11>PythonQt Light Wrapping - Moc'ing org_slicer_base_qSlicerBaseQTGUI wrapper headers
+9>Generating Code...
+9>Linking...
+11>Compiling...
+11>moc_org_slicer_base_qSlicerBaseQTGUI_all.cpp
+9>Embedding manifest...
+9>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Libs\MRML\Widgets\qMRMLWidgetsPythonQt.dir\Debug\BuildLog.htm"
+9>qMRMLWidgetsPythonQt - 0 error(s), 0 warning(s)
+12>------ Build started: Project: qSlicerMarkupsModuleCxxTests, Configuration: Debug Win32 ------
+12>Performing Pre-Link Event...
+12>Linking...
+12>Embedding manifest...
+12>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Markups\Testing\Cxx\qSlicerMarkupsModuleCxxTests.dir\Debug\BuildLog.htm"
+12>qSlicerMarkupsModuleCxxTests - 0 error(s), 0 warning(s)
+13>------ Build started: Project: HelloWorld.jar, Configuration: Debug Win32 ------
+13>added manifest
+13>adding: Examples/(in = 0) (out= 0)(stored 0%)
+13>adding: Examples/HelloWorldApp.class(in = 3078) (out= 1782)(deflated 42%)
+13>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\CLI\Java\HelloWorld.jar.dir\Debug\BuildLog.htm"
+13>HelloWorld.jar - 0 error(s), 0 warning(s)
+14>------ Build started: Project: CompilevtkSlicerVolumesModuleLogicPythonFiles, Configuration: Debug Win32 ------
+14>Copying python script: ./vtkSlicerVolumesModuleLogic.py
+14>Compiling python scripts: vtkSlicerVolumesModuleLogic
+14>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+14>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+14>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerVolumesModuleLogic.py ...
+14>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Volumes\Logic\CompilevtkSlicerVolumesModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+14>CompilevtkSlicerVolumesModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+15>------ Build started: Project: CompilevtkSlicerVolumeRenderingModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+15>Copying python script: ./vtkSlicerVolumeRenderingModuleMRML.py
+15>Compiling python scripts: vtkSlicerVolumeRenderingModuleMRML
+15>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+15>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+15>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerVolumeRenderingModuleMRML.py ...
+15>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\VolumeRendering\MRML\CompilevtkSlicerVolumeRenderingModuleMRMLPythonFiles.dir\Debug\BuildLog.htm"
+15>CompilevtkSlicerVolumeRenderingModuleMRMLPythonFiles - 0 error(s), 0 warning(s)
+16>------ Build started: Project: CompilevtkSlicerVolumeRenderingModuleLogicPythonFiles, Configuration: Debug Win32 ------
+16>Copying python script: ./vtkSlicerVolumeRenderingModuleLogic.py
+16>Compiling python scripts: vtkSlicerVolumeRenderingModuleLogic
+16>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+16>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+16>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerVolumeRenderingModuleLogic.py ...
+16>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\VolumeRendering\Logic\CompilevtkSlicerVolumeRenderingModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+16>CompilevtkSlicerVolumeRenderingModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+17>------ Build started: Project: CompilevtkSlicerTractographyFiducialSeedingModuleLogicPythonFiles, Configuration: Debug Win32 ------
+17>Copying python script: ./vtkSlicerTractographyFiducialSeedingModuleLogic.py
+17>Compiling python scripts: vtkSlicerTractographyFiducialSeedingModuleLogic
+17>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+17>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+17>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerTractographyFiducialSeedingModuleLogic.py ...
+17>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\TractographyFiducialSeeding\Logic\CompilevtkSlicerTractographyFiducialSeedingModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+17>CompilevtkSlicerTractographyFiducialSeedingModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+18>------ Build started: Project: CompilevtkSlicerTractographyDisplayModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+18>Copying python script: ./vtkSlicerTractographyDisplayModuleMRML.py
+11>org_slicer_base_qSlicerBaseQTGUI_module_init.cpp
+18>Compiling python scripts: vtkSlicerTractographyDisplayModuleMRML
+18>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+18>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+18>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerTractographyDisplayModuleMRML.py ...
+18>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\TractographyDisplay\MRML\CompilevtkSlicerTractographyDisplayModuleMRMLPythonFiles.dir\Debug\BuildLog.htm"
+18>CompilevtkSlicerTractographyDisplayModuleMRMLPythonFiles - 0 error(s), 0 warning(s)
+19>------ Build started: Project: CompilevtkSlicerTractographyDisplayModuleLogicPythonFiles, Configuration: Debug Win32 ------
+19>Copying python script: ./vtkSlicerTractographyDisplayModuleLogic.py
+19>Compiling python scripts: vtkSlicerTractographyDisplayModuleLogic
+19>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+19>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+19>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerTractographyDisplayModuleLogic.py ...
+19>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\TractographyDisplay\Logic\CompilevtkSlicerTractographyDisplayModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+19>CompilevtkSlicerTractographyDisplayModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+20>------ Build started: Project: CompilevtkSlicerSceneViewsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+20>Copying python script: ./vtkSlicerSceneViewsModuleLogic.py
+20>Compiling python scripts: vtkSlicerSceneViewsModuleLogic
+20>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+20>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+20>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerSceneViewsModuleLogic.py ...
+20>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\SceneViews\Logic\CompilevtkSlicerSceneViewsModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+20>CompilevtkSlicerSceneViewsModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+21>------ Build started: Project: CompilevtkSlicerReformatModuleLogicPythonFiles, Configuration: Debug Win32 ------
+21>Copying python script: ./vtkSlicerReformatModuleLogic.py
+21>Compiling python scripts: vtkSlicerReformatModuleLogic
+21>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+21>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+21>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerReformatModuleLogic.py ...
+21>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Reformat\Logic\CompilevtkSlicerReformatModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+21>CompilevtkSlicerReformatModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+22>------ Build started: Project: CompilevtkSlicerMultiVolumeExplorerModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+22>Copying python script: ./vtkSlicerMultiVolumeExplorerModuleMRML.py
+22>Compiling python scripts: vtkSlicerMultiVolumeExplorerModuleMRML
+22>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+22>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+22>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerMultiVolumeExplorerModuleMRML.py ...
+22>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\MultiVolumeExplorer\MRML\CompilevtkSlicerMultiVolumeExplorerModuleMRMLPythonFiles.dir\Debug\BuildLog.htm"
+22>CompilevtkSlicerMultiVolumeExplorerModuleMRMLPythonFiles - 0 error(s), 0 warning(s)
+23>------ Build started: Project: CompilevtkSlicerMultiVolumeExplorerModuleLogicPythonFiles, Configuration: Debug Win32 ------
+23>Copying python script: ./vtkSlicerMultiVolumeExplorerModuleLogic.py
+23>Compiling python scripts: vtkSlicerMultiVolumeExplorerModuleLogic
+23>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+23>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+23>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerMultiVolumeExplorerModuleLogic.py ...
+23>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\MultiVolumeExplorer\Logic\CompilevtkSlicerMultiVolumeExplorerModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+23>CompilevtkSlicerMultiVolumeExplorerModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+24>------ Build started: Project: CompilevtkSlicerModuleTemplateModuleLogicPythonFiles, Configuration: Debug Win32 ------
+24>Copying python script: ./vtkSlicerModuleTemplateModuleLogic.py
+24>Compiling python scripts: vtkSlicerModuleTemplateModuleLogic
+24>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+24>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+24>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerModuleTemplateModuleLogic.py ...
+24>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\ModuleTemplate\Logic\CompilevtkSlicerModuleTemplateModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+24>CompilevtkSlicerModuleTemplateModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+25>------ Build started: Project: CompilevtkSlicerModelsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+25>Copying python script: ./vtkSlicerModelsModuleLogic.py
+25>Compiling python scripts: vtkSlicerModelsModuleLogic
+25>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+25>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+25>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerModelsModuleLogic.py ...
+25>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Models\Logic\CompilevtkSlicerModelsModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+25>CompilevtkSlicerModelsModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+26>------ Build started: Project: CompilevtkSlicerModelTransformModuleLogicPythonFiles, Configuration: Debug Win32 ------
+26>Copying python script: ./vtkSlicerModelTransformModuleLogic.py
+26>Compiling python scripts: vtkSlicerModelTransformModuleLogic
+26>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+26>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+26>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerModelTransformModuleLogic.py ...
+26>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\ModelTransform\Logic\CompilevtkSlicerModelTransformModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+26>CompilevtkSlicerModelTransformModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+27>------ Build started: Project: CompilevtkSlicerModelMirrorModuleLogicPythonFiles, Configuration: Debug Win32 ------
+27>Copying python script: ./vtkSlicerModelMirrorModuleLogic.py
+27>Compiling python scripts: vtkSlicerModelMirrorModuleLogic
+27>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+27>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+27>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerModelMirrorModuleLogic.py ...
+27>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\ModelMirror\Logic\CompilevtkSlicerModelMirrorModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+27>CompilevtkSlicerModelMirrorModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+28>------ Build started: Project: CompilevtkSlicerMarkupsModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+28>Copying python script: ./vtkSlicerMarkupsModuleMRML.py
+28>Compiling python scripts: vtkSlicerMarkupsModuleMRML
+28>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+28>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+28>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerMarkupsModuleMRML.py ...
+28>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Markups\MRML\CompilevtkSlicerMarkupsModuleMRMLPythonFiles.dir\Debug\BuildLog.htm"
+28>CompilevtkSlicerMarkupsModuleMRMLPythonFiles - 0 error(s), 0 warning(s)
+29>------ Build started: Project: CompilevtkSlicerMarkupsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+29>Copying python script: ./vtkSlicerMarkupsModuleLogic.py
+29>Compiling python scripts: vtkSlicerMarkupsModuleLogic
+29>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+29>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+29>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerMarkupsModuleLogic.py ...
+29>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Markups\Logic\CompilevtkSlicerMarkupsModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+29>CompilevtkSlicerMarkupsModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+30>------ Build started: Project: CompilevtkSlicerFetchMIModuleLogicPythonFiles, Configuration: Debug Win32 ------
+30>Copying python script: ./vtkSlicerFetchMIModuleLogic.py
+30>Compiling python scripts: vtkSlicerFetchMIModuleLogic
+30>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+30>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+30>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerFetchMIModuleLogic.py ...
+30>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\FetchMI\Logic\CompilevtkSlicerFetchMIModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+30>CompilevtkSlicerFetchMIModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+31>------ Build started: Project: CompilevtkSlicerEMSegmentModuleLogicPythonFiles, Configuration: Debug Win32 ------
+31>Copying python script: ./vtkSlicerEMSegmentModuleLogic.py
+31>Compiling python scripts: vtkSlicerEMSegmentModuleLogic
+31>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+31>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+31>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerEMSegmentModuleLogic.py ...
+31>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\EMSegment\Qt\Logic\CompilevtkSlicerEMSegmentModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+31>CompilevtkSlicerEMSegmentModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+32>------ Build started: Project: CompilevtkSlicerDataModuleLogicPythonFiles, Configuration: Debug Win32 ------
+32>Copying python script: ./vtkSlicerDataModuleLogic.py
+32>Compiling python scripts: vtkSlicerDataModuleLogic
+32>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+32>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+32>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerDataModuleLogic.py ...
+32>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Data\Logic\CompilevtkSlicerDataModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+32>CompilevtkSlicerDataModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+33>------ Build started: Project: CompilevtkSlicerCropVolumeModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+33>Copying python script: ./vtkSlicerCropVolumeModuleMRML.py
+33>Compiling python scripts: vtkSlicerCropVolumeModuleMRML
+33>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+33>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+33>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerCropVolumeModuleMRML.py ...
+33>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\CropVolume\MRML\CompilevtkSlicerCropVolumeModuleMRMLPythonFiles.dir\Debug\BuildLog.htm"
+33>CompilevtkSlicerCropVolumeModuleMRMLPythonFiles - 0 error(s), 0 warning(s)
+34>------ Build started: Project: CompilevtkSlicerCropVolumeModuleLogicPythonFiles, Configuration: Debug Win32 ------
+34>Copying python script: ./vtkSlicerCropVolumeModuleLogic.py
+34>Compiling python scripts: vtkSlicerCropVolumeModuleLogic
+34>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+34>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+34>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerCropVolumeModuleLogic.py ...
+34>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\CropVolume\Logic\CompilevtkSlicerCropVolumeModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+34>CompilevtkSlicerCropVolumeModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+35>------ Build started: Project: CompilevtkSlicerColorsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+35>Copying python script: ./vtkSlicerColorsModuleLogic.py
+35>Compiling python scripts: vtkSlicerColorsModuleLogic
+35>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+35>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+35>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerColorsModuleLogic.py ...
+35>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Colors\Logic\CompilevtkSlicerColorsModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+35>CompilevtkSlicerColorsModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+36>------ Build started: Project: CompilevtkSlicerCamerasModuleLogicPythonFiles, Configuration: Debug Win32 ------
+36>Copying python script: ./vtkSlicerCamerasModuleLogic.py
+36>Compiling python scripts: vtkSlicerCamerasModuleLogic
+36>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+36>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+36>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerCamerasModuleLogic.py ...
+36>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Cameras\Logic\CompilevtkSlicerCamerasModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+36>CompilevtkSlicerCamerasModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+37>------ Build started: Project: CompilevtkSlicerAtlasCreatorModuleLogicPythonFiles, Configuration: Debug Win32 ------
+37>Copying python script: ./vtkSlicerAtlasCreatorModuleLogic.py
+37>Compiling python scripts: vtkSlicerAtlasCreatorModuleLogic
+37>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+37>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+37>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerAtlasCreatorModuleLogic.py ...
+37>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\AtlasCreator\Logic\CompilevtkSlicerAtlasCreatorModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+37>CompilevtkSlicerAtlasCreatorModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+38>------ Build started: Project: CompilevtkSlicerAnnotationsModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+38>Copying python script: ./vtkSlicerAnnotationsModuleMRML.py
+38>Compiling python scripts: vtkSlicerAnnotationsModuleMRML
+38>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+38>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+38>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerAnnotationsModuleMRML.py ...
+38>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Annotations\MRML\CompilevtkSlicerAnnotationsModuleMRMLPythonFiles.dir\Debug\BuildLog.htm"
+38>CompilevtkSlicerAnnotationsModuleMRMLPythonFiles - 0 error(s), 0 warning(s)
+39>------ Build started: Project: CompilevtkSlicerAnnotationsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+39>Copying python script: ./vtkSlicerAnnotationsModuleLogic.py
+39>Compiling python scripts: vtkSlicerAnnotationsModuleLogic
+39>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+39>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+39>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\vtkSlicerAnnotationsModuleLogic.py ...
+39>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\Annotations\Logic\CompilevtkSlicerAnnotationsModuleLogicPythonFiles.dir\Debug\BuildLog.htm"
+39>CompilevtkSlicerAnnotationsModuleLogicPythonFiles - 0 error(s), 0 warning(s)
+40>------ Build started: Project: CompileqSlicerMultiVolumeExplorerModuleWidgetPythonFiles, Configuration: Debug Win32 ------
+40>Compiling python scripts: qSlicerMultiVolumeExplorerModuleWidget
+40>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+40>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+40>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\MultiVolumeExplorer\Py\CompileqSlicerMultiVolumeExplorerModuleWidgetPythonFiles.dir\Debug\BuildLog.htm"
+40>CompileqSlicerMultiVolumeExplorerModuleWidgetPythonFiles - 0 error(s), 0 warning(s)
+41>------ Build started: Project: CompileqSlicerEMSegmentModuleWidgetPythonFiles, Configuration: Debug Win32 ------
+41>Compiling python scripts: qSlicerEMSegmentModuleWidget
+41>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+41>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+41>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\EMSegment\Qt\Py\CompileqSlicerEMSegmentModuleWidgetPythonFiles.dir\Debug\BuildLog.htm"
+41>CompileqSlicerEMSegmentModuleWidgetPythonFiles - 0 error(s), 0 warning(s)
+42>------ Build started: Project: CompilemrmlDisplayableManagerPythonFiles, Configuration: Debug Win32 ------
+42>Compiling python scripts: mrmlDisplayableManager
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOM2FullBrainTractographyLib ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOM2FullBrainTractographyLib\Resources ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOM2FullBrainTractographyLib\Resources\UI ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOMLib ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\EditorLib ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\mrmlDisplayableManager ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer\modulelogic ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer\modulemrml ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer\modulewidget ...
+42>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\tpycl ...
+42>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Libs\MRML\DisplayableManager\Python\CompilemrmlDisplayableManagerPythonFiles.dir\Debug\BuildLog.htm"
+42>CompilemrmlDisplayableManagerPythonFiles - 0 error(s), 0 warning(s)
+43>------ Build started: Project: CompileVolumeRenderingReplacementsPythonFiles, Configuration: Debug Win32 ------
+43>Copying python script: ./VolumeRenderingReplacements.py
+43>Compiling python scripts: VolumeRenderingReplacements
+43>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python ...
+43>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\EMSegmentWizard ...
+43>Compiling C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-loadable-modules/Python\VolumeRenderingReplacements.py ...
+43>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Loadable\VolumeRendering\VolumeRenderingReplacements\CompileVolumeRenderingReplacementsPythonFiles.dir\Debug\BuildLog.htm"
+43>CompileVolumeRenderingReplacementsPythonFiles - 0 error(s), 0 warning(s)
+44>------ Build started: Project: CompileSlicerQTScriptedModulesPythonFiles, Configuration: Debug Win32 ------
+44>Compiling python scripts: SlicerQTScriptedModules
+44>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules ...
+44>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules\MultiVolumeImporter ...
+44>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\Scripts\CompileSlicerQTScriptedModulesPythonFiles.dir\Debug\BuildLog.htm"
+44>CompileSlicerQTScriptedModulesPythonFiles - 0 error(s), 0 warning(s)
+45>------ Build started: Project: CompileSlicerDICOMPluginModulesPythonFiles, Configuration: Debug Win32 ------
+45>Compiling python scripts: SlicerDICOMPluginModules
+45>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules ...
+45>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules\MultiVolumeImporter ...
+45>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\Scripts\DICOMPlugins\CompileSlicerDICOMPluginModulesPythonFiles.dir\Debug\BuildLog.htm"
+45>CompileSlicerDICOMPluginModulesPythonFiles - 0 error(s), 0 warning(s)
+46>------ Build started: Project: CompileSlicerBasePythonFiles, Configuration: Debug Win32 ------
+46>Compiling python scripts: SlicerBase
+11>org_slicer_base_qSlicerBaseQTGUI_init.cpp
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOM2FullBrainTractographyLib ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOM2FullBrainTractographyLib\Resources ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOM2FullBrainTractographyLib\Resources\UI ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\DICOMLib ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\EditorLib ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\mrmlDisplayableManager ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer\modulelogic ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer\modulemrml ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\slicer\modulewidget ...
+46>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python\tpycl ...
+46>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Base\Python\CompileSlicerBasePythonFiles.dir\Debug\BuildLog.htm"
+46>CompileSlicerBasePythonFiles - 0 error(s), 0 warning(s)
+47>------ Build started: Project: CompileMultiVolumeImporterPythonFiles, Configuration: Debug Win32 ------
+47>Compiling python scripts: MultiVolumeImporter
+47>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules ...
+47>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules\MultiVolumeImporter ...
+47>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\MultiVolumeImporter\CompileMultiVolumeImporterPythonFiles.dir\Debug\BuildLog.htm"
+47>CompileMultiVolumeImporterPythonFiles - 0 error(s), 0 warning(s)
+48>------ Build started: Project: CompileEditorLibPythonFiles, Configuration: Debug Win32 ------
+48>Compiling python scripts: EditorLib
+48>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python/EditorLib ...
+48>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\EditorLib\CompileEditorLibPythonFiles.dir\Debug\BuildLog.htm"
+48>CompileEditorLibPythonFiles - 0 error(s), 0 warning(s)
+49>------ Build started: Project: CompileDICOMLibPythonFiles, Configuration: Debug Win32 ------
+49>Compiling python scripts: DICOMLib
+49>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python/DICOMLib ...
+49>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\DICOMLib\CompileDICOMLibPythonFiles.dir\Debug\BuildLog.htm"
+49>CompileDICOMLibPythonFiles - 0 error(s), 0 warning(s)
+50>------ Build started: Project: CompileDICOM2FullBrainTractographyPythonFiles, Configuration: Debug Win32 ------
+50>Compiling python scripts: DICOM2FullBrainTractography
+50>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules ...
+50>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/lib/Slicer-4.1/qt-scripted-modules\MultiVolumeImporter ...
+50>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\Scripts\DICOM2FullBrainTractography\CompileDICOM2FullBrainTractographyPythonFiles.dir\Debug\BuildLog.htm"
+50>CompileDICOM2FullBrainTractographyPythonFiles - 0 error(s), 0 warning(s)
+51>------ Build started: Project: CompileDICOM2FullBrainTractographyLibPythonFiles, Configuration: Debug Win32 ------
+51>Compiling python scripts: DICOM2FullBrainTractographyLib
+51>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python/DICOM2FullBrainTractographyLib ...
+51>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python/DICOM2FullBrainTractographyLib\Resources ...
+51>Listing C:/PWS2012/Slicer4/Slicer-Build-Debug/Slicer-build/bin/Python/DICOM2FullBrainTractographyLib\Resources\UI ...
+51>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Modules\Scripted\Scripts\DICOM2FullBrainTractography\DICOM2FullBrainTractographyLib\CompileDICOM2FullBrainTractographyLibPythonFiles.dir\Debug\BuildLog.htm"
+51>CompileDICOM2FullBrainTractographyLibPythonFiles - 0 error(s), 0 warning(s)
+52>------ Skipped Build: Project: CopyDICOM2FullBrainTractographyPythonFiles, Configuration: Debug Win32 ------
+52>Project not selected to build for this solution configuration 
+53>------ Skipped Build: Project: CopyDICOMLibPythonFiles, Configuration: Debug Win32 ------
+53>Project not selected to build for this solution configuration 
+54>------ Skipped Build: Project: CopyEditorLibPythonFiles, Configuration: Debug Win32 ------
+54>Project not selected to build for this solution configuration 
+55>------ Skipped Build: Project: CopyMultiVolumeImporterPythonFiles, Configuration: Debug Win32 ------
+55>Project not selected to build for this solution configuration 
+56>------ Skipped Build: Project: CopySlicerBasePythonFiles, Configuration: Debug Win32 ------
+56>Project not selected to build for this solution configuration 
+57>------ Skipped Build: Project: CopySlicerDICOMPluginModulesPythonFiles, Configuration: Debug Win32 ------
+57>Project not selected to build for this solution configuration 
+58>------ Skipped Build: Project: CopySlicerQTScriptedModulesPythonFiles, Configuration: Debug Win32 ------
+58>Project not selected to build for this solution configuration 
+59>------ Skipped Build: Project: CopyVolumeRenderingReplacementsPythonFiles, Configuration: Debug Win32 ------
+59>Project not selected to build for this solution configuration 
+60>------ Skipped Build: Project: CopymrmlDisplayableManagerPythonFiles, Configuration: Debug Win32 ------
+60>Project not selected to build for this solution configuration 
+61>------ Skipped Build: Project: CopyqSlicerEMSegmentModuleWidgetPythonFiles, Configuration: Debug Win32 ------
+61>Project not selected to build for this solution configuration 
+62>------ Skipped Build: Project: CopyqSlicerMultiVolumeExplorerModuleWidgetPythonFiles, Configuration: Debug Win32 ------
+62>Project not selected to build for this solution configuration 
+63>------ Skipped Build: Project: CopyvtkSlicerAnnotationsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+63>Project not selected to build for this solution configuration 
+64>------ Skipped Build: Project: CopyvtkSlicerAnnotationsModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+64>Project not selected to build for this solution configuration 
+65>------ Skipped Build: Project: CopyvtkSlicerAtlasCreatorModuleLogicPythonFiles, Configuration: Debug Win32 ------
+65>Project not selected to build for this solution configuration 
+66>------ Skipped Build: Project: CopyvtkSlicerCamerasModuleLogicPythonFiles, Configuration: Debug Win32 ------
+66>Project not selected to build for this solution configuration 
+67>------ Skipped Build: Project: CopyvtkSlicerColorsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+67>Project not selected to build for this solution configuration 
+68>------ Skipped Build: Project: CopyvtkSlicerCropVolumeModuleLogicPythonFiles, Configuration: Debug Win32 ------
+68>Project not selected to build for this solution configuration 
+69>------ Skipped Build: Project: CopyvtkSlicerCropVolumeModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+69>Project not selected to build for this solution configuration 
+70>------ Skipped Build: Project: CopyvtkSlicerDataModuleLogicPythonFiles, Configuration: Debug Win32 ------
+70>Project not selected to build for this solution configuration 
+71>------ Skipped Build: Project: CopyvtkSlicerEMSegmentModuleLogicPythonFiles, Configuration: Debug Win32 ------
+71>Project not selected to build for this solution configuration 
+72>------ Skipped Build: Project: CopyvtkSlicerFetchMIModuleLogicPythonFiles, Configuration: Debug Win32 ------
+72>Project not selected to build for this solution configuration 
+73>------ Skipped Build: Project: CopyvtkSlicerMarkupsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+73>Project not selected to build for this solution configuration 
+74>------ Skipped Build: Project: CopyvtkSlicerMarkupsModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+74>Project not selected to build for this solution configuration 
+75>------ Skipped Build: Project: CopyvtkSlicerModelMirrorModuleLogicPythonFiles, Configuration: Debug Win32 ------
+75>Project not selected to build for this solution configuration 
+76>------ Skipped Build: Project: CopyvtkSlicerModelTransformModuleLogicPythonFiles, Configuration: Debug Win32 ------
+76>Project not selected to build for this solution configuration 
+77>------ Skipped Build: Project: CopyvtkSlicerModelsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+77>Project not selected to build for this solution configuration 
+78>------ Skipped Build: Project: CopyvtkSlicerModuleTemplateModuleLogicPythonFiles, Configuration: Debug Win32 ------
+78>Project not selected to build for this solution configuration 
+79>------ Skipped Build: Project: CopyvtkSlicerMultiVolumeExplorerModuleLogicPythonFiles, Configuration: Debug Win32 ------
+79>Project not selected to build for this solution configuration 
+80>------ Skipped Build: Project: CopyvtkSlicerMultiVolumeExplorerModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+80>Project not selected to build for this solution configuration 
+81>------ Skipped Build: Project: CopyvtkSlicerReformatModuleLogicPythonFiles, Configuration: Debug Win32 ------
+81>Project not selected to build for this solution configuration 
+82>------ Skipped Build: Project: CopyvtkSlicerSceneViewsModuleLogicPythonFiles, Configuration: Debug Win32 ------
+82>Project not selected to build for this solution configuration 
+83>------ Skipped Build: Project: CopyvtkSlicerTractographyDisplayModuleLogicPythonFiles, Configuration: Debug Win32 ------
+83>Project not selected to build for this solution configuration 
+84>------ Skipped Build: Project: CopyvtkSlicerTractographyDisplayModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+84>Project not selected to build for this solution configuration 
+85>------ Skipped Build: Project: CopyvtkSlicerTractographyFiducialSeedingModuleLogicPythonFiles, Configuration: Debug Win32 ------
+85>Project not selected to build for this solution configuration 
+86>------ Skipped Build: Project: CopyvtkSlicerVolumeRenderingModuleLogicPythonFiles, Configuration: Debug Win32 ------
+86>Project not selected to build for this solution configuration 
+87>------ Skipped Build: Project: CopyvtkSlicerVolumeRenderingModuleMRMLPythonFiles, Configuration: Debug Win32 ------
+87>Project not selected to build for this solution configuration 
+88>------ Skipped Build: Project: CopyvtkSlicerVolumesModuleLogicPythonFiles, Configuration: Debug Win32 ------
+88>Project not selected to build for this solution configuration 
+89>------ Skipped Build: Project: Experimental, Configuration: Debug Win32 ------
+89>Project not selected to build for this solution configuration 
+90>------ Skipped Build: Project: CopyDICOM2FullBrainTractographyLibPythonFiles, Configuration: Debug Win32 ------
+90>Project not selected to build for this solution configuration 
+11>Generating Code...
+11>Linking...
+11>Embedding manifest...
+11>Build log was saved at "file://c:\PWS2012\Slicer4\Slicer-Build-Debug\Slicer-build\Base\QTGUI\qSlicerBaseQTGUIPythonQt.dir\Debug\BuildLog.htm"
+11>qSlicerBaseQTGUIPythonQt - 0 error(s), 0 warning(s)
+91>------ Skipped Build: Project: INSTALL, Configuration: Debug Win32 ------
+91>Project not selected to build for this solution configuration 
+92>------ Skipped Build: Project: PACKAGE, Configuration: Debug Win32 ------
+92>Project not selected to build for this solution configuration 
+========== Build: 50 succeeded, 0 failed, 383 up-to-date, 42 skipped ==========
