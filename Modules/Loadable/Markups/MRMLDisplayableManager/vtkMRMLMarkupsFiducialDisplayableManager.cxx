@@ -695,7 +695,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager::PropagateWidgetToMRML(vtkAbstract
 
   // disable processing of modified events
   this->Updating = 1;
-  fiducialNode->DisableModifiedEventOn();
+  // this was stopping PointModifiedEvent from being invoked, need that to
+  // update the GUI
+//  int disabledModify = fiducialNode->StartModify();
+
 
   // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
@@ -750,7 +753,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager::PropagateWidgetToMRML(vtkAbstract
     }
   
   // enable processing of modified events
-  fiducialNode->DisableModifiedEventOff();
+//  fiducialNode->EndModify(disabledModify);
 
   // did any of the positions change?
   if (positionChanged)

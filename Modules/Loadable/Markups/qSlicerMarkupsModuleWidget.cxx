@@ -171,6 +171,7 @@ void qSlicerMarkupsModuleWidget::enter()
   // qDebug() << "enter widget";
   this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
                  this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
+
   this->UpdateWidgetFromMRML();
 
 }
@@ -181,6 +182,16 @@ void qSlicerMarkupsModuleWidget::exit()
   this->Superclass::exit();
 
   // qDebug() << "exit widget";
+  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
+                 this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::exit()
+{
+  this->Superclass::exit();
+
+  qDebug() << "exit widget";
   this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
                  this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
 }
@@ -309,6 +320,42 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
       {
       d->activeMarkupTableWidget->setItem(m,xColumnIndex + p,new QTableWidgetItem(coordinate));
       }
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onNodeAddedEvent(vtkObject*, vtkObject* node)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
+  if (markupsNode)
+    {
+    // make it active
+    std::cout << "onNodeAddedEvent" << markupsNode->GetID() << std::endl;
+    d->activeMarkupMRMLNodeComboBox->setCurrentNode(markupsNode->GetID());
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject*, vtkObject* node)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
+  if (markupsNode)
+    {
+    // is it the current one? clear out the table
+    QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+    std::cout << "onNodeRemovedEvent" << markupsNode->GetID() << ", node combo box = " << qPrintable(activeMarkupsNodeID) << std::endl;
     }
 }
 
@@ -618,6 +665,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeNthMarkupModifiedEvent(vtkOb
     {
     return;
     }
+
   int *nPtr = NULL;
   int n = -1;
   nPtr = reinterpret_cast<int *>(callData);
@@ -665,6 +713,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupAddedEvent()//vtkMRMLN
   //qDebug() << QString("\tnew row / row count = ") + QString::number(newRow);
   d->activeMarkupTableWidget->insertRow(newRow);
   //qDebug() << QString("\t after insreting a row, row count = ") + QString::number(d->activeMarkupTableWidget->rowCount());
+
   this->UpdateRow(newRow);
 
   // scroll to the new row
