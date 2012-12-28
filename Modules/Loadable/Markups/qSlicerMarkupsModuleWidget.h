@@ -43,7 +43,7 @@ public:
   virtual void enter();
   /// disconnect from scene when exiting
   virtual void exit();
-  
+
   /// refresh the gui from the currently active markup node as determined by
   /// the selection node
   void UpdateWidgetFromMRML();
@@ -79,10 +79,10 @@ public slots:
   void onActiveMarkupsNodeMarkupAddedEvent();//vtkMRMLNode *markupsNode);
   /// update a table row from a modified markup
   void onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject *caller, vtkObject *callData);
-  
+
 protected:
   QScopedPointer<qSlicerMarkupsModuleWidgetPrivate> d_ptr;
-  
+
   virtual void setup();
 
 private:

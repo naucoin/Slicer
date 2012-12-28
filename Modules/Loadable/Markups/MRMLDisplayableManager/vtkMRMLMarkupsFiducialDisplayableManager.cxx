@@ -1,0 +1,1045 @@
+
+// MarkupsModule/Logic includes
+//#include <vtkSlicerMarkupsLogic.h>
+
+// MarkupsModule/MRML includes
+#include <vtkMRMLMarkupsFiducialNode.h>
+#include <vtkMRMLMarkupsNode.h>
+#include <vtkMRMLMarkupsDisplayNode.h>
+//#include <vtkMRMLMarkupsFiducialDisplayNode.h>
+
+// MarkupsModule/MRMLDisplayableManager includes
+#include "vtkMRMLMarkupsFiducialDisplayableManager.h"
+
+// MarkupsModule/VTKWidgets includes
+#include <vtkMarkupsGlyphSource2D.h>
+
+// MRMLDisplayableManager includes
+#include <vtkSliceViewInteractorStyle.h>
+
+// MRML includes
+#include <vtkMRMLInteractionNode.h>
+#include <vtkMRMLSelectionNode.h>
+
+// VTK includes
+#include <vtkAbstractWidget.h>
+#include <vtkFollower.h>
+#include <vtkHandleRepresentation.h>
+#include <vtkInteractorStyle.h>
+#include <vtkMath.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkOrientedPolygonalHandleRepresentation3D.h>
+#include <vtkPointHandleRepresentation2D.h>
+#include <vtkProperty2D.h>
+#include <vtkProperty.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkSeedWidget.h>
+#include <vtkSmartPointer.h>
+#include <vtkSeedRepresentation.h>
+#include <vtkSphereSource.h>
+
+// STD includes
+#include <string>
+
+//---------------------------------------------------------------------------
+vtkStandardNewMacro (vtkMRMLMarkupsFiducialDisplayableManager);
+vtkCxxRevisionMacro (vtkMRMLMarkupsFiducialDisplayableManager, "$Revision: 1.0 $");
+
+//---------------------------------------------------------------------------
+// vtkMRMLMarkupsFiducialDisplayableManager Callback
+/// \ingroup Slicer_QtModules_Markups
+class vtkMarkupsFiducialWidgetCallback : public vtkCommand
+{
+public:
+  static vtkMarkupsFiducialWidgetCallback *New()
+  { return new vtkMarkupsFiducialWidgetCallback; }
+
+  vtkMarkupsFiducialWidgetCallback(){}
+
+  virtual void Execute (vtkObject *vtkNotUsed(caller), unsigned long event, void *callData)
+  {
+    if (event ==  vtkCommand::PlacePointEvent)
+      {
+      std::cout << "Warning: PlacePointEvent not supported" << std::endl;
+      }
+    else if ((event == vtkCommand::EndInteractionEvent) || (event == vtkCommand::InteractionEvent))
+      {
+      // sanity checks
+      if (!this->DisplayableManager)
+        {
+        return;
+        }
+      if (!this->Node)
+        {
+        return;
+        }
+      if (!this->Widget)
+        {
+        return;
+        }
+      // sanity checks end
+
+      if (this->DisplayableManager->Is2DDisplayableManager())
+        {
+        // if this is a 2D SliceView displayableManager, restrict the
+        // widget to the renderer
+        
+        // we need the widgetRepresentation
+        vtkSeedRepresentation * representation = vtkSeedRepresentation::SafeDownCast(this->Widget->GetRepresentation());
+        if (!representation)
+          {
+          std::cerr << "Representation is null.\n";
+          return;
+          }
+        
+        double displayCoordinates1[4];
+        if (callData != NULL)
+          {
+          // have a single seed that moved
+          unsigned int *n =  reinterpret_cast<unsigned int *>(callData);
+          if (n ||
+              (n == 0 && representation->GetNumberOfSeeds() == 1))
+            {
+            // first, we get the current displayCoordinates of the points
+            representation->GetSeedDisplayPosition(*n,displayCoordinates1);
+            
+            // second, we copy these to restrictedDisplayCoordinates
+            double restrictedDisplayCoordinates1[4] = {displayCoordinates1[0], displayCoordinates1[1], displayCoordinates1[2], displayCoordinates1[3]};
+            
+            // modify restrictedDisplayCoordinates 1 and 2, if these are outside the viewport of the current renderer
+            this->DisplayableManager->RestrictDisplayCoordinatesToViewport(restrictedDisplayCoordinates1);
+
+            // only if we had to restrict the coordinates aka. if the coordinates changed, we update the positions
+            if (this->DisplayableManager->GetDisplayCoordinatesChanged(displayCoordinates1,restrictedDisplayCoordinates1))
+              {
+              representation->SetSeedDisplayPosition(*n,restrictedDisplayCoordinates1);
+              }
+            }
+          }
+        }
+      }
+
+    if (event == vtkCommand::EndInteractionEvent)
+      {
+      // save the state of the node when done moving, then call
+      // PropagateWidgetToMRML to update the node one last time
+      if (this->Node->GetScene())
+        {
+        this->Node->GetScene()->SaveStateForUndo(this->Node);
+        }
+      }
+    // the interaction with the widget ended, now propagate the changes to MRML
+    this->DisplayableManager->PropagateWidgetToMRML(this->Widget, this->Node);
+  }
+
+  void SetWidget(vtkAbstractWidget *w)
+    {
+    this->Widget = w;
+    }
+  void SetNode(vtkMRMLMarkupsNode *n)
+    {
+    this->Node = n;
+    }
+  void SetDisplayableManager(vtkMRMLMarkupsDisplayableManager * dm)
+    {
+    this->DisplayableManager = dm;
+    }
+
+  vtkAbstractWidget * Widget;
+  vtkMRMLMarkupsNode * Node;
+  vtkMRMLMarkupsDisplayableManager * DisplayableManager;
+};
+
+//---------------------------------------------------------------------------
+// vtkMRMLMarkupsFiducialDisplayableManager methods
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+  this->Helper->PrintSelf(os, indent);
+}
+
+//---------------------------------------------------------------------------
+/// Create a new text widget.
+vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager::CreateWidget(vtkMRMLMarkupsNode* node)
+{
+
+  if (!node)
+    {
+    vtkErrorMacro("CreateWidget: Node not set!")
+    return 0;
+    }
+
+  // 2d glyphs and text need to be scaled by 1/300 to show up properly in the 2d slice windows
+  this->SetScaleFactor2D(0.0033);
+
+  vtkMRMLMarkupsFiducialNode* fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
+
+  if (!fiducialNode)
+    {
+    vtkErrorMacro("CreateWidget: Could not get fiducial node!")
+    return 0;
+    }
+
+  vtkMRMLMarkupsDisplayNode *displayNode = fiducialNode->GetMarkupsDisplayNode();
+
+  if (!displayNode)
+    {
+    std::cout<<"No DisplayNode!"<<std::endl;
+    }
+
+  vtkNew<vtkSeedRepresentation> rep;
+  vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
+
+  // default to a starburst glyph, update in propagate mrml to widget
+  vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+  glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::StarBurst2D);
+  glyphSource->Update();
+  glyphSource->SetScale(1.0);
+  handle->SetHandle(glyphSource->GetOutput());
+
+
+  rep->SetHandleRepresentation(handle.GetPointer());
+
+
+  //seed widget
+  vtkSeedWidget * seedWidget = vtkSeedWidget::New();
+  seedWidget->CreateDefaultRepresentation();
+
+  seedWidget->SetRepresentation(rep.GetPointer());
+
+  seedWidget->SetInteractor(this->GetInteractor());
+  seedWidget->SetCurrentRenderer(this->GetRenderer());
+
+  //seedWidget->ProcessEventsOff();
+
+  // create a new handle
+  vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
+  if (!newhandle)
+    {
+    vtkErrorMacro("CreateWidget: error creaing a new handle!");
+    }
+  vtkWarningMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
+  
+  // init the widget from the mrml node
+  //this->PropagateMRMLToWidget(fiducialNode, seedWidget);
+
+  seedWidget->CompleteInteraction();
+
+  return seedWidget;
+
+  }
+
+//---------------------------------------------------------------------------
+/// Tear down the widget creation
+void vtkMRMLMarkupsFiducialDisplayableManager::OnWidgetCreated(vtkAbstractWidget * widget, vtkMRMLMarkupsNode * node)
+{
+
+  if (!widget)
+    {
+    vtkErrorMacro("OnWidgetCreated: Widget was null!")
+    return;
+    }
+
+  if (!node)
+    {
+    vtkErrorMacro("OnWidgetCreated: MRML node was null!")
+    return;
+    }
+
+  // add the callback
+  vtkMarkupsFiducialWidgetCallback *myCallback = vtkMarkupsFiducialWidgetCallback::New();
+  myCallback->SetNode(node);
+  myCallback->SetWidget(widget);
+  myCallback->SetDisplayableManager(this);
+  widget->AddObserver(vtkCommand::EndInteractionEvent,myCallback);
+  widget->AddObserver(vtkCommand::InteractionEvent,myCallback);
+  myCallback->Delete();
+
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsFiducialDisplayableManager::UpdateNthMarkupPosition(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode)
+{
+  if (!pointsNode || !widget)
+    {
+    return false;
+    }
+  if (n > pointsNode->GetNumberOfMarkups())
+    {
+    return false;
+    }
+  vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
+  if (!seedWidget)
+    {
+    return false;
+    }
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+  if (!seedRepresentation)
+    {
+    return false;
+    }
+  bool positionChanged = false;
+  
+  if (this->Is2DDisplayableManager())
+    {
+    // for 2d managers, compare the display positions
+    double displayCoordinates1[4];
+    double displayCoordinatesBuffer1[4];
+    
+    // get point in world coordinates using parent transforms
+    double pointTransformed[4];
+    // always only one point in a fiducial
+    pointsNode->GetMarkupPointWorld(n, 0, pointTransformed);
+    
+    this->GetWorldToDisplayCoordinates(pointTransformed,displayCoordinates1);
+     
+    seedRepresentation->GetSeedDisplayPosition(n,displayCoordinatesBuffer1);
+    
+    if (this->GetDisplayCoordinatesChanged(displayCoordinates1,displayCoordinatesBuffer1))
+      {
+      // only update when really changed
+      vtkDebugMacro("UpdateNthMarkupPosition: " << this->GetSliceNode()->GetName() << ": display coordinates changed:\n\tseed display = " << displayCoordinatesBuffer1[0] << ", " << displayCoordinatesBuffer1[1] << "\n\tfid display =  " << displayCoordinates1[0] << ", " << displayCoordinates1[1] );
+      seedRepresentation->SetSeedDisplayPosition(n,displayCoordinates1);
+      positionChanged = true;
+      }
+    else
+      {
+      vtkDebugMacro("UpdateNthMarkupPosition: " <<  this->GetSliceNode()->GetName() << ": display coordinates unchanged!");
+      }
+    }
+  else
+    {
+    // transform fiducial point using parent transforms
+    double fidWorldCoord[4];
+    pointsNode->GetMarkupPointWorld(n, 0, fidWorldCoord);
+    
+    // for 3d managers, compare world positions
+    double seedWorldCoord[4];
+    seedRepresentation->GetSeedWorldPosition(n,seedWorldCoord);
+     
+    if (this->GetWorldCoordinatesChanged(seedWorldCoord, fidWorldCoord))
+      {
+      vtkDebugMacro("UpdateNthMarkupPosition: " << (this->Is2DDisplayableManager() ? this->GetSliceNode()->GetName() : "3D") << ": world coordinates changed:\n\tseed = " << seedWorldCoord[0] << ", " << seedWorldCoord[1] << ", " << seedWorldCoord[2] << "\n\tfid =  " << fidWorldCoord[0] << ", " << fidWorldCoord[1] << ", " << fidWorldCoord[2]);
+      seedRepresentation->GetHandleRepresentation(n)->SetWorldPosition(fidWorldCoord);
+      positionChanged = true;
+      }
+    else
+      {
+      vtkDebugMacro("UpdateNthMarkupPosition: " << (this->Is2DDisplayableManager() ? this->GetSliceNode()->GetName() : "3D") << ": world coordinates unchanged!");
+      }
+    }
+  return positionChanged;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::SetNthSeed(int n, vtkMRMLMarkupsFiducialNode* fiducialNode, vtkSeedWidget *seedWidget)
+{
+
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+
+  if (!seedRepresentation)
+    {
+    vtkErrorMacro("SetNthSeed: no seed representation in widget!");
+    return;
+    }
+
+  vtkMRMLMarkupsDisplayNode *displayNode = fiducialNode->GetMarkupsDisplayNode();
+  if (!displayNode)
+    {
+    vtkDebugMacro("SetNthSeed: Could not get display node for node " << (fiducialNode->GetID() ? fiducialNode->GetID() : "null id"));
+    return;
+    }
+
+  int numberOfHandles = seedRepresentation->GetNumberOfSeeds();
+  vtkWarningMacro("SetNthSeed, n = " << n << ", number of handles = " << numberOfHandles);
+  
+  // does this handle need to be created?
+  bool createdNewHandle = false;
+  if (n >= numberOfHandles)
+    {
+    // create a new handle
+    vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
+    if (!newhandle)
+      {
+      vtkErrorMacro("SetNthSeed: error creaing a new handle!");
+      }
+    else
+      {
+      std::cout << "SetNthSeed: created a new handle,number of seeds = " << seedRepresentation->GetNumberOfSeeds() << std::endl;
+      createdNewHandle = true;
+      newhandle->ManagesCursorOff();
+      if (newhandle->GetEnabled() == 0)
+        {
+        vtkWarningMacro("turning on the new handle");
+        newhandle->EnabledOn();
+        }
+      }
+    }
+
+  // update the postion
+  bool positionChanged = this->UpdateNthMarkupPosition(n, seedWidget, fiducialNode);
+  std::cout << "Position changed? " << (positionChanged ? "yes" : "no") << std::endl;
+  
+  vtkOrientedPolygonalHandleRepresentation3D *handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
+  if (!handleRep)
+    {
+    vtkErrorMacro("Failed to get an oriented polygonal handle rep for n = " << n << ", number of seeds = " <<  seedRepresentation->GetNumberOfSeeds() << ", handle rep = " << (seedRepresentation->GetHandleRepresentation(n) ? seedRepresentation->GetHandleRepresentation(n)->GetClassName() : "null"));
+    return;
+    }
+
+  // update the text
+  std::string textString = fiducialNode->GetNthFiducialLabel(n);
+  if (textString.compare(handleRep->GetLabelText()) != 0)
+    {
+    handleRep->SetLabelText(textString.c_str());
+    }
+  // visibility for this handle, hide it if the whole list is invisible,
+  // this fid is invisible, or it's a 2d manager and the fids isn't
+  // visible on this slice
+  bool fidVisible = true;
+  if (displayNode->GetVisibility() == 0 ||
+      fiducialNode->GetNthFiducialVisibility(n) == 0 ||
+      this->IsWidgetDisplayableOnSlice(fiducialNode, n) == 0)
+    {
+    std::cout << "fidVisible set to FALSE (disp node visib = " << displayNode->GetVisibility() << ", nth fid visib = " << fiducialNode->GetNthFiducialVisibility(n) << ", visb on slice = " << this->IsWidgetDisplayableOnSlice(fiducialNode, n) << ")" << std::endl;
+    fidVisible = false;
+    }
+  if (fidVisible)
+    {
+    handleRep->VisibilityOn();
+    handleRep->HandleVisibilityOn();
+    if (textString.compare("") != 0)
+      {
+      handleRep->LabelVisibilityOn();
+      }
+    seedWidget->GetSeed(n)->EnabledOn();
+    }
+  else
+    {
+    handleRep->VisibilityOff();
+    handleRep->HandleVisibilityOff();
+    handleRep->LabelVisibilityOff();
+    seedWidget->GetSeed(n)->EnabledOff();
+    }
+
+  // update locked
+  int locked = fiducialNode->GetLocked();
+  handleRep->SetPickable(!locked);
+  handleRep->SetDragable(!locked);
+  
+  // set the glyph type if a new handle was created, or the glyph type changed
+  std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  if (createdNewHandle ||
+      iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
+    {
+    vtkDebugMacro("DisplayNode glyph type = " << displayNode->GetGlyphType() << " = " << displayNode->GetGlyphTypeAsString() << ", is 3d glyph = " << (displayNode->GlyphTypeIs3D() ? "true" : "false") << ", is 2d disp manager = " << this->Is2DDisplayableManager());
+    std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
+    if (displayNode->GlyphTypeIs3D())
+      {
+      if (this->Is2DDisplayableManager())
+        {
+        // map the 3d sphere to a filled circle, the 3d diamond to a filled
+        // diamond
+        vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+        if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
+          {
+          std::cout << "using circle 2d for sphere 3d" << std::endl;
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Circle2D);
+          }
+        else if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Diamond3D)
+          {
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Diamond2D);
+          }
+        else
+          {
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::StarBurst2D);
+          std::cout << "2d starburst" << std::endl;
+          }
+        glyphSource->Update();
+        glyphSource->SetScale(1.0);
+        handleRep->SetHandle(glyphSource->GetOutput());
+        } //if (this->Is2DDisplayableManager())
+      else
+        {
+        if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
+          {
+          std::cout << "3d sphere" << std::endl;
+          vtkNew<vtkSphereSource> sphereSource;
+          sphereSource->SetRadius(0.5);
+          sphereSource->SetPhiResolution(10);
+          sphereSource->SetThetaResolution(10);
+          sphereSource->Update();
+          handleRep->SetHandle(sphereSource->GetOutput());
+          }
+        else
+          {
+          // the 3d diamond isn't supported yet, use a 2d diamond for now
+          vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Diamond2D);
+          glyphSource->Update();
+          glyphSource->SetScale(1.0);
+          handleRep->SetHandle(glyphSource->GetOutput());
+          }
+        }
+      }//if (displayNode->GlyphTypeIs3D())
+    else
+      {
+      // 2D
+      vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+      glyphSource->SetGlyphType(displayNode->GetGlyphType());
+      glyphSource->Update();
+      glyphSource->SetScale(1.0);
+      handleRep->SetHandle(glyphSource->GetOutput());
+      }
+//    if (!createdNewHandle)
+      {
+      // TBD: keep with the assumption of one glyph type per markups node,
+      // that each seed has to have the same type, but update if necessary
+      this->NodeGlyphTypes[displayNode] = displayNode->GetGlyphType();
+      }
+    }  // end of glyph type
+
+  // update the text display properties if there is text
+  if (textString.compare("") != 0)
+    {
+    // scale the text
+    double textscale[3] = {displayNode->GetTextScale(), displayNode->GetTextScale(), displayNode->GetTextScale()};
+    if (this->Is2DDisplayableManager())
+      {
+      // scale it down for the 2d windows
+      textscale[0] *= this->GetScaleFactor2D();
+      textscale[1] *= this->GetScaleFactor2D();
+      textscale[2] *= this->GetScaleFactor2D();
+      }
+    handleRep->SetLabelTextScale(textscale);
+    if (handleRep->GetLabelTextActor())
+      {
+      // set the colours
+      if (fiducialNode->GetNthFiducialSelected(n))
+        {
+        double *color = displayNode->GetSelectedColor();
+        handleRep->GetLabelTextActor()->GetProperty()->SetColor(color);
+        std::cout << "Set label text actor property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        }
+      else
+        {
+        double *color = displayNode->GetColor();
+        handleRep->GetLabelTextActor()->GetProperty()->SetColor(color);
+        std::cout << "Set label text actor property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        }
+
+      handleRep->GetLabelTextActor()->GetProperty()->SetOpacity(displayNode->GetOpacity());
+      }
+    }
+  
+  vtkProperty *prop = NULL;
+  prop = handleRep->GetProperty();
+  if (prop)
+    {
+    if (fiducialNode->GetNthFiducialSelected(n))
+      {
+      // use the selected color
+      double *color = displayNode->GetSelectedColor();
+      prop->SetColor(color);
+      std::cout << "Set glyph property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+      }
+    else
+      {
+      // use the unselected color
+      double *color = displayNode->GetColor();
+      prop->SetColor(color);
+      std::cout << "Set glyph property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+      }
+    
+    // material properties
+    prop->SetOpacity(displayNode->GetOpacity());
+    prop->SetAmbient(displayNode->GetAmbient());
+    prop->SetDiffuse(displayNode->GetDiffuse());
+    prop->SetSpecular(displayNode->GetSpecular());
+    }
+  
+  // the following check is only needed since we require a different uniform scale depending on 2D and 3D
+  if (this->Is2DDisplayableManager())
+    {
+    handleRep->SetUniformScale(displayNode->GetGlyphScale()*this->GetScaleFactor2D());
+    }
+  else
+    {
+    handleRep->SetUniformScale(displayNode->GetGlyphScale());
+    }
+  
+  
+  
+  
+}
+
+//---------------------------------------------------------------------------
+/// Propagate properties of MRML node to widget.
+void vtkMRMLMarkupsFiducialDisplayableManager::PropagateMRMLToWidget(vtkMRMLMarkupsNode* node, vtkAbstractWidget * widget)
+{
+  if (!widget)
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: Widget was null!")
+    return;
+    }
+
+  if (!node)
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: MRML node was null!")
+    return;
+    }
+
+  // cast to the specific widget
+  vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
+
+  if (!seedWidget)
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: Could not get seed widget!")
+    return;
+    }
+
+  // cast to the specific mrml node
+  vtkMRMLMarkupsFiducialNode* fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
+
+  if (!fiducialNode)
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: Could not get fiducial node!")
+    return;
+    }
+
+  // disable processing of modified events
+  this->Updating = 1;
+
+  
+  // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
+  
+
+  vtkMRMLMarkupsDisplayNode *displayNode = fiducialNode->GetMarkupsDisplayNode();
+
+  if (!displayNode)
+    {
+    vtkDebugMacro("PropagateMRMLToWidget: Could not get display node for node " << (fiducialNode->GetID() ? fiducialNode->GetID() : "null id"));
+    }
+
+  // iterate over the fiducials in this markup
+  int numberOfFiducials = fiducialNode->GetNumberOfMarkups();
+  
+  vtkWarningMacro("Fids PropagateMRMLToWidget, node num markups = " << numberOfFiducials);
+  
+  for (int n = 0; n < numberOfFiducials; n++)
+    {
+    std::cout << "Fids PropagateMRMLToWidget: n = " << n << std::endl;
+    this->SetNthSeed(n, fiducialNode, seedWidget);
+    }
+
+  // now update the position of all the seeds - done in SetNthSeed now
+  //this->UpdatePosition(widget, node);
+
+  // update lock status
+  this->Helper->UpdateLocked(node);
+
+  // update visibility of widget as a whole
+  std::cout << "PropagateMRMLToWidget: calling UpdateWidgetVisibility" << std::endl;
+  this->UpdateWidgetVisibility(node);
+
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+  seedRepresentation->NeedToRenderOn();
+  seedWidget->Modified();
+
+//  seedWidget->CompleteInteraction();
+
+  // enable processing of modified events
+  this->Updating = 0;
+
+
+}
+
+//---------------------------------------------------------------------------
+/// Propagate properties of widget to MRML node.
+void vtkMRMLMarkupsFiducialDisplayableManager::PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node)
+{
+
+  if (!widget)
+    {
+    vtkErrorMacro("PropagateWidgetToMRML: Widget was null!")
+    return;
+    }
+
+  if (!node)
+    {
+    vtkErrorMacro("PropagateWidgetToMRML: MRML node was null!")
+    return;
+    }
+
+  // cast to the specific widget
+  vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
+
+  if (!seedWidget)
+   {
+   vtkErrorMacro("PropagateWidgetToMRML: Could not get seed widget!")
+   return;
+   }
+
+  // cast to the specific mrml node
+  vtkMRMLMarkupsFiducialNode* fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
+
+  if (!fiducialNode)
+   {
+   vtkErrorMacro("PropagateWidgetToMRML: Could not get fiducial node!")
+   return;
+   }
+
+  // disable processing of modified events
+  this->Updating = 1;
+  fiducialNode->DisableModifiedEventOn();
+
+  // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+  int numberOfSeeds = seedRepresentation->GetNumberOfSeeds();
+
+  bool positionChanged = false;
+  for (int n = 0; n < numberOfSeeds; n++)
+    {
+    double worldCoordinates1[4];
+
+    if (this->Is2DDisplayableManager())
+      {
+      // 2D widget was changed
+
+      double displayCoordinates1[4];
+      seedRepresentation->GetSeedDisplayPosition(n,displayCoordinates1);
+      vtkDebugMacro("PropagateWidgetToMRML: 2d displayable manager: widget display coords = " << displayCoordinates1[0] << ", " << displayCoordinates1[1] << ", " << displayCoordinates1[2]);
+      this->GetDisplayToWorldCoordinates(displayCoordinates1,worldCoordinates1);
+      vtkDebugMacro("PropagateWidgetToMRML: 2d: widget seed " << n << " world coords = " << worldCoordinates1[0] << ", " << worldCoordinates1[1] << ", "<< worldCoordinates1[2]);
+      }
+    else
+      {
+      
+      seedRepresentation->GetSeedWorldPosition(n,worldCoordinates1);
+      vtkDebugMacro("PropagateWidgetToMRML: 3d: widget seed " << n << " world coords = " << worldCoordinates1[0] << ", " << worldCoordinates1[1] << ", "<< worldCoordinates1[2]);
+      }
+
+    // was there a change?
+    double currentCoordinates[4];
+    fiducialNode->GetNthFiducialWorldCoordinates(n,currentCoordinates);
+    vtkDebugMacro("PropagateWidgetToMRML: fiducial " << n << " current world coordinates = " << currentCoordinates[0] << ", " << currentCoordinates[1] << ", " << currentCoordinates[2]);
+
+    double currentCoords[3];
+    currentCoords[0] = currentCoordinates[0];
+    currentCoords[1] = currentCoordinates[1];
+    currentCoords[2] = currentCoordinates[2];
+    double newCoords[3];
+    newCoords[0] = worldCoordinates1[0];
+    newCoords[1] = worldCoordinates1[1];
+    newCoords[2] = worldCoordinates1[2];
+    if (this->GetWorldCoordinatesChanged(currentCoords, newCoords))
+      {
+      vtkDebugMacro("PropagateWidgetToMRML: position changed.");
+      positionChanged = true;
+      }
+
+    if (positionChanged)
+      {
+      vtkDebugMacro("PropagateWidgetToMRML: position changed, setting fiducial coordinates");
+      fiducialNode->SetNthFiducialWorldCoordinates(n,worldCoordinates1);
+      }
+    }
+  
+  // enable processing of modified events
+  fiducialNode->DisableModifiedEventOff();
+
+  // did any of the positions change?
+  if (positionChanged)
+    {
+    vtkWarningMacro("PropagateWidgetToMRML: position changed, calling point modified on the fiducial node");
+    fiducialNode->Modified();
+    //fiducialNode->GetScene()->InvokeEvent(vtkCommand::ModifiedEvent,fiducialNode);
+    fiducialNode->GetScene()->InvokeEvent(vtkMRMLMarkupsNode::PointModifiedEvent,fiducialNode);
+    }
+  // This displayableManager should now consider ModifiedEvent again
+  this->Updating = 0;
+}
+
+//---------------------------------------------------------------------------
+/// Create a markupsMRMLnode
+void vtkMRMLMarkupsFiducialDisplayableManager::OnClickInRenderWindow(double x, double y, const char *associatedNodeID)
+{
+  if (!this->IsCorrectDisplayableManager())
+    {
+    // jump out
+    vtkDebugMacro("OnClickInRenderWindow: x = " << x << ", y = " << y << ", incorrect displayable manager, focus = " << this->Focus << ", jumping out");
+    return;
+    }
+
+  // place the seed where the user clicked
+  vtkDebugMacro("OnClickInRenderWindow: placing seed at " << x << ", " << y);
+  // switch to updating state to avoid events mess
+  this->Updating = 1;
+
+  double displayCoordinates1[2];
+  displayCoordinates1[0] = x;
+  displayCoordinates1[1] = y;
+
+
+  double worldCoordinates1[4];
+
+  this->GetDisplayToWorldCoordinates(displayCoordinates1,worldCoordinates1);
+
+  // Is there an active markups node that's a fiducial node?
+  vtkMRMLMarkupsFiducialNode *activeFiducialNode = NULL;
+  
+  vtkMRMLSelectionNode *selectionNode = this->GetSelectionNode();
+  if (selectionNode)
+    {
+    const char *activeMarkupsID = selectionNode->GetActiveMarkupsID();
+    vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID(activeMarkupsID);
+    if (mrmlNode &&
+        mrmlNode->IsA("vtkMRMLMarkupsFiducialNode"))
+      {
+      activeFiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+      }
+    else
+      {
+      vtkErrorMacro("OnClickInRenderWindow: active markup id = " << (activeMarkupsID ? activeMarkupsID : "null") << ", mrml node is " << (mrmlNode ? mrmlNode->GetID() : "null") << ", not a vtkMRMLMarkupsFiducialNode");
+      }
+    }
+
+  bool newNode = false;
+  if (!activeFiducialNode)
+    {
+    newNode = true;
+    // create the MRML node
+    activeFiducialNode = vtkMRMLMarkupsFiducialNode::New();
+    }
+  
+  // add a fiducial: this will trigger an update of the widgets
+  int fiducialIndex = activeFiducialNode->AddMarkupWithNPoints(1);
+  if (fiducialIndex == -1)
+    {
+    vtkErrorMacro("OnClickInRenderWindow: unable to add a fiducial to active fiducial list!");
+    if (newNode)
+      {
+      activeFiducialNode->Delete();
+      }
+    return;
+    }
+  // set values on it
+  activeFiducialNode->SetNthFiducialWorldCoordinates(fiducialIndex,worldCoordinates1);
+  std::cout << "OnClickInRenderWindow: Setting " << fiducialIndex << "th fiducial label from " << activeFiducialNode->GetNthFiducialLabel(fiducialIndex);
+  activeFiducialNode->SetNthFiducialLabel(fiducialIndex,this->GetMRMLScene()->GetUniqueNameByString("M"));
+  std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
+  
+  // reset updating state
+  this->Updating = 0;
+
+  // if this was a one time place, go back to view transform mode
+  vtkMRMLInteractionNode *interactionNode = this->GetInteractionNode();
+  if (interactionNode && interactionNode->GetPlaceModePersistence() != 1)
+    {
+    vtkDebugMacro("End of one time place, place mode persistence = " << interactionNode->GetPlaceModePersistence());
+    interactionNode->SetCurrentInteractionMode(vtkMRMLInteractionNode::ViewTransform);
+    }
+
+  // save for undo and add the node to the scene after any reset of the
+  // interaction node so that don't end up back in place mode
+  this->GetMRMLScene()->SaveStateForUndo();
+  
+  // is there a node associated with this?
+  if (associatedNodeID)
+    {
+    activeFiducialNode->SetNthFiducialAssociatedNodeID(fiducialIndex, associatedNodeID);
+    }
+
+  if (newNode)
+    {
+    // create a display node and add node and display node to scene
+    vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
+    this->GetMRMLScene()->AddNode(displayNode);
+    activeFiducialNode->AddAndObserveDisplayNodeID(displayNode->GetID());
+    this->GetMRMLScene()->AddNode(activeFiducialNode);
+
+    // save it as the active markups list
+    if (selectionNode)
+      {
+      selectionNode->SetActiveMarkupsID(activeFiducialNode->GetID());
+      }
+    // clean up
+    displayNode->Delete();
+    activeFiducialNode->Delete();
+    }
+}
+
+//---------------------------------------------------------------------------
+/// observe key press events
+void vtkMRMLMarkupsFiducialDisplayableManager::AdditionnalInitializeStep()
+{
+  // don't add the key press event, as it triggers a crash on start up
+  //vtkDebugMacro("Adding an observer on the key press event");
+  this->AddInteractorStyleObservableEvent(vtkCommand::KeyPressEvent);
+}
+
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::OnInteractorStyleEvent(int eventid)
+{
+  this->Superclass::OnInteractorStyleEvent(eventid);
+
+  if (this->GetDisableInteractorStyleEventsProcessing())
+    {
+    vtkWarningMacro("OnInteractorStyleEvent: Processing of events was disabled.")
+    return;
+    }
+
+  if (eventid == vtkCommand::KeyPressEvent)
+    {
+    char *keySym = this->GetInteractor()->GetKeySym();
+    vtkDebugMacro("OnInteractorStyleEvent " << (this->Is2DDisplayableManager() ? this->GetSliceNode()->GetName() : "3D") << ": key press event position = " << this->GetInteractor()->GetEventPosition()[0] << ", " << this->GetInteractor()->GetEventPosition()[1] << ", key sym = " << (keySym == NULL ? "null" : keySym));
+    if (!keySym)
+      {
+      return;
+      }
+    if (strcmp(keySym, "p") == 0)
+      {
+      if (this->GetInteractionNode()->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place)
+        {
+        this->OnClickInRenderWindowGetCoordinates();
+        }
+      else
+        {
+        vtkDebugMacro("Fiducial DisplayableManager: key press p, but not in Place mode! Returning.");
+        return;
+        }
+      }
+    }
+  else if (eventid == vtkCommand::KeyReleaseEvent)
+    {
+    vtkDebugMacro("Got a key release event");
+    }
+}
+
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node)
+{
+//  vtkWarningMacro("UpdatePosition, node is " << (node == NULL ? "null" : node->GetID()));
+  if (!node)
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode *pointsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
+  if (!pointsNode)
+    {
+    vtkErrorMacro("UpdatePosition - Can not access control points node from node with id " << node->GetID());
+    return;
+    }
+  // get the widget
+  if (!widget)
+    {
+    vtkErrorMacro("UpdatePosition: no widget associated with points node " << pointsNode->GetID());
+    return;
+    }
+  // cast to a seed widget
+  vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
+
+  if (!seedWidget)
+   {
+   vtkErrorMacro("UpdatePosition: Could not get seed widget!")
+   return;
+   }
+
+  // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
+ 
+  
+  // disable processing of modified events
+  //this->Updating = 1;
+  bool positionChanged = false;
+  int numberOfFiducials = pointsNode->GetNumberOfMarkups();
+  for (int n = 0; n < numberOfFiducials; n++)
+    {
+    if (this->UpdateNthMarkupPosition(n, seedWidget, pointsNode))
+      {
+      positionChanged = true;
+      }
+    }
+  // did any of the positions change?
+  if (positionChanged && this->Updating == 0)
+    {
+    // not already updating from propagate mrml to widget, so trigger a render
+    vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+    seedRepresentation->NeedToRenderOn();
+    seedWidget->Modified();
+//    seedWidget->CompleteInteraction();
+    }
+  // enable processing of modified events
+  //this->Updating = 0;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::OnMRMLSceneEndClose()
+{
+  // clear out the map of glyph types
+  this->NodeGlyphTypes.clear();
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode* node, int n)
+{
+  int numberOfMarkups = node->GetNumberOfMarkups();
+  if (n < 0 || n >= numberOfMarkups)
+    {
+    vtkErrorMacro("OnMRMLMarkupsNodeNthMarkupModifiedEvent: n = " << n << " is out of range 0-" << numberOfMarkups);
+    return;
+    }
+  
+  vtkAbstractWidget *widget = this->Helper->GetWidget(node);
+  if (!widget)
+    {
+    vtkErrorMacro("OnMRMLMarkupsNodeNthMarkupModifiedEvent: a markup was added to a node that doesn't already have a widget! Returning..");
+    return;
+    }
+  
+  vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
+  if (!seedWidget)
+   {
+   vtkErrorMacro("OnMRMLMarkupsNodeNthMarkupModifiedEvent: Could not get seed widget!")
+   return;
+   }
+  this->SetNthSeed(n, vtkMRMLMarkupsFiducialNode::SafeDownCast(node), seedWidget);
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager::OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * markupsNode)
+{
+  vtkWarningMacro("OnMRMLMarkupsNodeMarkupAddedEvent");
+
+  if (!markupsNode)
+    {
+    return;
+    }
+  vtkAbstractWidget *widget = this->Helper->GetWidget(markupsNode);
+  if (!widget)
+    {
+    // TBD: create a widget?
+    vtkErrorMacro("OnMRMLMarkupsNodeMarkupAddedEvent: a markup was added to a node that doesn't already have a widget! Returning..");
+    return;
+    }
+  
+  vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
+  if (!seedWidget)
+   {
+   vtkErrorMacro("OnMRMLMarkupsNodeMarkupAddedEvent: Could not get seed widget!")
+   return;
+   }
+
+  // this call will create a new handle and set it
+  int n = markupsNode->GetNumberOfMarkups() - 1;
+  this->SetNthSeed(n, vtkMRMLMarkupsFiducialNode::SafeDownCast(markupsNode), seedWidget);
+
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+  seedRepresentation->NeedToRenderOn();
+  seedWidget->Modified();
+}

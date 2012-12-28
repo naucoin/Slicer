@@ -16,7 +16,7 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
 
   TEST_SET_GET_BOOLEAN(node1, Locked);
   TEST_SET_GET_BOOLEAN(node1, UseListNameForMarkups);
-  
+
   node1->AddText("testing");
 
   int numTexts = node1->GetNumberOfTexts();
@@ -128,7 +128,7 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     }
   else { std::cout << "pass add markup with -1 points" << std::endl; }
 
-  node1->AddMarkupWithNPoints(0);
+ node1->AddMarkupWithNPoints(0);
   numMarkups = node1->GetNumberOfMarkups();
   if (numMarkups != 1)
     {

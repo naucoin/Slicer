@@ -209,3 +209,4 @@ void vtkSlicerMarkupsLogic::JumpSlicesToNthPointInMarkup(const char *id, int n)
     this->JumpSlicesToLocation(point[0], point[1], point[2]);
     }
 }
+
