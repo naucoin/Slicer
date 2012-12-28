@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Developer Tools</category>
+  <title>Markups</title>
+  <description><![CDATA[Create and edit markups, supplementary information associated with a scene. Currently supported markups are lists of fiducial points. Fiducials can be placed using the mouse mode tool bar. Once fiducial place mode has been entered, a new fiducial can be placed under the current mouse position by pressing the p key.]]></description>
+  <version>4.3</version>
+  <documentation-url>http://wiki.slicer.org/slicerWiki/index.php/Documentation/4.3/Modules/Markups</documentation-url>
+  <license>slicer4</license>
+  <contributor>Nicole Aucoin (SPL, BWH)</contributor>
+  <acknowledgements><![CDATA[This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.]]></acknowledgements>
+  <parameters>
+    <label>Modify Selected List and Contents</label>
+    <parameter>
+      <label>Markups fiducial node selector</label>
+      <description><![CDATA[Select a Markups fiducial node from the scene to populate the GUI and allow modifications. One option is to create a new node with the display properties of the current list]]></description>
+    </parameter>
+    <parameters>
+      <label>Display Properties</label>
+      <parameter>
+	<label>Reset to Defaults</label>
+	<description><![CDATA[Reset the display properties of this markups node to the system defaults.]]></description>
+      </parameter>
+      <parameter>
+	<label>Save to Defaults</label>
+	<description><![CDATA[Save the display properties of this markups node to be the new system defaults.]]></description>
+      </parameter>
+      <parameter>
+	<label>Glyph Type</label>
+	<description><![CDATA[Select the symbol that will be used to mark each location. Default is the Sphere3D.]]></description>
+      </parameter>
+      <parameter>
+	<label>Selected Color</label>
+	<description><![CDATA[Select the color that will be used to display the glyph and text when the markup is marked as selected.]]></description>
+      </parameter>
+      <parameter>
+	<label>Unselected Color</label>
+	<description><![CDATA[Select the color that will be used to display the glyph and text when the markup is not marked as selected.]]></description>
+      </parameter>
+      <parameter>
+	<label>Glyph Scale</label>
+	<description><![CDATA[Pick the relative size of the glyph used to mark the points.]]></description>
+      </parameter>
+      <parameter>
+	<label>Text Scale</label>
+	<description><![CDATA[Pick the relative size of the text shown beside each glyph. Select 0 to turn off text.]]></description>
+      </parameter>
+      <parameter>
+	<label>Opacity</label>
+	<description><![CDATA[Pick the opacity used for the glyph and text, select 0 for invisible, 1 for fully visible.]]></description>
+      </parameter>
+    </parameters>
+    <parameters>
+      <label>Modify List</label>
+      <parameter>
+	<label>Add Markup</label>
+	<description><![CDATA[Add a new markup to the selected list, placing it at the origin]]></description>
+      </parameter>
+      <parameter>
+	<label>Visibility</label>
+	<description><![CDATA[Toggle the list visibility, which will over ride the individual markup visibility settings. If the eye icon is open, the list is visible, and pressing it will make it invisible. If the eye icon is closed, the list is invisilbe and pressing the button will make it visible.]]></description>
+      </parameter>
+      <parameter>
+	<label>Locked</label>
+	<description><![CDATA[Toggle the list lock state (if it can be moved by mouse interactions in the viewers), which will over ride the individual markup lock settings. If the lock icon is open, the list is unlocked, and pressing it will lock it. If the lock icon is closed, the list is locked and pressing the button will unlock it.]]></description>
+      </parameter>
+      <parameter>
+	<label>Delete the highlighted markups from the active list</label>
+	<description><![CDATA[After highlighting rows in the table to select markups, press this button to delete them from the list.]]></description>
+      </parameter>
+      <parameter>
+	<label>Remove all markups from the active list</label>
+	<description><![CDATA[Pressing this button will delete all of the markups in the active list, leaving it having a list length of 0]]></description>
+      </parameter>
+    </parameters>
+    <parameters>
+      <label>Modify Markups in List</label>
+      <parameter>
+	<label>Select All</label>
+	<description><![CDATA[Select all the markups in the active list.]]></description>
+      </parameter>
+      <parameter>
+	<label>Deselect All</label>
+	<description><![CDATA[Deselect all the markups in the active list - they won't be passed to CLIs.]]></description>
+      </parameter>
+      <parameter>
+	<label>Visibility On</label>
+	<description><![CDATA[Set visibility flag to on for all markups in active list.]]></description>
+      </parameter>
+      <parameter>
+	<label>Visibility Off</label>
+	<description><![CDATA[Set visibility flag to off for all markups in active list.]]></description>
+      </parameter>
+      <parameter>
+	<label>Lock Off</label>
+	<description><![CDATA[Set the lock flag to false on all markups in the active list. They will respond to mouse events in the viewers.]]></description>
+      </parameter>
+      <parameter>
+	<label>Lock On</label>
+	<description><![CDATA[Set the lock flag to true on all markups in the active list. They will not respond to mouse events in the viewers.]]></description>
+      </parameter>
+      <parameter>
+	<label>Move Up</label>
+	<description><![CDATA[Move a highlighted markup up one spot in the list.]]></description>
+      </parameter>
+      <parameter>
+	<label>Move Down</label>
+	<description><![CDATA[Move a highlighted markup down one spot in the list.]]></description>
+      </parameter>
+    </parameters>
+    <parameters>
+      <label>Advanced</label>
+      <parameter>
+	<label>Click Name to Jump Slices</label>
+	<description><![CDATA[If checked, click in name column to jump slices to that point. The radio buttons control if the slice is centered on the markup or not after the jump.]]></description>
+      </parameter>
+      <parameter>
+	<label>Use List Name</label>
+	<description><![CDATA[Prefix the labels of new markups with the list name, on by default.]]></description>
+      </parameter>
+    </parameters>
+    <parameters>
+      <label>Markups Table</label>
+      <parameter>
+	<label>Selected</label>
+	<description><![CDATA[A check box is shown in this column, it's check state depends on if the markup is selected or not. Click to toggle the selected state.]]></description>
+      </parameter>
+      <parameter>
+	<label>Locked</label>
+	<description><![CDATA[An open or closed padlock is shown in this column, depending on if the markup is unlocked or locked. Click it to toggle the locked state.]]></description>
+      </parameter>
+      <parameter>
+	<label>Visibility</label>
+	<description><![CDATA[An open or closed eye icon is shown in this column, depending on if the markup is visible or not. Click it to toggle the visibility state.]]></description>
+      </parameter>
+      <parameter>
+	<label>Name</label>
+	<description><![CDATA[A short name for this markup, displayed in the viewers as text next to the glyphs.]]></description>
+      </parameter>
+      <parameter>
+	<label>Description</label>
+	<description><![CDATA[A longer description for this markup, not displayed in the viewers.]]></description>
+      </parameter>
+      <parameter>
+	<label>X, Y, Z</label>
+	<description><![CDATA[The RAS coordinates of this markup.]]></description>
+      </parameter>
+    </parameters>
+  </parameters>
+</executable>

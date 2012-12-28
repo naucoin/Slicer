@@ -518,6 +518,38 @@ class PaintEffectTool(LabelEffect.LabelEffectTool):
     labelImage.SetScalarComponentFromFloat(ijk[0],ijk[1],ijk[2],0, paintLabel)
     self.editUtil.markVolumeNodeAsModified(labelNode)
 
+  def paintPixel(self, x, y):
+    """
+    paint with a single pixel (in label space)
+    """
+    sliceLogic = self.sliceWidget.sliceLogic()
+    labelLogic = sliceLogic.GetLabelLayer()
+    labelNode = labelLogic.GetVolumeNode()
+    labelImage = labelNode.GetImageData()
+
+    if not labelNode:
+      # if there's no label, we can't paint
+      return
+
+    xyToIJK = labelLogic.GetXYToIJKTransform().GetMatrix()
+    ijkFloat = xyToIJK.MultiplyPoint( (x, y, 0, 1) )
+    ijk = []
+    for e in ijkFloat:
+      try:
+        index = int(round(e))
+      except ValueError:
+        return
+      ijk.append(index)
+    dims = labelImage.GetDimensions()
+    for e,d in zip(ijk,dims): # clamp to volume extent
+      if e < 0 or e >= d:
+        return
+
+    parameterNode = self.editUtil.getParameterNode()
+    paintLabel = int(parameterNode.GetParameter("label"))
+    labelImage.SetScalarComponentFromFloat(ijk[0],ijk[1],ijk[2],0, paintLabel)
+    labelImage.Modified()
+
   def paintBrush(self, x, y):
     """
     paint with a brush that is circular in XY space 
