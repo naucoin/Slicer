@@ -1,6 +1,6 @@
 /*=auto=========================================================================
 
-  Portions (c) Copyright 2005 Brigham and Women's Hospital (BWH) 
+  Portions (c) Copyright 2005 Brigham and Women's Hospital (BWH)
   All Rights Reserved.
 
   See COPYRIGHT.txt
@@ -86,7 +86,7 @@ int vtkMRMLSelectionNodeTest1(int , char * [] )
   node1->Print(std::cout);
 
   // markups
-  
+
   return EXIT_SUCCESS;
 }
 

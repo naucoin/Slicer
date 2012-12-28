@@ -26,7 +26,7 @@ vtkMRMLNodeNewMacro(vtkMRMLMarkupsNode);
 vtkMRMLMarkupsNode::vtkMRMLMarkupsNode()
 {
   this->TextList = vtkStringArray::New();
-  this->Locked = 0;  
+  this->Locked = 0;
   this->UseListNameForMarkups = 1;
 }
 
@@ -40,12 +40,12 @@ vtkMRMLMarkupsNode::~vtkMRMLMarkupsNode()
 void vtkMRMLMarkupsNode::WriteXML(ostream& of, int nIndent)
 {
   Superclass::WriteXML(of,nIndent);
- 
+
   vtkIndent indent(nIndent);
- 
+
   of << indent << " locked=\"" << this->Locked << "\"";
   of << indent << " useListNameForMarkups=\"" << this->UseListNameForMarkups << "\"";
- 
+
   int textLength = this->TextList->GetNumberOfValues();
 
   for (int i = 0 ; i < textLength; i++)
@@ -64,7 +64,7 @@ void vtkMRMLMarkupsNode::ReadXMLAttributes(const char** atts)
   const char* attName;
   const char* attValue;
 
-  while (*atts != NULL) 
+  while (*atts != NULL)
     {
     attName = *(atts++);
     attValue = *(atts++);
@@ -72,7 +72,7 @@ void vtkMRMLMarkupsNode::ReadXMLAttributes(const char** atts)
     if (!strncmp(attName, "textList", 9))
       {
       this->AddText(attValue);
-      }  
+      }
     else if (!strcmp(attName, "locked"))
       {
       this->SetLocked(atof(attValue));
@@ -95,7 +95,7 @@ void vtkMRMLMarkupsNode::Copy(vtkMRMLNode *anode)
     {
     return;
     }
-  
+
   this->SetLocked(node->GetLocked());
   this->SetUseListNameForMarkups(node->GetUseListNameForMarkups());
   this->TextList->DeepCopy(node->TextList);
@@ -211,7 +211,7 @@ void vtkMRMLMarkupsNode::SetText(int id, const char *newText)
     }
 
   this->TextList->InsertValue(id,newString);
- 
+
   if(!this->GetDisableModifiedEvent())
     {
     // invoke a modified event
@@ -227,7 +227,7 @@ int vtkMRMLMarkupsNode::AddText(const char *newText)
 {
   if (!this->TextList)
     {
-    vtkErrorMacro("Markups: For node " << this->GetName() << " text is not defined"); 
+    vtkErrorMacro("Markups: For node " << this->GetName() << " text is not defined");
     return -1 ;
     }
   int n = this->GetNumberOfTexts();
@@ -243,7 +243,7 @@ vtkStdString vtkMRMLMarkupsNode::GetText(int n)
     {
       return vtkStdString();
     }
-  return this->TextList->GetValue(n); 
+  return this->TextList->GetValue(n);
 }
 
 //-------------------------------------------------------------------------
@@ -253,14 +253,14 @@ int  vtkMRMLMarkupsNode::DeleteText(int id)
     {
     return -1;
     }
-  
+
   int n = this->GetNumberOfTexts();
-  if (id < 0 || id >= n) 
+  if (id < 0 || id >= n)
     {
       return -1;
     }
 
-  for (int i = id; id < n-1; i++ ) 
+  for (int i = id; id < n-1; i++ )
     {
       this->TextList->SetValue(i,this->GetText(i+1));
     }
@@ -274,7 +274,7 @@ int  vtkMRMLMarkupsNode::DeleteText(int id)
 //-------------------------------------------------------------------------
 int vtkMRMLMarkupsNode::GetNumberOfTexts()
 {
-  if (!this->TextList) 
+  if (!this->TextList)
     {
     return -1;
     }
@@ -359,7 +359,7 @@ Markup *vtkMRMLMarkupsNode::GetNthMarkup(int n)
     {
     return &(this->Markups[n]);
     }
-  
+
   return NULL;
 }
 
