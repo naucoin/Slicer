@@ -30,6 +30,7 @@
 
 // module includes
 #include "vtkMRMLMarkupsNode.h"
+#include "vtkMRMLMarkupsFiducialNode.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_Markups
@@ -61,7 +62,7 @@ private:
 qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMarkupsModuleWidget& object)
   : q_ptr(&object)
 {
-  this->columnLabels << " " << "Visible" << "Name" << "X" << "Y" << "Z";// << "Description";
+  this->columnLabels << "Selected" << "Visible" << "Name" << "X" << "Y" << "Z";// << "Description";
 }
 
 //-----------------------------------------------------------------------------
@@ -113,6 +114,10 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // number of columns with headers
   this->activeMarkupTableWidget->setColumnCount(this->numberOfColumns());
   this->activeMarkupTableWidget->setHorizontalHeaderLabels(this->columnLabels);
+
+  // listen for changes so can update mrml node
+  QObject::connect(this->activeMarkupTableWidget, SIGNAL(cellChanged(int, int)),
+                   q, SLOT(onActiveMarkupTableCellChanged(int, int)));
 }
 
 //-----------------------------------------------------------------------------
@@ -235,7 +240,7 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     qDebug() << QString("Update Row: unable to get markups node with id ") + activeMarkupsNodeID;
     return;
     }
-  
+
   // selected
   QTableWidgetItem* selectedItem = new QTableWidgetItem();
   if (markupsNode->GetNthMarkupSelected(m))
@@ -246,7 +251,11 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     {
     selectedItem->setCheckState(Qt::Unchecked);
     }
-  d->activeMarkupTableWidget->setItem(m,0,selectedItem);
+  if (d->activeMarkupTableWidget->item(m,0) == NULL ||
+      (d->activeMarkupTableWidget->item(m,0)->checkState() != selectedItem->checkState()))
+    {
+    d->activeMarkupTableWidget->setItem(m,0,selectedItem);
+    }
   
   // visible
   QTableWidgetItem* visibleItem = new QTableWidgetItem();
@@ -258,11 +267,19 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     {
     visibleItem->setCheckState(Qt::Unchecked);
     }
-  d->activeMarkupTableWidget->setItem(m,1,visibleItem);
-  
+   if (d->activeMarkupTableWidget->item(m,1) == NULL ||
+      (d->activeMarkupTableWidget->item(m,1)->checkState() != visibleItem->checkState()))
+     {
+     d->activeMarkupTableWidget->setItem(m,1,visibleItem);
+     }
+   
   // name
   QString markupLabel = QString(markupsNode->GetNthMarkupLabel(m).c_str());
-  d->activeMarkupTableWidget->setItem(m,2,new QTableWidgetItem(markupLabel));
+  if (d->activeMarkupTableWidget->item(m,2) == NULL ||
+      d->activeMarkupTableWidget->item(m,2)->text() != markupLabel)
+    {
+    d->activeMarkupTableWidget->setItem(m,2,new QTableWidgetItem(markupLabel));
+    }
   
   // point
   double point[3];
@@ -273,7 +290,11 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     {
     // last argument to number sets the precision
     QString coordinate = QString::number(point[p], 'f', 6);
-    d->activeMarkupTableWidget->setItem(m,xColumnIndex + p,new QTableWidgetItem(coordinate));
+    if (d->activeMarkupTableWidget->item(m,xColumnIndex + p) == NULL ||
+        d->activeMarkupTableWidget->item(m,xColumnIndex + p)->text() != coordinate)
+      {
+      d->activeMarkupTableWidget->setItem(m,xColumnIndex + p,new QTableWidgetItem(coordinate));
+      }
     }
 }
 
@@ -391,6 +412,94 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActiveMarkupsIDChanged()
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int column)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  
+//  qDebug() << QString("cell changed: row = ") + QString::number(row) + QString(", col = ") + QString::number(column);
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    }
+  if (!listNode)
+    {
+    qDebug() << QString("Cell Changed: unable to get current list");
+    return;
+    }
+  
+  // row corresponds to the index in the list
+  int n = row;
+
+  // now switch on the property
+  QTableWidgetItem *item = d->activeMarkupTableWidget->item(row, column);
+  if (!item)
+    {
+    qDebug() << QString("Unable to find item in table at ") + QString::number(row) + QString(", ") + QString::number(column);
+    return;
+    }
+  if (column == d->columnIndex("Selected"))
+    {
+    bool flag = (item->checkState() == Qt::Unchecked ? false : true);
+    listNode->SetNthMarkupSelected(n, flag);
+    }
+  else if (column == d->columnIndex("Visible"))
+    {
+    bool flag = (item->checkState() == Qt::Unchecked ? false : true);
+    listNode->SetNthMarkupVisibility(n, flag);
+    }
+  else if (column ==  d->columnIndex("Name"))
+    {
+    std::string name = std::string(item->text().toLatin1());
+    listNode->SetNthMarkupLabel(n, name);
+    }
+  else if (column == d->columnIndex("X") ||
+           column == d->columnIndex("Y") ||
+           column == d->columnIndex("Z"))
+    {
+    // get the new value
+    double newPoint[3] = {0.0, 0.0, 0.0};
+    if (d->activeMarkupTableWidget->item(row, d->columnIndex("X")) == NULL ||
+        d->activeMarkupTableWidget->item(row, d->columnIndex("Y")) == NULL ||
+        d->activeMarkupTableWidget->item(row, d->columnIndex("Z")) == NULL)
+      {
+      // init state, return
+      return;
+      }
+    newPoint[0] = d->activeMarkupTableWidget->item(row, d->columnIndex("X"))->text().toDouble();
+    newPoint[1] = d->activeMarkupTableWidget->item(row, d->columnIndex("Y"))->text().toDouble();
+    newPoint[2] = d->activeMarkupTableWidget->item(row, d->columnIndex("Z"))->text().toDouble();
+
+    // get the old value
+    double point[3];
+    listNode->GetMarkupPoint(n, 0, point);
+
+    // changed?
+    double minChange = 0.001;
+    if (fabs(newPoint[0] - point[0]) > minChange ||
+        fabs(newPoint[1] - point[1]) > minChange ||
+        fabs(newPoint[2] - point[2]) > minChange)
+      {
+      vtkMRMLMarkupsFiducialNode *fidList = vtkMRMLMarkupsFiducialNode::SafeDownCast(listNode);
+      if (fidList)
+        {
+        fidList->SetNthFiducialWorldCoordinates(n, newPoint);
+        }
+      }
+    else
+      {
+      //qDebug() << QString("Cell changed: no change in location bigger than ") + QString::number(minChange);
+      }
+    }
+  else
+    {
+    qDebug() << QString("Cell Changed: unknown column: ") + QString::number(column);
+    }
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLockModifiedEvent()//vtkMRMLNode *markupsNode)
 {
   Q_D(qSlicerMarkupsModuleWidget);
@@ -418,7 +527,6 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeNthMarkupModifiedEvent(vtkOb
     {
     return;
     }
-  qDebug() << "\tcaller class = " << caller->GetClassName();
   int *nPtr = NULL;
   int n = -1;
   nPtr = reinterpret_cast<int *>(callData);
@@ -426,7 +534,6 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeNthMarkupModifiedEvent(vtkOb
     {
     n = *nPtr;
     }
-  qDebug() << "\tn = " << QString::number(n);
   this->UpdateRow(n);
 }
 

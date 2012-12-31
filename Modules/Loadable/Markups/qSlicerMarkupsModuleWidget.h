@@ -61,6 +61,9 @@ public slots:
   /// update the combo box from the selection node
   void onSelectionNodeActiveMarkupsIDChanged();
 
+  /// update the mrml node from the table
+  void onActiveMarkupTableCellChanged(int row, int column);
+  
   /// enable/disable editing the table if the markups node is un/locked
   void onActiveMarkupsNodeLockModifiedEvent();//vtkMRMLNode *markupsNode);
   /// update the table with the modified point information if the node is
