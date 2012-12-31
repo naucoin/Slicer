@@ -63,7 +63,7 @@ private:
 qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMarkupsModuleWidget& object)
   : q_ptr(&object)
 {
-  this->columnLabels << " " << "Visible" << "Name" << "X" << "Y" << "Z";// << "Description";
+  this->columnLabels << "Selected" << "Visible" << "Name" << "X" << "Y" << "Z";// << "Description";
 }
 
 //-----------------------------------------------------------------------------
