@@ -1,11 +1,11 @@
-#ifndef __vtkMRMLMarkupsFiducialDisplayableManager_h
-#define __vtkMRMLMarkupsFiducialDisplayableManager_h
+#ifndef __vtkMRMLMarkupsFiducialDisplayableManager3D_h
+#define __vtkMRMLMarkupsFiducialDisplayableManager3D_h
 
 // MarkupsModule includes
 #include "vtkSlicerMarkupsModuleMRMLDisplayableManagerExport.h"
 
 // MarkupsModule/MRMLDisplayableManager includes
-#include "vtkMRMLMarkupsDisplayableManager.h"
+#include "vtkMRMLMarkupsDisplayableManager3D.h"
 
 class vtkMRMLMarkupsFiducialNode;
 class vtkSlicerViewerWidget;
@@ -13,19 +13,19 @@ class vtkMRMLMarkupsDisplayNode;
 class vtkTextWidget;
 
 /// \ingroup Slicer_QtModules_Markups
-class VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsFiducialDisplayableManager :
-    public vtkMRMLMarkupsDisplayableManager
+class VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsFiducialDisplayableManager3D :
+    public vtkMRMLMarkupsDisplayableManager3D
 {
 public:
 
-  static vtkMRMLMarkupsFiducialDisplayableManager *New();
-  vtkTypeRevisionMacro(vtkMRMLMarkupsFiducialDisplayableManager, vtkMRMLMarkupsDisplayableManager);
+  static vtkMRMLMarkupsFiducialDisplayableManager3D *New();
+  vtkTypeRevisionMacro(vtkMRMLMarkupsFiducialDisplayableManager3D, vtkMRMLMarkupsDisplayableManager3D);
   void PrintSelf(ostream& os, vtkIndent indent);
 
 protected:
 
-  vtkMRMLMarkupsFiducialDisplayableManager(){this->Focus="vtkMRMLMarkupsFiducialNode";}
-  virtual ~vtkMRMLMarkupsFiducialDisplayableManager(){}
+  vtkMRMLMarkupsFiducialDisplayableManager3D(){this->Focus="vtkMRMLMarkupsFiducialNode";}
+  virtual ~vtkMRMLMarkupsFiducialDisplayableManager3D(){}
 
   /// Callback for click in RenderWindow
   virtual void OnClickInRenderWindow(double x, double y, const char *associatedNodeID);
@@ -65,8 +65,8 @@ protected:
 
 private:
 
-  vtkMRMLMarkupsFiducialDisplayableManager(const vtkMRMLMarkupsFiducialDisplayableManager&); /// Not implemented
-  void operator=(const vtkMRMLMarkupsFiducialDisplayableManager&); /// Not Implemented
+  vtkMRMLMarkupsFiducialDisplayableManager3D(const vtkMRMLMarkupsFiducialDisplayableManager3D&); /// Not implemented
+  void operator=(const vtkMRMLMarkupsFiducialDisplayableManager3D&); /// Not Implemented
 
 };
 

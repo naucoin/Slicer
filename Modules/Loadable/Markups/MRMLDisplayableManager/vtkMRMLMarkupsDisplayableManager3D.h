@@ -1,5 +1,5 @@
-#ifndef __vtkMRMLMarkupsDisplayableManager_h
-#define __vtkMRMLMarkupsDisplayableManager_h
+#ifndef __vtkMRMLMarkupsDisplayableManager3D_h
+#define __vtkMRMLMarkupsDisplayableManager3D_h
 
 // MarkupsModule includes
 #include "vtkSlicerMarkupsModuleMRMLDisplayableManagerExport.h"
@@ -9,8 +9,7 @@
 #include "vtkMRMLMarkupsDisplayableManagerHelper.h"
 
 // MRMLDisplayableManager includes
-#include <vtkMRMLAbstractDisplayableManager.h>
-#include <vtkMRMLAbstractSliceViewDisplayableManager.h>
+#include <vtkMRMLAbstractThreeDViewDisplayableManager.h>
 
 // VTK includes
 #include <vtkHandleWidget.h>
@@ -22,13 +21,13 @@ class vtkMRMLMarkupsDisplayNode;
 class vtkAbstractWidget;
 
 /// \ingroup Slicer_QtModules_Markups
-class  VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsDisplayableManager :
-    public vtkMRMLAbstractDisplayableManager
+class  VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsDisplayableManager3D :
+    public vtkMRMLAbstractThreeDViewDisplayableManager
 {
 public:
 
-  static vtkMRMLMarkupsDisplayableManager *New();
-  vtkTypeRevisionMacro(vtkMRMLMarkupsDisplayableManager, vtkMRMLAbstractDisplayableManager);
+  static vtkMRMLMarkupsDisplayableManager3D *New();
+  vtkTypeRevisionMacro(vtkMRMLMarkupsDisplayableManager3D, vtkMRMLAbstractThreeDViewDisplayableManager);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   /// Hide/Show a widget so that the node's display node visibility setting
@@ -40,16 +39,6 @@ public:
   virtual void PropagateMRMLToWidget(vtkMRMLMarkupsNode* node, vtkAbstractWidget * widget);
   /// Propagate properties of widget to MRML node.
   virtual void PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node);
-  /// Check if this is a 2d SliceView displayable manager, returns true if so,
-  /// false otherwise. Checks return from GetSliceNode for non null, which means
-  /// it's a 2d displayable manager
-  virtual bool Is2DDisplayableManager();
-  /// Get the sliceNode, if registered. This would mean it is a 2D SliceView displayableManager.
-  vtkMRMLSliceNode * GetSliceNode();
-
-  /// Check if the displayCoordinates are inside the viewport and if not, correct the displayCoordinates
-  void RestrictDisplayCoordinatesToViewport(double* displayCoordinates);
-
   /// Check if there are real changes between two sets of displayCoordinates
   bool GetDisplayCoordinatesChanged(double * displayCoordinates1, double * displayCoordinates2);
 
@@ -67,10 +56,6 @@ public:
   /// Set mrml parent transform to widgets
   virtual void SetParentTransformToWidget(vtkMRMLMarkupsNode *vtkNotUsed(node), vtkAbstractWidget *vtkNotUsed(widget)){};
 
-  /// Set/Get the 2d scale factor to divide 3D scale by to show 2D elements appropriately (usually set to 300)
-  vtkSetMacro(ScaleFactor2D, double);
-  vtkGetMacro(ScaleFactor2D, double);
-
   /// Create a new widget for this markups node and save it to the helper.
   /// Returns widget on success, null on failure.
   vtkAbstractWidget *AddWidget(vtkMRMLMarkupsNode *markupsNode);
@@ -79,8 +64,8 @@ public:
   
 protected:
 
-  vtkMRMLMarkupsDisplayableManager();
-  virtual ~vtkMRMLMarkupsDisplayableManager();
+  vtkMRMLMarkupsDisplayableManager3D();
+  virtual ~vtkMRMLMarkupsDisplayableManager3D();
 
   virtual void ProcessMRMLNodesEvents(vtkObject *caller, unsigned long event, void *callData);
 
@@ -107,13 +92,6 @@ protected:
 
   /// Called after the corresponding MRML View container was modified
   virtual void OnMRMLDisplayableNodeModifiedEvent(vtkObject* caller);
-
-  /// Handler for specific SliceView actions
-  virtual void OnMRMLSliceNodeModifiedEvent(vtkMRMLSliceNode * sliceNode);
-
-  /// Check, if the widget is displayable in the current slice geometry for
-  /// this markup, returns true if a 3d displayable manager
-  virtual bool IsWidgetDisplayableOnSlice(vtkMRMLMarkupsNode* node, int markupIndex = 0);
 
   /// Observe one node
   void SetAndObserveNode(vtkMRMLMarkupsNode *markupsNode);
@@ -206,16 +184,12 @@ protected:
 
 private:
 
-  vtkMRMLMarkupsDisplayableManager(const vtkMRMLMarkupsDisplayableManager&); /// Not implemented
-  void operator=(const vtkMRMLMarkupsDisplayableManager&); /// Not Implemented
+  vtkMRMLMarkupsDisplayableManager3D(const vtkMRMLMarkupsDisplayableManager3D&); /// Not implemented
+  void operator=(const vtkMRMLMarkupsDisplayableManager3D&); /// Not Implemented
 
 
   int DisableInteractorStyleEventsProcessing;
 
-  vtkMRMLSliceNode * SliceNode;
-
-  /// Scale factor for 2d windows
-  double ScaleFactor2D;
 };
 
 #endif

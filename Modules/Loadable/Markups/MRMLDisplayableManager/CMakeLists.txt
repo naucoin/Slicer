@@ -14,8 +14,10 @@ set(${KIT}_INCLUDE_DIRECTORIES
 ) 
 
 set(displayable_manager_SRCS
-  vtkMRMLMarkupsDisplayableManager.cxx
-  vtkMRMLMarkupsFiducialDisplayableManager.cxx
+  vtkMRMLMarkupsDisplayableManager3D.cxx
+  vtkMRMLMarkupsDisplayableManager2D.cxx
+  vtkMRMLMarkupsFiducialDisplayableManager3D.cxx
+  vtkMRMLMarkupsFiducialDisplayableManager2D.cxx
   )
 
 set(VTK_USE_INSTANTIATOR_NEW 1)
