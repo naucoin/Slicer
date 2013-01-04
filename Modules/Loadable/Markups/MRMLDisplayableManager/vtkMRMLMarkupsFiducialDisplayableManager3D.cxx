@@ -40,7 +40,6 @@
 #include <vtkSphereSource.h>
 
 // STD includes
-#include <sstream>
 #include <string>
 
 //---------------------------------------------------------------------------
