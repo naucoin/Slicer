@@ -15,6 +15,7 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
   EXERCISE_BASIC_DISPLAYABLE_MRML_METHODS( vtkMRMLMarkupsNode, node1 );
 
   TEST_SET_GET_BOOLEAN(node1, Locked);
+  TEST_SET_GET_BOOLEAN(node1, UseListNameForMarkups);
   
   node1->AddText("testing");
 
@@ -125,6 +126,8 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     std::cerr << "Tried adding invalid number of points, -1, expected 0 markups, but got " << numMarkups << std::endl;
     return EXIT_FAILURE;
     }
+  else { std::cout << "pass add markup with -1 points" << std::endl; }
+
   node1->AddMarkupWithNPoints(0);
   numMarkups = node1->GetNumberOfMarkups();
   if (numMarkups != 1)

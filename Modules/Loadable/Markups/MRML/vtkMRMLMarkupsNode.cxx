@@ -27,6 +27,7 @@ vtkMRMLMarkupsNode::vtkMRMLMarkupsNode()
 {
   this->TextList = vtkStringArray::New();
   this->Locked = 0;  
+  this->UseListNameForMarkups = 1;
 }
 
 //----------------------------------------------------------------------------
@@ -43,7 +44,8 @@ void vtkMRMLMarkupsNode::WriteXML(ostream& of, int nIndent)
   vtkIndent indent(nIndent);
  
   of << indent << " locked=\"" << this->Locked << "\"";
-   
+  of << indent << " useListNameForMarkups=\"" << this->UseListNameForMarkups << "\"";
+ 
   int textLength = this->TextList->GetNumberOfValues();
 
   for (int i = 0 ; i < textLength; i++)
@@ -75,6 +77,10 @@ void vtkMRMLMarkupsNode::ReadXMLAttributes(const char** atts)
       {
       this->SetLocked(atof(attValue));
       }
+    else if (!strcmp(attName, "useListNameForMarkups"))
+      {
+      this->SetUseListNameForMarkups(atof(attValue));
+      }
     }
   this->EndModify(disabledModify);
 }
@@ -91,6 +97,7 @@ void vtkMRMLMarkupsNode::Copy(vtkMRMLNode *anode)
     }
   
   this->SetLocked(node->GetLocked());
+  this->SetUseListNameForMarkups(node->GetUseListNameForMarkups());
   this->TextList->DeepCopy(node->TextList);
 
   this->Markups.clear();
@@ -123,6 +130,8 @@ void vtkMRMLMarkupsNode::PrintSelf(ostream& os, vtkIndent indent)
   Superclass::PrintSelf(os,indent);
 
   os << indent << "Locked: " << this->Locked << "\n";
+  os << indent << "UseListNameForMarkups: " << this->UseListNameForMarkups << "\n";
+
   for (int i = 0; i < this->GetNumberOfMarkups(); i++)
     {
     os << indent << "Markup " << i << ":\n";
@@ -167,6 +176,7 @@ void vtkMRMLMarkupsNode::RemoveAllMarkups()
   this->TextList->Initialize(); 
 
   this->Locked = 0;
+  this->UseListNameForMarkups = 1;
 }
 
 
@@ -387,7 +397,21 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
   ss << numberOfMarkups;
   std::string numberString;
   ss >> numberString;
-  markup->Label = std::string("M") + numberString;
+  if (this->GetUseListNameForMarkups())
+    {
+    if (this->GetName() != NULL)
+      {
+      markup->Label = std::string(this->GetName()) + numberString;
+      }
+    else
+      {
+      markup->Label = numberString;
+      }
+    }
+  else
+    {
+    markup->Label = std::string("M") + numberString;
+    }
 
   // set the flags
   markup->Selected = true;
