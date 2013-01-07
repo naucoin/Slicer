@@ -745,6 +745,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
     newNode = true;
     // create the MRML node
     activeFiducialNode = vtkMRMLMarkupsFiducialNode::New();
+    activeFiducialNode->SetName("Fiducial List");
     }
   
   // add a fiducial: this will trigger an update of the widgets
