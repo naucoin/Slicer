@@ -718,7 +718,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
     activeFiducialNode->SetNthFiducialLabel(fiducialIndex, labelString);
     }
   // std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
-  
+
   // reset updating state
   this->Updating = 0;
 

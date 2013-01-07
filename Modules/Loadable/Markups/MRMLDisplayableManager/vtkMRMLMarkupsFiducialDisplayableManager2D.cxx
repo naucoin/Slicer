@@ -862,10 +862,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
     std::string numberString;
     ss >> numberString;
     std::string labelString = std::string("F") + numberString;
-    activeFiducialNode->SetNthFiducialLabel(fiducialIndex, labelString);    
+    activeFiducialNode->SetNthFiducialLabel(fiducialIndex, labelString);
     }
   // std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
-  
+
   // reset updating state
   this->Updating = 0;
 
@@ -880,7 +880,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
   // save for undo and add the node to the scene after any reset of the
   // interaction node so that don't end up back in place mode
   this->GetMRMLScene()->SaveStateForUndo();
-  
+
   // is there a node associated with this?
   if (associatedNodeID)
     {

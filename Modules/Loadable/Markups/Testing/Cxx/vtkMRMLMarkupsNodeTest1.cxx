@@ -128,7 +128,7 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     }
   else { std::cout << "pass add markup with -1 points" << std::endl; }
 
- node1->AddMarkupWithNPoints(0);
+  node1->AddMarkupWithNPoints(0);
   numMarkups = node1->GetNumberOfMarkups();
   if (numMarkups != 1)
     {
