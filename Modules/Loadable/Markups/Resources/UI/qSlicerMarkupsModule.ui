@@ -34,8 +34,11 @@
        <widget class="qMRMLNodeComboBox" name="activeMarkupMRMLNodeComboBox">
         <property name="nodeTypes">
          <stringlist>
-          <string>vtkMRMLMarkupsNode</string>
+          <string>vtkMRMLMarkupsFiducialNode</string>
          </stringlist>
+        </property>
+        <property name="baseName">
+          <string>Fiducial List</string>
         </property>
         <property name="addEnabled">
          <bool>true</bool>
