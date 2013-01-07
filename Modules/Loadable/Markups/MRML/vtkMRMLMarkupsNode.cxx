@@ -393,6 +393,8 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
 
   // set a default label
   int numberOfMarkups = this->GetNumberOfMarkups();
+  // the markup hasn't been added to the list yet, so increment by one so as not to start with 0
+  numberOfMarkups++;
   std::stringstream ss;
   ss << numberOfMarkups;
   std::string numberString;

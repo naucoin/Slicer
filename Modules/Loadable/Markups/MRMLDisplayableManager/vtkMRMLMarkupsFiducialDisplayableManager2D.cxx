@@ -41,6 +41,7 @@
 #include <vtkSphereSource.h>
 
 // STD includes
+#include <sstream>
 #include <string>
 
 //---------------------------------------------------------------------------
@@ -764,7 +765,13 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
   // std::cout << "OnClickInRenderWindow: Setting " << fiducialIndex << "th fiducial label from " << activeFiducialNode->GetNthFiducialLabel(fiducialIndex);
   if (!activeFiducialNode->GetUseListNameForMarkups())
     {
-    activeFiducialNode->SetNthFiducialLabel(fiducialIndex,this->GetMRMLScene()->GetUniqueNameByString("F"));
+    int numberOfMarkups = activeFiducialNode->GetNumberOfMarkups();
+    std::stringstream ss;
+    ss << numberOfMarkups;
+    std::string numberString;
+    ss >> numberString;
+    std::string labelString = std::string("F") + numberString;
+    activeFiducialNode->SetNthFiducialLabel(fiducialIndex, labelString);    
     }
   // std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
   
