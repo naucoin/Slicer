@@ -607,4 +607,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupAddedEvent()//vtkMRMLN
   d->activeMarkupTableWidget->insertRow(newRow);
   qDebug() << QString("\t after insreting a row, row count = ") + QString::number(d->activeMarkupTableWidget->rowCount());
   this->UpdateRow(newRow);
+
+  // scroll to the new row
+  d->activeMarkupTableWidget->setCurrentCell(newRow, 0);
 }
