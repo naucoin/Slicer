@@ -108,6 +108,11 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     //qDebug() << "No selection node found in scene!";
     }
 
+  // 
+  // set up the use list name for markups check box
+  //
+  QObject::connect(this->useListNameForMarkupsCheckBox, SIGNAL(toggled(bool)),
+                   q, SLOT(onUseListNameForMarkupsCheckBoxToggled(bool)));
   //
   // set up the use list name for markups check box
   //
