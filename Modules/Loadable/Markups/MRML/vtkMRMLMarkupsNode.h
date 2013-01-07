@@ -173,6 +173,13 @@ public:
   virtual void ApplyTransformMatrix(vtkMatrix4x4* transformMatrix);
   virtual void ApplyTransform(vtkAbstractTransform* transform);  
 
+  /// toggle using the name of the markups list node to name the new points added to it.
+  /// if true, sets the label automatically as a numbered version of the list name.
+  /// if false, defauls to using M as the default prefix
+  vtkSetMacro(UseListNameForMarkups, int);
+  vtkGetMacro(UseListNameForMarkups, int);
+  vtkBooleanMacro (UseListNameForMarkups, int);
+
 protected:
   vtkMRMLMarkupsNode();
   ~vtkMRMLMarkupsNode();
@@ -187,6 +194,7 @@ protected:
   
   int Locked;
 
+  int UseListNameForMarkups;
   
 };
 
