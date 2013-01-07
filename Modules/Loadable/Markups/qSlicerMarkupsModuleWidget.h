@@ -61,6 +61,9 @@ public slots:
   /// update the combo box from the selection node
   void onSelectionNodeActiveMarkupsIDChanged();
 
+  /// update the markup from the check box
+  void onUseListNameForMarkupsCheckBoxToggled(bool flag);
+
   /// update the mrml node from the table
   void onActiveMarkupTableCellChanged(int row, int column);
   

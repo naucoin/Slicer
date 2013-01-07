@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>525</width>
+    <width>586</width>
     <height>319</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QLabel" name="activeMarkupLabel">
         <property name="text">
@@ -31,25 +31,45 @@
        </widget>
       </item>
       <item>
-       <widget class="qMRMLNodeComboBox" name="activeMarkupMRMLNodeComboBox">
-        <property name="nodeTypes">
-         <stringlist>
-          <string>vtkMRMLMarkupsFiducialNode</string>
-         </stringlist>
-        </property>
-        <property name="baseName">
-          <string>Fiducial List</string>
-        </property>
-        <property name="addEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="renameEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="qMRMLNodeComboBox" name="activeMarkupMRMLNodeComboBox">
+          <property name="toolTip">
+           <string>Select or create a markups list</string>
+          </property>
+          <property name="nodeTypes">
+           <stringlist>
+            <string>vtkMRMLMarkupsFiducialNode</string>
+           </stringlist>
+          </property>
+          <property name="addEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="renameEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="baseName">
+           <string>Fiducial List</string>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="useListNameForMarkupsCheckBox">
+          <property name="toolTip">
+           <string>Prefix the labels of new markups with the list name</string>
+          </property>
+          <property name="text">
+           <string>Use List Name</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QTableWidget" name="activeMarkupTableWidget">
@@ -61,12 +81,12 @@
         </property>
         <property name="alternatingRowColors">
          <bool>true</bool>
-        </property>        
+        </property>
        </widget>
       </item>
      </layout>
     </widget>
-   </item>   
+   </item>
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">

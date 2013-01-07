@@ -107,6 +107,11 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     qDebug() << "No selection node found in scene!";
     }
 
+  // 
+  // set up the use list name for markups check box
+  //
+  QObject::connect(this->useListNameForMarkupsCheckBox, SIGNAL(toggled(bool)),
+                   q, SLOT(onUseListNameForMarkupsCheckBoxToggled(bool)));
   //
   // set up the table
   //
@@ -408,6 +413,33 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActiveMarkupsIDChanged()
   else
     {
     qDebug() << "Unable to update combo box from selection node";
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onUseListNameForMarkupsCheckBoxToggled(bool flag)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    }
+  if (!listNode)
+    {
+    qDebug() << QString("List name check box toggled: unable to get current list");
+    return;
+    }
+  if (flag)
+    {
+    listNode->UseListNameForMarkupsOn();
+    }
+  else
+    {
+    listNode->UseListNameForMarkupsOff();
     }
 }
 
