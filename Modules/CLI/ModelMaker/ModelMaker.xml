@@ -24,6 +24,13 @@
       <longflag>color</longflag>
       <description><![CDATA[Color table to make labels to colors and objects]]></description>
     </table>
+    <file fileExtensions=".mrml">
+      <name>ModelHierarchyFile</name>
+      <channel>input</channel>
+      <label>Color Hierarchy</label>
+      <longflag>--modelHierarchyFile</longflag>
+      <description><![CDATA[A mrml file that contains a model hierarchy tree with a hierarchy node per color used in the color table used to display the input volume.]]></description>
+    </file>
     <geometry aggregate="true" fileExtensions=".mrml" multiple="true">
       <name>ModelSceneFile</name>
       <channel>output</channel>

@@ -75,6 +75,7 @@ int main(int argc, char * argv[])
     std::cout << "Calculate point normals? " << PointNormals << std::endl;
     std::cout << "Pad? " << Pad << std::endl;
     std::cout << "Filter type: " << FilterType << std::endl;
+    std::cout << "Input color hierarchy scene file: " << ModelHierarchyFile.c_str() << std::endl;
     std::cout << "Output model scene file: "
               << (ModelSceneFile.size() > 0 ? ModelSceneFile[0].c_str() : "None") << std::endl;
     std::cout << "Color table file : " << ColorTable.c_str() << std::endl;
@@ -141,6 +142,8 @@ int main(int argc, char * argv[])
 
   vtkSmartPointer<vtkMRMLScene> modelScene = vtkSmartPointer<vtkMRMLScene>::New();
 
+
+  // load the scene that Slicer will re-read
   modelScene->SetURL(sceneFilename.c_str() );
   // only try importing if the scene file exists
   if( vtksys::SystemTools::FileExists(sceneFilename.c_str() ) )
@@ -178,6 +181,65 @@ int main(int argc, char * argv[])
       }
     rtnd = vtkMRMLModelHierarchyNode::SafeDownCast(rnd);
     }
+
+  // if there's a color based model hierarchy file, import it into the model scene
+  vtkMRMLModelHierarchyNode *topColorHierarchyNode = NULL;
+  if (ModelHierarchyFile.length() > 0)
+    {
+      // only try importing if the scene file exists
+      if( vtksys::SystemTools::FileExists(ModelHierarchyFile.c_str() ) )
+        {
+        modelScene->SetURL(ModelHierarchyFile.c_str() );
+        modelScene->Import();
+	// reset to the default file name
+        modelScene->SetURL(sceneFilename.c_str() );
+	// and root directory
+	modelScene->SetRootDirectory(rootDir.c_str());
+        if( debug )
+          {
+          std::cout << "Imported model hierarchy scene file " << ModelHierarchyFile.c_str() << std::endl;
+          }
+        }
+      else
+        {
+        std::cerr << "Model hierarchy scene file doesn't exist, using a flat hieararchy" << std::endl;
+        }
+
+      // make sure we have a new model hierarchy node
+      vtkMRMLNode * mnode = modelScene->GetNthNodeByClass(1,"vtkMRMLModelHierarchyNode");
+      if (mnode != NULL)
+        {
+        topColorHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast(mnode);
+        }
+      if (!topColorHierarchyNode)
+        {
+	std::cerr << "Model hierarchy scene file failed to import a model hierarchy node" << std::endl;
+        }
+      else
+	{
+	  std::cout << "Loaded a color based model hierarchy scene with top level node = " << topColorHierarchyNode->GetName() << ", id = " << topColorHierarchyNode->GetID() << std::endl;
+	}
+     }
+
+  
+  // if have a color hiearchy node, make it a child of the passed in model hiearchy
+  if (topColorHierarchyNode != NULL)
+    {
+    topColorHierarchyNode->SetParentNodeID(rtnd->GetID());
+    // there's also a chance that the parent node refs weren't reset when the top color hierarchy node was re-id'd
+    // go through all the hierarchy nodes that are right under the rtnd and reset them to be under the topColorHierarchyNode
+    std::vector< vtkMRMLHierarchyNode* > children = rtnd->GetChildrenNodes();
+    for (unsigned int i = 0; i < children.size(); i++)
+      {
+	// don't touch the top color hierarchy node since you don't want to reset it's parent to itself
+	if (strcmp(topColorHierarchyNode->GetID(), children[i]->GetID()) != 0)
+	  {
+	  children[i]->SetParentNodeID(topColorHierarchyNode->GetID());
+	  std::cout << "Reset child " << i << " " << children[i]->GetName() << " so parent is now " << children[i]->GetParentNodeID() << std::endl;
+	  }
+      }
+    }
+
   vtkSmartPointer<vtkMRMLColorTableNode>        colorNode;
   vtkSmartPointer<vtkMRMLColorTableStorageNode> colorStorageNode;
 
@@ -1587,11 +1649,36 @@ int main(int argc, char * argv[])
         modelScene->AddNode(mnode);
 
         // put it in the hierarchy
-        vtkSmartPointer<vtkMRMLModelHierarchyNode> mhnd = vtkSmartPointer<vtkMRMLModelHierarchyNode>::New();
-        modelScene->AddNode(mhnd);
-        mhnd->SetParentNodeID( rnd->GetID() );
-        mhnd->SetModelNodeID( mnode->GetID() );
-
+        if (topColorHierarchyNode == NULL)
+          {
+	  // use a flat hierarchy
+          vtkSmartPointer<vtkMRMLModelHierarchyNode> mhnd = vtkSmartPointer<vtkMRMLModelHierarchyNode>::New();
+          modelScene->AddNode(mhnd);
+          mhnd->SetParentNodeID( rnd->GetID() );
+          mhnd->SetModelNodeID( mnode->GetID() );
+	  mhnd = NULL;
+          }
+        else
+	  {
+	  // try to find the matching color hierarchy node to make this an associated node
+	  if (colorNode != NULL )
+            {
+            std::string colorName = std::string(colorNode->GetColorNameAsFileName(i) );
+            if( colorName.c_str() != NULL )
+              {
+	      vtkMRMLNode *mrmlNode = modelScene->GetFirstNodeByName(colorName.c_str());
+	      if (mrmlNode)
+ 		{
+		vtkMRMLModelHierarchyNode *colorHierarchyNode = vtkMRMLModelHierarchyNode::SafeDownCast(mrmlNode);
+		if (colorHierarchyNode)
+		  {
+		  colorHierarchyNode->SetAssociatedNodeID(mnode->GetID());
+		  std::cout << "Found a color hierarchy node with name " << colorHierarchyNode->GetName() << ", set it's associated node to this model id: " << mnode->GetID() << std::endl;
+		  }
+		}
+              }
+            }
+	  }
         if( debug )
           {
           std::cout << "...done adding model to output scene" << endl;
@@ -1600,7 +1687,6 @@ int main(int argc, char * argv[])
         dnode = NULL;
         snode = NULL;
         mnode = NULL;
-        mhnd = NULL;
         }
       } // end of skipping an empty label
     }   // end of loop over labels
@@ -1643,6 +1729,35 @@ int main(int argc, char * argv[])
       {
       modelScene->RemoveNode(colorNode);
       }
+    // take out any extra hierarchy nodes and display nodes
+    if (topColorHierarchyNode != NULL)
+      {
+	// get all the hierarchies under it, recursively
+	std::vector< vtkMRMLHierarchyNode* > allChildren;
+	topColorHierarchyNode->GetAllChildrenNodes(allChildren);
+	for (unsigned int i = 0; i < allChildren.size(); i++)
+	  {
+	    if (allChildren[i]->GetAssociatedNodeID() == NULL &&
+		allChildren[i]->GetNumberOfChildrenNodes() == 0)
+	      {
+		// if this child doesn't have an associated node, nor does it have children nodes (keep the structure of the hierarchy), remove it and it's display node
+		
+		std::cout << "Removing extraneous hierarchy node " << allChildren[i]->GetName() << std::endl;
+		if (vtkMRMLDisplayableHierarchyNode::SafeDownCast(allChildren[i]) != NULL)
+		  {
+		    vtkMRMLDisplayNode *hierarchyDisplayNode = vtkMRMLDisplayableHierarchyNode::SafeDownCast(allChildren[i])->GetDisplayNode();
+		    if (hierarchyDisplayNode)
+		      {
+			std::cout << "\tand disp node " << hierarchyDisplayNode->GetID() << std::endl;
+			modelScene->RemoveNode(hierarchyDisplayNode);
+		      }
+		  }
+		modelScene->RemoveNode(allChildren[i]);
+		
+	      }
+	  }
+      }
+    // write to disk
     modelScene->Commit();
     std::cout << "Models saved to scene file " << sceneFilename.c_str() << "\n";
     if( ModelSceneFile.size() == 0 )
