@@ -31,6 +31,7 @@
 // module includes
 #include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsFiducialNode.h"
+#include "vtkSlicerMarkupsLogic.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_Markups
@@ -116,6 +117,11 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // set up the table
   //
   
+  // only select rows rather than cells
+  this->activeMarkupTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+  // allow multi select
+  this->activeMarkupTableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
   // number of columns with headers
   this->activeMarkupTableWidget->setColumnCount(this->numberOfColumns());
   this->activeMarkupTableWidget->setHorizontalHeaderLabels(this->columnLabels);
@@ -123,6 +129,10 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // listen for changes so can update mrml node
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(cellChanged(int, int)),
                    q, SLOT(onActiveMarkupTableCellChanged(int, int)));
+
+  // listen for click on a markup
+  QObject::connect(this->activeMarkupTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)),
+                   q, SLOT(onActiveMarkupTableCellClicked(QTableWidgetItem*)));
 }
 
 //-----------------------------------------------------------------------------
@@ -529,6 +539,55 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     {
     qDebug() << QString("Cell Changed: unknown column: ") + QString::number(column);
     }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem* item)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  if (item == 0)
+    {
+    return;
+    }
+
+  if (item->column() == d->columnIndex(QString("Name")))
+    {
+    std::cout << "onActiveMarkupTableCellClicked: Name column" << std::endl;
+    if (0)
+      {
+      // get the coordinates from the table
+      double x, y, z = 0.0;
+      int row = item->row();
+      x = d->activeMarkupTableWidget->item(row, d->columnIndex("X"))->text().toDouble();
+      y = d->activeMarkupTableWidget->item(row, d->columnIndex("Y"))->text().toDouble();
+      z = d->activeMarkupTableWidget->item(row, d->columnIndex("Z"))->text().toDouble();
+      // jump to it
+      if (this->logic() != NULL &&
+          vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
+        {
+        vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToLocation(x, y, z);
+        }
+      }
+    else
+      {
+      // use the node id + row index
+       // get the active list
+      vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+      if (!mrmlNode)
+        {
+        return;
+        }
+      int row = item->row();
+      // jump to it
+      if (this->logic() != NULL &&
+          vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
+        {
+        vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row);
+        }
+      }
+    } 
+
 }
 
 //-----------------------------------------------------------------------------
