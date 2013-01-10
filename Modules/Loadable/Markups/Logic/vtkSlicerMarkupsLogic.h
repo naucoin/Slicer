@@ -49,6 +49,10 @@ public:
   /// the scene. On success, return the id, on failure return an empty string.
   std::string AddNewMarkupsNode();
   
+  /// jump the slice windows to the given coordinate
+  void JumpSlicesToLocation(double x, double y, double z);
+  /// jump the slice windows to the nth markup with the mrml id id
+  void JumpSlicesToNthPointInMarkup(const char *id, int n);
 protected:
   vtkSlicerMarkupsLogic();
   virtual ~vtkSlicerMarkupsLogic();

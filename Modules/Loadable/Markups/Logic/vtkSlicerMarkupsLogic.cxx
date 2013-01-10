@@ -26,6 +26,7 @@
 
 // MRML includes
 #include "vtkMRMLSelectionNode.h"
+#include "vtkMRMLSliceNode.h"
 
 // VTK includes
 #include <vtkNew.h>
@@ -153,4 +154,58 @@ std::string vtkSlicerMarkupsLogic::AddNewMarkupsNode()
     mnode->Delete();
     }
   return id;
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::JumpSlicesToLocation(double x, double y, double z)
+{
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("JumpSlicesToLocation: No scene defined");
+    return;
+    }
+
+ vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNthNodeByClass(0,"vtkMRMLSliceNode");
+  if (!mrmlNode)
+    {
+    vtkErrorMacro("JumpSlicesToLocation: could not get first slice node from scene");
+    return;
+    }
+  vtkMRMLSliceNode *sliceNode = vtkMRMLSliceNode::SafeDownCast(mrmlNode);
+  if (sliceNode)
+    {
+    this->GetMRMLScene()->SaveStateForUndo();
+    sliceNode->JumpAllSlices(x,y,z);
+    // JumpAllSlices jumps all the other slices, not self, so JumpSlice on
+    // this node as well
+    sliceNode->JumpSlice(x,y,z);
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::JumpSlicesToNthPointInMarkup(const char *id, int n)
+{
+  if (!id)
+    {
+    return;
+    }
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("JumpSlicesToLocation: No scene defined");
+    return;
+    }
+  // get the markups node
+  vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID(id);
+  if (mrmlNode == NULL)
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode *markup = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (markup)
+    {
+    double point[4];
+    // get the first point for now
+    markup->GetMarkupPointWorld(n, 0, point);
+    this->JumpSlicesToLocation(point[0], point[1], point[2]);
+    }
 }
