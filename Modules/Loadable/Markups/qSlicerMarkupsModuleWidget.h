@@ -25,6 +25,7 @@
 
 class qSlicerMarkupsModuleWidgetPrivate;
 class vtkMRMLNode;
+class QTableWidgetItem;
 
 /// \ingroup Slicer_QtModules_Markups
 class Q_SLICER_QTMODULES_MARKUPS_EXPORT qSlicerMarkupsModuleWidget :
@@ -66,7 +67,9 @@ public slots:
 
   /// update the mrml node from the table
   void onActiveMarkupTableCellChanged(int row, int column);
-  
+  /// react to clicks in the table
+  void onActiveMarkupTableCellClicked(QTableWidgetItem* item);
+
   /// enable/disable editing the table if the markups node is un/locked
   void onActiveMarkupsNodeLockModifiedEvent();//vtkMRMLNode *markupsNode);
   /// update the table with the modified point information if the node is
