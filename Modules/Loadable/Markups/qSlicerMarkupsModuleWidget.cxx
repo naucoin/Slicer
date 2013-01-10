@@ -83,7 +83,7 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   Q_Q(qSlicerMarkupsModuleWidget);
   this->Ui_qSlicerMarkupsModule::setupUi(widget);
 
-  std::cout << "setupUI\n";
+  //std::cout << "setupUI\n";
 
   // set up the active markups node selector
   QObject::connect(this->activeMarkupMRMLNodeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
@@ -96,7 +96,7 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     }
   else
     {
-    qDebug() << "No mrml scene set! q = " << q;
+    //qDebug() << "No mrml scene set! q = " << q;
     }
   if (selectionNode)
     {
@@ -196,7 +196,7 @@ void qSlicerMarkupsModuleWidget::exit()
 {
   this->Superclass::exit();
 
-  qDebug() << "exit widget";
+  // qDebug() << "exit widget";
   this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
                  this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
 }
@@ -426,7 +426,6 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     }
 
   //qDebug() << "setActiveMarkupsNode: combo box says: " << qPrintable(activeMarkupsNodeID) << ", input node says " << (activeID ? activeID : "null");
-
   // update the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
   vtkMRMLSelectionNode *selectionNode = NULL;
@@ -653,10 +652,10 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLockModifiedEvent()//vtkMRML
     {
     //nodeID = QString(markupsNode->GetID());
     }
-  qDebug() << QString("onActiveMarkupsNodeLockModifiedEvent, passed node id = ") +  nodeID + QString(", active markups node id = ") + activeMarkupsNodeID;
+    //qDebug() << QString("onActiveMarkupsNodeLockModifiedEvent, passed node id = ") +  nodeID + QString(", active markups node id = ") + activeMarkupsNodeID;
   if (activeMarkupsNodeID.compare(nodeID) != 0)
     {
-    qDebug() << "Got event from non active node " + nodeID + ", active id = " + activeMarkupsNodeID;
+    //qDebug() << "Got event from non active node " + nodeID + ", active id = " + activeMarkupsNodeID;
     }
 }
 
