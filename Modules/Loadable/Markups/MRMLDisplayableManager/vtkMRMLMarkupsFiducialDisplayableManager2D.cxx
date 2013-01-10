@@ -540,6 +540,13 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     return;
     }
 
+  if (seedWidget->GetWidgetState() != vtkSeedWidget::MovingSeed)
+    {
+    // ignore events not caused by seed movement
+    // return;
+    std::cout << "2D: Seed widget state is not moving: state = " << seedWidget->GetWidgetState() << " != " << vtkSeedWidget::MovingSeed << std::endl;
+    }
+
   // cast to the specific mrml node
   vtkMRMLMarkupsFiducialNode* fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
 
