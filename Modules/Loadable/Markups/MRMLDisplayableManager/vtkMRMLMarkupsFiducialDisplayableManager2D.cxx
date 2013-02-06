@@ -161,7 +161,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PrintSelf(ostream& os, vtkInden
 }
 
 //---------------------------------------------------------------------------
-/// Create a new text widget.
+/// Create a new seed widget.
 vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtkMRMLMarkupsNode* node)
 {
 
@@ -189,19 +189,36 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
     // std::cout<<"No DisplayNode!"<<std::endl;
     }
 
+  // unset the glyph type which can be necessary when recreating a widget due to 2d/3d swap
+  std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  if (iter != this->NodeGlyphTypes.end())
+    {
+    vtkDebugMacro("CreateWidget: found a glyph type already defined for this node: " << iter->second);
+    this->NodeGlyphTypes[displayNode] = vtkMRMLMarkupsDisplayNode::GlyphMin - 1;
+    }
+
   vtkNew<vtkSeedRepresentation> rep;
-  vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
 
-  // default to a starburst glyph, update in propagate mrml to widget
-  vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
-  glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::StarBurst2D);
-  glyphSource->Update();
-  glyphSource->SetScale(1.0);
-  handle->SetHandle(glyphSource->GetOutput());
+  if (!this->IsInLightboxMode())
+    {
+    vtkDebugMacro("CreateWidget: not in light box mode, making a 3d handle");
+    vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
 
 
-  rep->SetHandleRepresentation(handle.GetPointer());
-
+    // default to a sphere glyph, update in propagate mrml to widget
+    vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+    glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Sphere3D);
+    glyphSource->Update();
+    glyphSource->SetScale(1.0);
+    handle->SetHandle(glyphSource->GetOutput());
+    rep->SetHandleRepresentation(handle.GetPointer());
+    }
+  else
+    {
+    vtkDebugMacro("CreateWidget: in light box mode, making a 2d handle");
+    vtkNew<vtkPointHandleRepresentation2D> handle;
+    rep->SetHandleRepresentation(handle.GetPointer());
+    }
 
   //seed widget
   vtkSeedWidget * seedWidget = vtkSeedWidget::New();
@@ -210,7 +227,19 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
   seedWidget->SetRepresentation(rep.GetPointer());
 
   seedWidget->SetInteractor(this->GetInteractor());
-  seedWidget->SetCurrentRenderer(this->GetRenderer());
+  // set the renderer on the widget and representation
+  if (!this->IsInLightboxMode())
+    {
+    seedWidget->SetCurrentRenderer(this->GetRenderer());
+    seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer());
+    }
+  else
+    {
+    int lightboxIndex = this->GetLightboxIndex(fiducialNode, 0,0);
+    seedWidget->SetCurrentRenderer(this->GetRenderer(lightboxIndex));
+    seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer(lightboxIndex));
+    }
+
 
   //seedWidget->ProcessEventsOff();
 
@@ -354,26 +383,22 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       }
     }
 
+  // can have a 3d or 2d handle depending on if in light box mode or not
+  vtkOrientedPolygonalHandleRepresentation3D *handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
+  vtkPointHandleRepresentation2D *pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
+
   // update the postion
   bool positionChanged = this->UpdateNthMarkupPosition(n, seedWidget, fiducialNode);
   vtkDebugMacro("Position changed? " << (positionChanged ? "yes" : "no"));
   
-  vtkOrientedPolygonalHandleRepresentation3D *handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
-  if (!handleRep)
+  if (!handleRep && !pointHandleRep)
     {
-    vtkErrorMacro("Failed to get an oriented polygonal handle rep for n = " << n << ", number of seeds = " <<  seedRepresentation->GetNumberOfSeeds() << ", handle rep = " << (seedRepresentation->GetHandleRepresentation(n) ? seedRepresentation->GetHandleRepresentation(n)->GetClassName() : "null"));
+    vtkErrorMacro("Failed to get a handle rep for n = " << n << ", number of seeds = " <<  seedRepresentation->GetNumberOfSeeds() << ", handle rep = " << (seedRepresentation->GetHandleRepresentation(n) ? seedRepresentation->GetHandleRepresentation(n)->GetClassName() : "null"));
     return;
     }
 
-  // update the text
-  std::string textString = fiducialNode->GetNthFiducialLabel(n);
-  if (textString.compare(handleRep->GetLabelText()) != 0)
-    {
-    handleRep->SetLabelText(textString.c_str());
-    }
   // visibility for this handle, hide it if the whole list is invisible,
-  // this fid is invisible, or it's a 2d manager and the fids isn't
-  // visible on this slice
+  // this fid is invisible, or the fid isn't visible on this slice
   bool fidVisible = true;
   if (displayNode->GetVisibility() == 0 ||
       fiducialNode->GetNthFiducialVisibility(n) == 0 ||
@@ -382,68 +407,48 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
     // std::cout << "fidVisible set to FALSE (disp node visib = " << displayNode->GetVisibility() << ", nth fid visib = " << fiducialNode->GetNthFiducialVisibility(n) << ", visb on slice = " << this->IsWidgetDisplayableOnSlice(fiducialNode, n) << ")" << std::endl;
     fidVisible = false;
     }
-  if (fidVisible)
-    {
-    handleRep->VisibilityOn();
-    handleRep->HandleVisibilityOn();
-    if (textString.compare("") != 0)
-      {
-      handleRep->LabelVisibilityOn();
-      }
-    seedWidget->GetSeed(n)->EnabledOn();
-    }
-  else
-    {
-    handleRep->VisibilityOff();
-    handleRep->HandleVisibilityOff();
-    handleRep->LabelVisibilityOff();
-    seedWidget->GetSeed(n)->EnabledOff();
-    }
 
-  // update locked
-  int locked = fiducialNode->GetLocked();
-  handleRep->SetPickable(!locked);
-  handleRep->SetDragable(!locked);
-  
-  // set the glyph type if a new handle was created, or the glyph type changed
-  std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
-  if (createdNewHandle ||
-      iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
+  if (handleRep)
     {
-    vtkDebugMacro("DisplayNode glyph type = " << displayNode->GetGlyphType() << " = " << displayNode->GetGlyphTypeAsString() << ", is 3d glyph = " << (displayNode->GlyphTypeIs3D() ? "true" : "false") << ", is 2d disp manager.");
-    // std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
-    if (displayNode->GlyphTypeIs3D())
+    // set the glyph type if a new handle was created, or the glyph type changed
+    std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+    if (createdNewHandle ||
+        iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
       {
-      // map the 3d sphere to a filled circle, the 3d diamond to a filled
-      // diamond
-      vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
-      if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
+      vtkDebugMacro("DisplayNode glyph type = " << displayNode->GetGlyphType() << " = " << displayNode->GetGlyphTypeAsString() << ", is 3d glyph = " << (displayNode->GlyphTypeIs3D() ? "true" : "false") << ", is 2d disp manager.");
+      // std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
+      if (displayNode->GlyphTypeIs3D())
         {
-        // std::cout << "using circle 2d for sphere 3d" << std::endl;
-        glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Circle2D);
-        }
-      else if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Diamond3D)
-        {
-        glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Diamond2D);
-        }
+        // map the 3d sphere to a filled circle, the 3d diamond to a filled
+        // diamond
+        vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+        if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
+          {
+          // std::cout << "using circle 2d for sphere 3d" << std::endl;
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Circle2D);
+          }
+        else if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Diamond3D)
+          {
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Diamond2D);
+          }
+        else
+          {
+          glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::StarBurst2D);
+          // std::cout << "2d starburst" << std::endl;
+          }
+        glyphSource->Update();
+        glyphSource->SetScale(1.0);
+        handleRep->SetHandle(glyphSource->GetOutput());
+        }//if (displayNode->GlyphTypeIs3D())
       else
         {
-        glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::StarBurst2D);
-        // std::cout << "2d starburst" << std::endl;
+        // 2D
+        vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+        glyphSource->SetGlyphType(displayNode->GetGlyphType());
+        glyphSource->Update();
+        glyphSource->SetScale(1.0);
+        handleRep->SetHandle(glyphSource->GetOutput());
         }
-      glyphSource->Update();
-      glyphSource->SetScale(1.0);
-      handleRep->SetHandle(glyphSource->GetOutput());
-      }//if (displayNode->GlyphTypeIs3D())
-    else
-      {
-      // 2D
-      vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
-      glyphSource->SetGlyphType(displayNode->GetGlyphType());
-      glyphSource->Update();
-      glyphSource->SetScale(1.0);
-      handleRep->SetHandle(glyphSource->GetOutput());
-      }
 //    if (!createdNewHandle)
       {
       // TBD: keep with the assumption of one glyph type per markups node,
@@ -452,67 +457,108 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       }
     }  // end of glyph type
 
-  // update the text display properties if there is text
-  if (textString.compare("") != 0)
-    {
+    // set the color
+    vtkProperty *prop = NULL;
+    prop = handleRep->GetProperty();
+    if (prop)
+      {
+      if (fiducialNode->GetNthFiducialSelected(n))
+        {
+        // use the selected color
+        prop->SetColor( displayNode->GetSelectedColor());
+        }
+      else
+        {
+        // use the unselected color
+        prop->SetColor(displayNode->GetColor());
+        }
+      
+      // set the material properties
+      prop->SetOpacity(displayNode->GetOpacity());
+      prop->SetAmbient(displayNode->GetAmbient());
+      prop->SetDiffuse(displayNode->GetDiffuse());
+      prop->SetSpecular(displayNode->GetSpecular());
+      }
+
+    // set the scaling
+    // the following is only needed since we require a different uniform scale depending on 2D and 3D
+    handleRep->SetUniformScale(displayNode->GetGlyphScale()*this->GetScaleFactor2D());
+
+    /// if the text is visible
+    std::string textString = fiducialNode->GetNthFiducialLabel(n);
+    // update the text string
+
+    if (textString.compare(handleRep->GetLabelText()) != 0)
+      {
+      handleRep->SetLabelText(textString.c_str());
+      }
     // scale the text
-    double textscale[3] = {displayNode->GetTextScale(), displayNode->GetTextScale(), displayNode->GetTextScale()};
+    if (textString.compare("") != 0)
+      {
+      // scale the text
+      double textscale[3] = {displayNode->GetTextScale(), displayNode->GetTextScale(), displayNode->GetTextScale()};
 
-    // scale it down for the 2d windows
-    textscale[0] *= this->GetScaleFactor2D();
-    textscale[1] *= this->GetScaleFactor2D();
-    textscale[2] *= this->GetScaleFactor2D();
-
-    handleRep->SetLabelTextScale(textscale);
+      // scale it down for the 2d windows
+      textscale[0] *= this->GetScaleFactor2D();
+      textscale[1] *= this->GetScaleFactor2D();
+      textscale[2] *= this->GetScaleFactor2D();
+      
+      handleRep->SetLabelTextScale(textscale);
+      }
+    // set the text colors
     if (handleRep->GetLabelTextActor())
       {
       // set the colours
       if (fiducialNode->GetNthFiducialSelected(n))
         {
-        double *color = displayNode->GetSelectedColor();
-        handleRep->GetLabelTextActor()->GetProperty()->SetColor(color);
-        // std::cout << "Set label text actor property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        handleRep->GetLabelTextActor()->GetProperty()->SetColor(displayNode->GetSelectedColor());
         }
       else
         {
-        double *color = displayNode->GetColor();
-        handleRep->GetLabelTextActor()->GetProperty()->SetColor(color);
-        // std::cout << "Set label text actor property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        handleRep->GetLabelTextActor()->GetProperty()->SetColor(displayNode->GetColor());
         }
-
       handleRep->GetLabelTextActor()->GetProperty()->SetOpacity(displayNode->GetOpacity());
       }
-    }
   
-  vtkProperty *prop = NULL;
-  prop = handleRep->GetProperty();
-  if (prop)
-    {
-    if (fiducialNode->GetNthFiducialSelected(n))
+    // set the text visibility
+    if (fidVisible)
       {
+      handleRep->VisibilityOn();
+      handleRep->HandleVisibilityOn();
+      if (textString.compare("") != 0)
+        {
+        handleRep->LabelVisibilityOn();
+        }
+      seedWidget->GetSeed(n)->EnabledOn();
+      }
+    else
+      {
+      handleRep->VisibilityOff();
+      handleRep->HandleVisibilityOff();
+      handleRep->LabelVisibilityOff();
+      seedWidget->GetSeed(n)->EnabledOff();
+      }
+    // update locked
+    int locked = fiducialNode->GetLocked();
+    handleRep->SetPickable(!locked);
+    handleRep->SetDragable(!locked);
+    
+    }
+  else if (pointHandleRep)
+    {
+    // set the glyph type - TBD, swapping isn't working
+    // set the color
+    if (fiducialNode->GetNthFiducialSelected(n))
+      { 
       // use the selected color
-      double *color = displayNode->GetSelectedColor();
-      prop->SetColor(color);
-      // std::cout << "Set glyph property color to selected col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+      pointHandleRep->GetProperty()->SetColor(displayNode->GetSelectedColor());
       }
     else
       {
       // use the unselected color
-      double *color = displayNode->GetColor();
-      prop->SetColor(color);
-      // std::cout << "Set glyph property color to col " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+      pointHandleRep->GetProperty()->SetColor(displayNode->GetColor());
       }
-    
-    // material properties
-    prop->SetOpacity(displayNode->GetOpacity());
-    prop->SetAmbient(displayNode->GetAmbient());
-    prop->SetDiffuse(displayNode->GetDiffuse());
-    prop->SetSpecular(displayNode->GetSpecular());
     }
-  
-  // the following is only needed since we require a different uniform scale depending on 2D and 3D
-  handleRep->SetUniformScale(displayNode->GetGlyphScale()*this->GetScaleFactor2D());
-  
 }
 
 //---------------------------------------------------------------------------
@@ -570,6 +616,42 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     vtkDebugMacro("PropagateMRMLToWidget: Could not get display node for node " << (fiducialNode->GetID() ? fiducialNode->GetID() : "null id"));
     }
 
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+  if (!seedRepresentation)
+    {
+    vtkErrorMacro("Unable to get the seed representation!");
+    return;
+    }
+
+  // can have a 3d or 2d handle depending on if in light box mode or not
+  vtkOrientedPolygonalHandleRepresentation3D *handleRep = vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation());
+  // might be in lightbox mode where using a 2d point handle
+  vtkPointHandleRepresentation2D *pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation());
+  // double check that if switch in and out of light box mode, the handle rep
+  // is updated
+  bool updateHandleType = false;
+  if (this->IsInLightboxMode())
+    {
+    if (handleRep)
+      {
+      vtkDebugMacro("SetNthSeed: have a 3d handle representation in 2d light box, resetting it.");
+      updateHandleType = true;
+      }
+    }
+  else
+    {
+    if (pointHandleRep)
+      {
+      vtkDebugMacro("SetNthSeed: Not in light box, but have a point handle.");
+      updateHandleType = true;     
+      }
+    }
+  if (updateHandleType)
+    {
+    // in annotations module, it deletes the whole thing and re-calls PropagateMRMLToWidget
+    vtkWarningMacro("WARNING: need to update handle type!!!!");
+    }
+
   // iterate over the fiducials in this markup
   int numberOfFiducials = fiducialNode->GetNumberOfMarkups();
   
@@ -591,8 +673,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
   // std::cout << "PropagateMRMLToWidget: calling UpdateWidgetVisibility" << std::endl;
   this->UpdateWidgetVisibility(node);
 
-  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
-  seedRepresentation->NeedToRenderOn();
+  if (seedRepresentation)
+    {
+    seedRepresentation->NeedToRenderOn();
+    }
   seedWidget->Modified();
 
 //  seedWidget->CompleteInteraction();
@@ -985,6 +1069,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupAddedEve
    }
 
   // this call will create a new handle and set it
+  std::cout << "OnMRMLMarkupsNodeMarkupAddedEvent: adding to markups node that currently has " << markupsNode->GetNumberOfMarkups() << std::endl;
   int n = markupsNode->GetNumberOfMarkups() - 1;
   this->SetNthSeed(n, vtkMRMLMarkupsFiducialNode::SafeDownCast(markupsNode), seedWidget);
 
