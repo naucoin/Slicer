@@ -3,6 +3,7 @@ set(KIT qSlicer${MODULE_NAME}Module)
 #-----------------------------------------------------------------------------
 set(KIT_TEST_SRCS
   qSlicerColorsModuleWidgetTest1.cxx
+  vtkSlicerScalarBarActorTest1.cxx
   )
 
 #-----------------------------------------------------------------------------
@@ -14,3 +15,4 @@ slicerMacroConfigureModuleCxxTestDriver(
 
 #-----------------------------------------------------------------------------
 simple_test(qSlicerColorsModuleWidgetTest1)
+simple_test( vtkSlicerScalarBarActorTest1 )

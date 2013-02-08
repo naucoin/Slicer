@@ -45,6 +45,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkScalarBarActor.h>
 #include <vtkScalarBarWidget.h>
+#include <vtkSlicerScalarBarActor.h>
 
 //-----------------------------------------------------------------------------
 class qSlicerColorsModuleWidgetPrivate: public Ui_qSlicerColorsModuleWidget
@@ -60,6 +61,7 @@ public:
   void setDefaultColorNode();
 
   vtkScalarBarWidget* ScalarBarWidget;
+  vtkSlicerScalarBarActor*  ScalarBarActor;
 };
 
 //-----------------------------------------------------------------------------
@@ -67,6 +69,8 @@ qSlicerColorsModuleWidgetPrivate::qSlicerColorsModuleWidgetPrivate(qSlicerColors
   : q_ptr(&object)
 {
   this->ScalarBarWidget = vtkScalarBarWidget::New();
+  this->ScalarBarActor = vtkSlicerScalarBarActor::New();
+  this->ScalarBarWidget->SetScalarBarActor(this->ScalarBarActor);
   this->ScalarBarWidget->GetScalarBarActor()->SetOrientationToVertical();
   this->ScalarBarWidget->GetScalarBarActor()->SetNumberOfLabels(11);
   this->ScalarBarWidget->GetScalarBarActor()->SetTitle("(mm)");
@@ -85,6 +89,11 @@ qSlicerColorsModuleWidgetPrivate::~qSlicerColorsModuleWidgetPrivate()
     {
     this->ScalarBarWidget->Delete();
     this->ScalarBarWidget = 0;
+    }
+  if (this->ScalarBarActor)
+    {
+    this->ScalarBarActor->Delete();
+    this->ScalarBarActor = 0;
     }
 }
 
@@ -143,6 +152,8 @@ void qSlicerColorsModuleWidget::setup()
           this, SLOT(setLookupTableRange(double,double)));
   connect(d->CopyColorNodeButton, SIGNAL(clicked()),
           this, SLOT(copyCurrentColorNode()));
+  connect(d->UseColorNameAsLabelCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(setUseColorNameAsLabel(bool)));
 
   qSlicerApplication * app = qSlicerApplication::application();
   if (app && app->layoutManager())
@@ -203,6 +214,11 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
       qMin(range[0], -1024.),qMax(range[1], 3071.));
     d->LUTRangeWidget->setValues(range[0], range[1]);
     d->ScalarBarWidget->GetScalarBarActor()->SetLookupTable(colorNode->GetLookupTable());
+    for (int i=0; i<colorNode->GetNumberOfColors(); i++)
+      {
+      vtkSlicerScalarBarActor::SafeDownCast(d->ScalarBarWidget->GetScalarBarActor())->SetColorName(i,
+                                            colorNode->GetColorName(i));
+      }
     }
   else
     {
@@ -263,4 +279,21 @@ void qSlicerColorsModuleWidget::copyCurrentColorNode()
   this->mrmlScene()->AddNode(colorNode);
   colorNode->Delete();
   d->ColorTableComboBox->setCurrentNode(colorNode);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerColorsModuleWidget::setUseColorNameAsLabel(bool useColorName)
+{
+  Q_D(qSlicerColorsModuleWidget);
+
+  if (useColorName)
+    {
+    d->ScalarBarActor->SetUseColorNameAsLabel(1);;
+    d->ScalarBarActor->SetLabelFormat(" %s");
+    }
+  else
+    {
+    d->ScalarBarActor->SetUseColorNameAsLabel(0);;
+    d->ScalarBarActor->SetLabelFormat(" %#8.3f");
+    }
 }
