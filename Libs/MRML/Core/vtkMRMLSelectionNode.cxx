@@ -27,9 +27,8 @@ Version:   $Revision: 1.2 $
 vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, SecondaryVolumeID);
 vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveLabelVolumeID);
 vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveFiducialListID);
-vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveMarkupsID);
-vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveAnnotationID);
-vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveMarkupsNodeType);
+vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActivePlaceNodeID);
+vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActivePlaceNodeClassName);
 vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveROIListID);
 vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveCameraID);
 vtkCxxSetReferenceStringMacro(vtkMRMLSelectionNode, ActiveViewID);
@@ -51,9 +50,8 @@ vtkMRMLSelectionNode::vtkMRMLSelectionNode()
   this->SecondaryVolumeID = NULL;
   this->ActiveLabelVolumeID = NULL;
   this->ActiveFiducialListID = NULL;
-  this->ActiveMarkupsID = NULL;
-  this->ActiveAnnotationID = NULL;
-  this->ActiveMarkupsNodeType = NULL;
+  this->ActivePlaceNodeID = NULL;
+  this->ActivePlaceNodeClassName = NULL;
   this->ActiveROIListID  =NULL;
   this->ActiveCameraID = NULL;
   this->ActiveViewID = NULL;
@@ -86,20 +84,15 @@ vtkMRMLSelectionNode::~vtkMRMLSelectionNode()
     delete [] this->ActiveFiducialListID;
     this->ActiveFiducialListID = NULL;
     }
-  if (this->ActiveMarkupsID)
+  if (this->ActivePlaceNodeID)
     {
-    delete [] this->ActiveMarkupsID;
-    this->ActiveMarkupsID = NULL;
+    delete [] this->ActivePlaceNodeID;
+    this->ActivePlaceNodeID = NULL;
     }
-  if (this->ActiveAnnotationID)
+  if (this->ActivePlaceNodeClassName)
     {
-    delete [] this->ActiveAnnotationID;
-    this->ActiveAnnotationID = NULL;
-    }
-  if (this->ActiveMarkupsNodeType)
-    {
-    delete [] this->ActiveMarkupsNodeType;
-    this->ActiveMarkupsNodeType = NULL;
+    delete [] this->ActivePlaceNodeClassName;
+    this->ActivePlaceNodeClassName = NULL;
     }
   if (this->ActiveROIListID)
     {
@@ -134,9 +127,8 @@ void vtkMRMLSelectionNode::WriteXML(ostream& of, int nIndent)
   of << indent << " secondaryVolumeID=\"" << (this->SecondaryVolumeID ? this->SecondaryVolumeID : "NULL") << "\"";
   of << indent << " activeLabelVolumeID=\"" << (this->ActiveLabelVolumeID ? this->ActiveLabelVolumeID : "NULL") << "\"";
   of << indent << " activeFiducialListID=\"" << (this->ActiveFiducialListID ? this->ActiveFiducialListID : "NULL") << "\"";
-  of << indent << " activeMarkupsID=\"" << (this->ActiveMarkupsID ? this->ActiveMarkupsID : "NULL") << "\"";
-  of << indent << " activeAnnotationID=\"" << (this->ActiveAnnotationID ? this->ActiveAnnotationID : "NULL") << "\"";
-  of << indent << " activeMarkupsNodeType=\"" << (this->ActiveMarkupsNodeType ? this->ActiveMarkupsNodeType : "NULL") << "\"";
+  of << indent << " activePlaceNodeID=\"" << (this->ActivePlaceNodeID ? this->ActivePlaceNodeID : "NULL") << "\"";
+  of << indent << " activePlaceNodeClassName=\"" << (this->ActivePlaceNodeClassName ? this->ActivePlaceNodeClassName : "NULL") << "\"";
   of << indent << " activeROIListID=\"" << (this->ActiveROIListID ? this->ActiveROIListID : "NULL") << "\"";
   of << indent << " activeCameraID=\"" << (this->ActiveCameraID ? this->ActiveCameraID : "NULL") << "\"";
   of << indent << " activeViewID=\"" << (this->ActiveViewID ? this->ActiveViewID : "NULL") << "\"";
@@ -150,6 +142,7 @@ void vtkMRMLSelectionNode::SetSceneReferences()
   this->Scene->AddReferencedNodeID(this->ActiveVolumeID, this);
   this->Scene->AddReferencedNodeID(this->ActiveLabelVolumeID, this);
   this->Scene->AddReferencedNodeID(this->ActiveFiducialListID, this);
+  this->Scene->AddReferencedNodeID(this->ActivePlaceNodeID, this);
   this->Scene->AddReferencedNodeID(this->ActiveCameraID, this);
   this->Scene->AddReferencedNodeID(this->ActiveViewID, this);
   this->Scene->AddReferencedNodeID(this->ActiveLayoutID, this);
@@ -175,17 +168,13 @@ void vtkMRMLSelectionNode::UpdateReferenceID(const char *oldID, const char *newI
     {
     this->SetActiveFiducialListID(newID);
     }
-  if (this->ActiveMarkupsID && !strcmp(oldID, this->ActiveMarkupsID))
+  if (this->ActivePlaceNodeID && !strcmp(oldID, this->ActivePlaceNodeID))
     {
-    this->SetActiveMarkupsID(newID);
+    this->SetActivePlaceNodeID(newID);
     }
-  if (this->ActiveAnnotationID && !strcmp(oldID, this->ActiveAnnotationID))
+  if (this->ActivePlaceNodeClassName && !strcmp(oldID, this->ActivePlaceNodeClassName))
     {
-    this->SetActiveAnnotationID(newID);
-    }
-  if (this->ActiveMarkupsNodeType && !strcmp(oldID, this->ActiveMarkupsNodeType))
-    {
-    this->SetActiveMarkupsNodeType(newID);
+    this->SetActivePlaceNodeClassName(newID);
     }
   if ( this->ActiveCameraID && !strcmp (oldID, this->ActiveCameraID ))
     {
@@ -223,17 +212,13 @@ void vtkMRMLSelectionNode::UpdateReferences()
     {
     this->SetActiveFiducialListID(NULL);
     }
-  if (this->ActiveMarkupsID != NULL && this->Scene->GetNodeByID(this->ActiveMarkupsID) == NULL)
+  if (this->ActivePlaceNodeID != NULL && this->Scene->GetNodeByID(this->ActivePlaceNodeID) == NULL)
     {
-    this->SetActiveMarkupsID(NULL);
+    this->SetActivePlaceNodeID(NULL);
     }
-  if (this->ActiveAnnotationID != NULL && this->Scene->GetNodeByID(this->ActiveAnnotationID) == NULL)
+  if (this->ActivePlaceNodeClassName != NULL && this->Scene->GetNodeByID(this->ActivePlaceNodeClassName) == NULL)
     {
-    this->SetActiveAnnotationID(NULL);
-    }
-  if (this->ActiveMarkupsNodeType != NULL && this->Scene->GetNodeByID(this->ActiveMarkupsNodeType) == NULL)
-    {
-    this->SetActiveMarkupsNodeType(NULL);
+    this->SetActivePlaceNodeClassName(NULL);
     }
   if (this->ActiveViewID != NULL && this->Scene->GetNodeByID(this->ActiveViewID) == NULL)
     {
@@ -284,18 +269,13 @@ void vtkMRMLSelectionNode::ReadXMLAttributes(const char** atts)
       }
     if (!strcmp(attName, "activeMarkupsID"))
       {
-      this->SetActiveMarkupsID(attValue);
-      //this->Scene->AddReferencedNodeID(this->ActiveMarkupsID, this);
+      this->SetActivePlaceNodeID(attValue);
+      //this->Scene->AddReferencedNodeID(this->ActivePlaceNodeID, this);
       }
-    if (!strcmp(attName, "activeAnnotationID"))
+    if (!strcmp(attName, "activePlaceNodeClassName"))
       {
-      this->SetActiveAnnotationID(attValue);
-      //this->Scene->AddReferencedNodeID(this->ActriveAnnotationID, this);
-      }
-    if (!strcmp(attName, "activeMarkupsNodeType"))
-      {
-      this->SetActiveMarkupsNodeType(attValue);
-      //this->Scene->AddReferencedNodeID(this->ActiveMarkupsNodeType, this);
+      this->SetActivePlaceNodeClassName(attValue);
+      //this->Scene->AddReferencedNodeID(this->ActivePlaceNodeClassName, this);
       }
     if (!strcmp (attName, "activeCameraID"))
       {
@@ -332,9 +312,8 @@ void vtkMRMLSelectionNode::Copy(vtkMRMLNode *anode)
   this->SetSecondaryVolumeID(node->GetActiveVolumeID());
   this->SetActiveLabelVolumeID(node->GetActiveLabelVolumeID());
   this->SetActiveFiducialListID(node->GetActiveFiducialListID());
-  this->SetActiveMarkupsID(node->GetActiveMarkupsID());
-  this->SetActiveAnnotationID(node->GetActiveAnnotationID());
-  this->SetActiveMarkupsNodeType(node->GetActiveMarkupsNodeType());
+  this->SetActivePlaceNodeID(node->GetActivePlaceNodeID());
+  this->SetActivePlaceNodeClassName(node->GetActivePlaceNodeClassName());
   this->SetActiveCameraID (node->GetActiveCameraID());
   this->SetActiveViewID (node->GetActiveViewID() );
   this->SetActiveLayoutID (node->GetActiveLayoutID() );
@@ -351,39 +330,30 @@ void vtkMRMLSelectionNode::PrintSelf(ostream& os, vtkIndent indent)
   os << "SecondaryVolumeID: " << ( (this->SecondaryVolumeID) ? this->SecondaryVolumeID : "None" ) << "\n";
   os << "ActiveLabelVolumeID: " << ( (this->ActiveLabelVolumeID) ? this->ActiveLabelVolumeID : "None" ) << "\n";
   os << "ActiveFiducialListID: " << ( (this->ActiveFiducialListID) ? this->ActiveFiducialListID : "None" ) << "\n";
-  os << "ActiveMarkupsID: " << ( (this->ActiveMarkupsID) ? this->ActiveMarkupsID : "None" ) << "\n";
-  os << "ActiveAnnotationID: " << ( (this->ActiveAnnotationID) ? this->ActiveAnnotationID : "None" ) << "\n";
-  if (this->AnnotationIDList.size() > 0)
+  os << "ActivePlaceNodeID: " << ( (this->ActivePlaceNodeID) ? this->ActivePlaceNodeID : "None" ) << "\n";
+  os << "ActivePlaceNodeClassName: " << ( (this->ActivePlaceNodeClassName) ? this->ActivePlaceNodeClassName : "None" ) << "\n";
+  if (this->PlaceNodeClassNameList.size() > 0)
     {
-    os << "Valid Annotation IDs: \n";
-    for (unsigned int i = 0; i < this->AnnotationIDList.size(); ++i)
+    os << "Valid PlaceNode IDs: \n";
+    for (unsigned int i = 0; i < this->PlaceNodeClassNameList.size(); ++i)
       {
-      os << indent.GetNextIndent() << i << ": " << this->AnnotationIDList[i]<< "\n";
+      os << indent.GetNextIndent() << i << ": " << this->PlaceNodeClassNameList[i]<< "\n";
       }
     }
-  if (this->AnnotationResourceList.size() > 0)
+  if (this->PlaceNodeResourceList.size() > 0)
     {
-    os << "Annotation Resources: \n";
-    for (unsigned int i = 0; i < this->AnnotationResourceList.size(); ++i)
+    os << "PlaceNode Resources: \n";
+    for (unsigned int i = 0; i < this->PlaceNodeResourceList.size(); ++i)
       {
-      os << indent.GetNextIndent() << i << ": " << this->AnnotationResourceList[i] << "\n";
+      os << indent.GetNextIndent() << i << ": " << this->PlaceNodeResourceList[i] << "\n";
       }
     }
-  os << "ActiveMarkupsNodeType: " << ( (this->ActiveMarkupsNodeType) ? this->ActiveMarkupsNodeType : "None" ) << "\n";
-  if (this->MarkupsIDList.size() > 0)
+  if (this->PlaceNodeIconNameList.size() > 0)
     {
-    os << "Valid Markups IDs: \n";
-    for (unsigned int i = 0; i < this->MarkupsIDList.size(); ++i)
+    os << "PlaceNode Icon Names: \n";
+    for (unsigned int i = 0; i < this->PlaceNodeIconNameList.size(); ++i)
       {
-      os << indent.GetNextIndent() << i << ": " << this->MarkupsIDList[i]<< "\n";
-      }
-    }
-  if (this->MarkupsResourceList.size() > 0)
-    {
-    os << "Markups Resources: \n";
-    for (unsigned int i = 0; i < this->MarkupsResourceList.size(); ++i)
-      {
-      os << indent.GetNextIndent() << i << ": " << this->MarkupsResourceList[i] << "\n";
+      os << indent.GetNextIndent() << i << ": " << this->PlaceNodeIconNameList[i] << "\n";
       }
     }
   os << "ActiveCameraID: " << ( (this->ActiveCameraID) ? this->ActiveCameraID : "None" ) << "\n";
@@ -393,125 +363,112 @@ void vtkMRMLSelectionNode::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLSelectionNode::AddNewAnnotationIDToList(const char *newID, const char *resource)
+void vtkMRMLSelectionNode::AddNewPlaceNodeClassNameToList(const char *newClassName, const char *resource, const char *iconName)
 {
-  if (newID == NULL)
+  if (newClassName == NULL)
     {
     return;
     }
-  vtkDebugMacro("AddNewAnnotationIDToList: newID = " << newID);
+  vtkDebugMacro("AddNewPlaceNodeClassNameToList: newClassName = " << newClassName);
 
-  std::string idString = std::string(newID);
+  std::string classNameString = std::string(newClassName);
   std::string resourceString;
   if (resource)
     {
     resourceString = std::string(resource);
     }
-  int index = this->AnnotationIDInList(idString);
+  std::string iconNameString;
+  if (iconName != NULL)
+    {
+    iconNameString = std::string(iconName);
+    }
+  int index = this->PlaceNodeClassNameInList(classNameString);
   if (index == -1)
     {
-    vtkDebugMacro("Annotation id " << idString << " not in list, adding it and invoking annotation id list modified event");
-    this->AnnotationIDList.push_back(idString);
-    this->AnnotationResourceList.push_back(resourceString);
-    this->InvokeEvent(vtkMRMLSelectionNode::AnnotationIDListModifiedEvent);
+    vtkDebugMacro("PlaceNode class name " << classNameString << " not in list, adding it and invoking placeNode class name list modified event");
+    this->PlaceNodeClassNameList.push_back(classNameString);
+    this->PlaceNodeIconNameList.push_back(iconNameString);
+    this->PlaceNodeResourceList.push_back(resourceString);
+    this->InvokeEvent(vtkMRMLSelectionNode::PlaceNodeClassNameListModifiedEvent);
     }
   else
     {
     // check if the resource needs to be updated
-    if (resourceString.compare(this->GetAnnotationResourceByIndex(index)) != 0)
+    if (resourceString.compare(this->GetPlaceNodeResourceByIndex(index)) != 0)
       {
-      vtkDebugMacro("Updating resource for id " << idString << ", at index " << index << " to " << resourceString);
-      this->AnnotationResourceList[index] = resourceString;
-      this->InvokeEvent(vtkMRMLSelectionNode::AnnotationIDListModifiedEvent);
+      vtkDebugMacro("Updating resource for class name " << classNameString << ", at index " << index << " to " << resourceString);
+      this->PlaceNodeResourceList[index] = resourceString;
+      this->InvokeEvent(vtkMRMLSelectionNode::PlaceNodeClassNameListModifiedEvent);
+      }
+    // check if the icon name needs to be updated
+    if (iconNameString.compare(this->GetPlaceNodeIconNameByIndex(index)) != 0)
+      {
+      vtkDebugMacro("Updating icon name for place node class name " << classNameString << ", at index " << index << " to " << iconNameString);
+      this->PlaceNodeIconNameList[index] = iconNameString;
+      this->InvokeEvent(vtkMRMLSelectionNode::PlaceNodeClassNameListModifiedEvent);
       }
     }
   this->Modified();
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLSelectionNode::RemoveAnnotationIDFromList(const char *id)
+void vtkMRMLSelectionNode::RemovePlaceNodeClassNameFromList(const char *className)
 {
-  if (id == NULL)
+  if (className == NULL)
     {
     return;
     }
-  vtkDebugMacro("RemoveAnnotationIDFromList: id = " << id);
+  vtkDebugMacro("RemovePlaceNodeClassNameFromList: className = " << className);
 
-  std::string idString = std::string(id);
+  std::string classNameString = std::string(className);
 
-  int index = this->AnnotationIDInList(idString);
+  int index = this->PlaceNodeClassNameInList(classNameString);
   if (index == -1)
     {
     return;
     }
-  vtkDebugMacro("Removing annotation id " << id << ", found at index " << index);
-  // erase the id and resource
-  this->AnnotationIDList.erase(this->AnnotationIDList.begin()+index);
-  this->AnnotationResourceList.erase(this->AnnotationResourceList.begin()+index);
+  vtkDebugMacro("Removing placeNode className " << className << ", found at index " << index);
+  // erase the className and resource
+  this->PlaceNodeClassNameList.erase(this->PlaceNodeClassNameList.begin()+index);
+  this->PlaceNodeResourceList.erase(this->PlaceNodeResourceList.begin()+index);
 
   // was it the active one?
-  if (this->GetActiveAnnotationID() &&
-      idString.compare(this->GetActiveAnnotationID()) == 0)
+  if (this->GetActivePlaceNodeClassName() &&
+      classNameString.compare(this->GetActivePlaceNodeClassName()) == 0)
     {
     // make it inactive
-    this->SetActiveAnnotationID(NULL);
+    this->SetActivePlaceNodeClassName(NULL);
     }
-  this->InvokeEvent(vtkMRMLSelectionNode::AnnotationIDListModifiedEvent);
+  this->InvokeEvent(vtkMRMLSelectionNode::PlaceNodeClassNameListModifiedEvent);
   this->Modified();
 }
 
 //----------------------------------------------------------------------------
-std::string vtkMRMLSelectionNode::GetAnnotationIDByIndex(int n)
+std::string vtkMRMLSelectionNode::GetPlaceNodeClassNameByIndex(int n)
 {
-  std::string id;
-  if (this->AnnotationIDList.size() > (unsigned int)n && n >= 0)
+  std::string className;
+  if (this->PlaceNodeClassNameList.size() > (unsigned int)n && n >= 0)
     {
-    id = this->AnnotationIDList[n];
+    className = this->PlaceNodeClassNameList[n];
     }
   else
     {
-    vtkWarningMacro("GetAnnotationIDByIndex: index " << n << " is out of bounds of 0-" << this->AnnotationIDList.size());
+    vtkWarningMacro("GetPlaceNodeClassNameByIndex: index " << n << " is out of bounds of 0-" << this->PlaceNodeClassNameList.size());
     }
-  return id;
+  return className;
 }
 
 //----------------------------------------------------------------------------
-std::string vtkMRMLSelectionNode::GetAnnotationResourceByIndex(int n)
+std::string vtkMRMLSelectionNode::GetPlaceNodeResourceByIndex(int n)
 {
   std::string resource;
-  if (this->AnnotationResourceList.size() > (unsigned int)n && n >= 0)
+  if (this->PlaceNodeResourceList.size() > (unsigned int)n && n >= 0)
     {
-    resource = this->AnnotationResourceList[n];
+    resource = this->PlaceNodeResourceList[n];
     }
   else
     {
-    vtkWarningMacro("GetAnnotationResourceByIndex: index " << n << " is out of bounds of 0-" << this->AnnotationResourceList.size());
-    }
-  return resource;
-}
-
-//----------------------------------------------------------------------------
-int vtkMRMLSelectionNode::AnnotationIDInList(std::string id)
-{
-  for (unsigned int i = 0; i < this->AnnotationIDList.size(); ++i)
-    {
-    if (this->AnnotationIDList[i].compare(id) == 0)
-      {
-      return i;
-      }
-    }
-  return -1;
-}
-
-//----------------------------------------------------------------------------
-std::string vtkMRMLSelectionNode::GetAnnotationResourceByID(std::string id)
-{
-  std::string resource;
-
-  int annotationIndex = this->AnnotationIDInList(id);
-  if (annotationIndex != -1)
-    {
-    resource = this->GetAnnotationResourceByIndex(annotationIndex);
+    vtkWarningMacro("GetPlaceNodeResourceByIndex: index " << n << " is out of bounds of 0-" << this->PlaceNodeResourceList.size());
     }
   return resource;
 }
@@ -541,38 +498,18 @@ void vtkMRMLSelectionNode::GetUnitNodes(std::vector<vtkMRMLUnitNode*>& units)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLSelectionNode::AddNewMarkupsIDToList(const char *newID, const char *resource)
+std::string vtkMRMLSelectionNode::GetPlaceNodeIconNameByIndex(int n)
 {
-  if (newID == NULL)
+  std::string iconName;
+  if (this->PlaceNodeIconNameList.size() > (unsigned int)n && n >= 0)
     {
-    return;
-    }
-  vtkDebugMacro("AddNewMarkupsIDToList: newID = " << newID);
-
-  std::string idString = std::string(newID);
-  std::string resourceString;
-  if (resource)
-    {
-    resourceString = std::string(resource);
-    }
-  int index = this->MarkupsIDInList(idString);
-  if (index == -1)
-    {
-    vtkDebugMacro("Markups id " << idString << " not in list, adding it and invoking markups id list modified event");
-    this->MarkupsIDList.push_back(idString);
-    this->MarkupsResourceList.push_back(resourceString);
-    this->InvokeEvent(vtkMRMLSelectionNode::MarkupsIDListModifiedEvent);
+    iconName = this->PlaceNodeIconNameList[n];
     }
   else
     {
-    // check if the resource needs to be updated
-    if (resourceString.compare(this->GetMarkupsResourceByIndex(index)) != 0)
-      {
-      vtkDebugMacro("Updating resource for id " << idString << ", at index " << index << " to " << resourceString);
-      this->MarkupsResourceList[index] = resourceString;
-      this->InvokeEvent(vtkMRMLSelectionNode::MarkupsIDListModifiedEvent);
-      }
+    vtkWarningMacro("GetPlaceNodeIconNameByIndex: index " << n << " is out of bounds of 0-" << this->PlaceNodeIconNameList.size());
     }
+  return iconName;
 }
 
 //----------------------------------------------------------------------------
@@ -624,73 +561,12 @@ void vtkMRMLSelectionNode::ProcessMRMLEvents(vtkObject *caller,
     }
 }
 
-//---------------------------------------------------------------------------
-void vtkMRMLSelectionNode::RemoveMarkupsIDFromList(const char *id)
-{
-  if (id == NULL)
-    {
-    return;
-    }
-  vtkDebugMacro("RemoveMarkupsIDFromList: id = " << id);
-
-  std::string idString = std::string(id);
-
-  int index = this->MarkupsIDInList(idString);
-  if (index == -1)
-    {
-    return;
-    }
-  vtkDebugMacro("Removing markups id " << id << ", found at index " << index);
-  // erase the id and resource
-  this->MarkupsIDList.erase(this->MarkupsIDList.begin()+index);
-  this->MarkupsResourceList.erase(this->MarkupsResourceList.begin()+index);
-
-  // was it the active one?
-  if (this->GetActiveMarkupsNodeType() &&
-      idString.compare(this->GetActiveMarkupsNodeType()) == 0)
-    {
-    // make it inactive
-    this->SetActiveMarkupsNodeType(NULL);
-    }
-  this->InvokeEvent(vtkMRMLSelectionNode::MarkupsIDListModifiedEvent);
-}
-
 //----------------------------------------------------------------------------
-std::string vtkMRMLSelectionNode::GetMarkupsIDByIndex(int n)
+int vtkMRMLSelectionNode::PlaceNodeClassNameInList(std::string className)
 {
-  std::string id;
-  if (this->MarkupsIDList.size() > (unsigned int)n && n >= 0)
+  for (unsigned int i = 0; i < this->PlaceNodeClassNameList.size(); ++i)
     {
-    id = this->MarkupsIDList[n];
-    }
-  else
-    {
-    vtkWarningMacro("GetMarkupsIDByIndex: index " << n << " is out of bounds of 0-" << this->MarkupsIDList.size());
-    }
-  return id;
-}
-
-//----------------------------------------------------------------------------
-std::string vtkMRMLSelectionNode::GetMarkupsResourceByIndex(int n)
-{
-  std::string resource;
-  if (this->MarkupsResourceList.size() > (unsigned int)n && n >= 0)
-    {
-    resource = this->MarkupsResourceList[n];
-    }
-  else
-    {
-    vtkWarningMacro("GetMarkupsResourceByIndex: index " << n << " is out of bounds of 0-" << this->MarkupsResourceList.size());
-    }
-  return resource;
-}
-
-//----------------------------------------------------------------------------
-int vtkMRMLSelectionNode::MarkupsIDInList(std::string id)
-{
-  for (unsigned int i = 0; i < this->MarkupsIDList.size(); ++i)
-    {
-    if (this->MarkupsIDList[i].compare(id) == 0)
+    if (this->PlaceNodeClassNameList[i].compare(className) == 0)
       {
       return i;
       }
@@ -699,14 +575,22 @@ int vtkMRMLSelectionNode::MarkupsIDInList(std::string id)
 }
 
 //----------------------------------------------------------------------------
-std::string vtkMRMLSelectionNode::GetMarkupsResourceByID(std::string id)
+std::string vtkMRMLSelectionNode::GetPlaceNodeResourceByClassName(std::string className)
 {
   std::string resource;
 
-  int markupIndex = this->MarkupsIDInList(id);
-  if (markupIndex != -1)
+  int placeNodeIndex = this->PlaceNodeClassNameInList(className);
+  if (placeNodeIndex != -1)
     {
-    resource = this->GetMarkupsResourceByIndex(markupIndex);
+    resource = this->GetPlaceNodeResourceByIndex(placeNodeIndex);
     }
   return resource;
 }
+
+//----------------------------------------------------------------------------
+void vtkMRMLSelectionNode::SetReferenceActivePlaceNodeClassName (const char *className)
+{
+  this->SetActivePlaceNodeClassName(className);
+  this->InvokeEvent(vtkMRMLSelectionNode::ActivePlaceNodeClassNameChangedEvent);
+}
+

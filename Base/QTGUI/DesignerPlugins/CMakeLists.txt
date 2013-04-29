@@ -19,8 +19,6 @@ set(${KIT}_SRCS
   qSlicerModulePanelPlugin.h
   qSlicerModulesListViewPlugin.cxx
   qSlicerModulesListViewPlugin.h
-  qSlicerMarkupsToolBarPlugin.cxx
-  qSlicerMarkupsToolBarPlugin.h
   qSlicerMouseModeToolBarPlugin.cxx
   qSlicerMouseModeToolBarPlugin.h
   qSlicerWidgetPlugin.cxx
@@ -35,7 +33,6 @@ set(${KIT}_MOC_SRCS
   qSlicerModulePanelPlugin.h
   qSlicerModulesListViewPlugin.h
   qSlicerMouseModeToolBarPlugin.h
-  qSlicerMarkupsToolBarPlugin.h
   qSlicerWidgetPlugin.h
   )
 

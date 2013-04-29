@@ -72,10 +72,10 @@ vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
   // by default, multiply the display node scale by this when setting scale on elements in 2d windows
   this->ScaleFactor2D = 0.00333;
 
-  this->LastClickWorldCoordinates[0]=0;
-  this->LastClickWorldCoordinates[1]=0;
-  this->LastClickWorldCoordinates[2]=0;
-  this->LastClickWorldCoordinates[3]=1;
+  this->LastClickWorldCoordinates[0]=0.0;
+  this->LastClickWorldCoordinates[1]=0.0;
+  this->LastClickWorldCoordinates[2]=0.0;
+  this->LastClickWorldCoordinates[3]=1.0;
 }
 
 //---------------------------------------------------------------------------
@@ -1320,14 +1320,26 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsCorrectDisplayableManager()
     vtkErrorMacro ( "IsCorrectDisplayableManager: No selection node in the scene." );
     return false;
     }
-  if ( selectionNode->GetActiveMarkupsNodeType() == 0)
+  if ( selectionNode->GetActivePlaceNodeClassName() == 0)
     {
     //vtkErrorMacro ( "IsCorrectDisplayableManager: no active markups");
     return false;
     }
   // the purpose of the displayableManager is hardcoded
-  return !strcmp(selectionNode->GetActiveMarkupsNodeType(), this->Focus);
+  return this->IsManageable(selectionNode->GetActivePlaceNodeClassName());
 
+}
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsDisplayableManager2D::IsManageable(vtkMRMLNode* node)
+{
+  return node->IsA(this->Focus);
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsDisplayableManager2D::IsManageable(const char* nodeClassName)
+{
+  std::cout << "IsManageable: node class name = " << (nodeClassName ? nodeClassName : "null") << ", focus = " << (this->Focus ? this->Focus : "null") << std::endl;
+  return nodeClassName && !strcmp(nodeClassName, this->Focus);
 }
 
 //---------------------------------------------------------------------------
