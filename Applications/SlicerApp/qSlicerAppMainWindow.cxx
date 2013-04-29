@@ -191,25 +191,13 @@ void qSlicerAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   // MouseMode ToolBar
   //----------------------------------------------------------------------------
   // MouseMode toolBar should listen the MRML scene
-/*
+
   this->MouseModeToolBar->setApplicationLogic(
     qSlicerApplication::application()->applicationLogic());
   this->MouseModeToolBar->setMRMLScene(qSlicerApplication::application()->mrmlScene());
   QObject::connect(qSlicerApplication::application(),
                    SIGNAL(mrmlSceneChanged(vtkMRMLScene*)),
                    this->MouseModeToolBar,
-                   SLOT(setMRMLScene(vtkMRMLScene*)));
-*/
-  //----------------------------------------------------------------------------
-  // Markups ToolBar
-  //----------------------------------------------------------------------------
-  // Markups toolBar should listen the MRML scene
-  this->MarkupsToolBar->setApplicationLogic(
-    qSlicerApplication::application()->applicationLogic());
-  this->MarkupsToolBar->setMRMLScene(qSlicerApplication::application()->mrmlScene());
-  QObject::connect(qSlicerApplication::application(),
-                   SIGNAL(mrmlSceneChanged(vtkMRMLScene*)),
-                   this->MarkupsToolBar,
                    SLOT(setMRMLScene(vtkMRMLScene*)));
 
   //----------------------------------------------------------------------------
@@ -245,7 +233,6 @@ void qSlicerAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   toolBarActions << this->ViewToolBar->toggleViewAction();
   //toolBarActions << this->LayoutToolBar->toggleViewAction();
   toolBarActions << this->MouseModeToolBar->toggleViewAction();
-  toolBarActions << this->MarkupsToolBar->toggleViewAction();
   toolBarActions << this->CaptureToolBar->toggleViewAction();
   toolBarActions << this->ViewersToolBar->toggleViewAction();
 #ifdef Slicer_BUILD_EXTENSIONMANAGER_SUPPORT

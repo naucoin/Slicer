@@ -672,7 +672,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
   vtkMRMLSelectionNode *selectionNode = this->GetSelectionNode();
   if (selectionNode)
     {
-    const char *activeMarkupsID = selectionNode->GetActiveMarkupsID();
+    const char *activeMarkupsID = selectionNode->GetActivePlaceNodeID();
     vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID(activeMarkupsID);
     if (mrmlNode &&
         mrmlNode->IsA("vtkMRMLMarkupsFiducialNode"))
@@ -752,7 +752,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
     // save it as the active markups list
     if (selectionNode)
       {
-      selectionNode->SetActiveMarkupsID(activeFiducialNode->GetID());
+      selectionNode->SetActivePlaceNodeID(activeFiducialNode->GetID());
       }
     // clean up
     displayNode->Delete();

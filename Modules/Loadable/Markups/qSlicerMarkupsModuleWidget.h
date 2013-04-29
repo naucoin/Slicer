@@ -60,7 +60,7 @@ public slots:
   /// update the selection node from the combo box
   void onActiveMarkupMRMLNodeChanged(vtkMRMLNode *markupsNode);
   /// update the combo box from the selection node
-  void onSelectionNodeActiveMarkupsIDChanged();
+  void onSelectionNodeActivePlaceNodeIDChanged();
 
   /// update the markup from the check box
   void onUseListNameForMarkupsCheckBoxToggled(bool flag);

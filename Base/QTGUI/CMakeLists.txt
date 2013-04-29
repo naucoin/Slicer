@@ -62,9 +62,6 @@ set(KIT_SRCS
   qSlicerModulePanel.cxx
   qSlicerModulePanel.h
 
-  qSlicerMarkupsToolBar.cxx
-  qSlicerMarkupsToolBar.h
-  qSlicerMarkupsToolBar_p.h
   qSlicerModuleSelectorToolBar.cxx
   qSlicerModuleSelectorToolBar.h
   qSlicerMouseModeToolBar.cxx
@@ -174,8 +171,6 @@ set(KIT_MOC_SRCS
   qSlicerIOOptionsWidget.h
   qSlicerLayoutManager.h
   qSlicerLoadableModule.h
-  qSlicerMarkupsToolBar.h
-  qSlicerMarkupsToolBar_p.h
 
   qSlicerModelsDialog.h
   qSlicerModelsDialog_p.h

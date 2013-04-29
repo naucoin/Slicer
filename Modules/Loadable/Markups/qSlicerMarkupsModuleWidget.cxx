@@ -100,8 +100,8 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     }
   if (selectionNode)
     {
-    q->qvtkConnect(selectionNode, vtkMRMLSelectionNode::ActiveMarkupsIDChangedEvent,
-                   q, SLOT(onSelectionNodeActiveMarkupsIDChanged()));
+    q->qvtkConnect(selectionNode, vtkMRMLSelectionNode::ActivePlaceNodeIDChangedEvent,
+                   q, SLOT(onSelectionNodeActivePlaceNodeIDChanged()));
     }
   else
     {
@@ -209,7 +209,7 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
   // std::cout << "UpdateWidgetFromMRML" << std::endl;
 
   // update the combo box
-  this->onSelectionNodeActiveMarkupsIDChanged();
+  this->onSelectionNodeActivePlaceNodeIDChanged();
 
   // get the active markup
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -221,7 +221,7 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
   vtkMRMLNode *markupsNodeMRML = NULL;
   if (selectionNode)
     {
-    markupsNodeMRML = this->mrmlScene()->GetNodeByID(selectionNode->GetActiveMarkupsID());
+    markupsNodeMRML = this->mrmlScene()->GetNodeByID(selectionNode->GetActivePlaceNodeID());
     }
   vtkMRMLMarkupsNode *markupsNode = NULL;
   if (markupsNodeMRML)
@@ -436,11 +436,11 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
   if (selectionNode)
     {
     // check if changed
-    const char *selectionNodeActiveMarkupsID = selectionNode->GetActiveMarkupsID();
-    if (!selectionNodeActiveMarkupsID || !activeID ||
-        strcmp(selectionNodeActiveMarkupsID, activeID) != 0)
+    const char *selectionNodeActivePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+    if (!selectionNodeActivePlaceNodeID || !activeID ||
+        strcmp(selectionNodeActivePlaceNodeID, activeID) != 0)
       {
-      selectionNode->SetReferenceActiveMarkupsID(activeID);
+      selectionNode->SetReferenceActivePlaceNodeID(activeID);
       }
     }
   else
@@ -453,11 +453,11 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::onSelectionNodeActiveMarkupsIDChanged()
+void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
-  //qDebug() << "\n\n******\nonSelectionNodeActiveMarkupsIDChanged\n";
+  //qDebug() << "\n\n******\nonSelectionNodeActivePlaceNodeIDChanged\n";
 
   // get the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -466,10 +466,14 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActiveMarkupsIDChanged()
     {
     selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
     }
-  if (selectionNode)
+  if (selectionNode && selectionNode->GetActivePlaceNodeID())
     {
-    std::cout << "\tsetting current node to " << selectionNode->GetActiveMarkupsID() << std::endl;
-    d->activeMarkupMRMLNodeComboBox->setCurrentNode(selectionNode->GetActiveMarkupsID());
+    std::string activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+    std::cout << "\ttesting current node: " << activePlaceNodeID << std::endl;
+    if (activePlaceNodeID.find("vtkMRMLMarkups") != std::string::npos)
+      {
+      d->activeMarkupMRMLNodeComboBox->setCurrentNode(QString(activePlaceNodeID.c_str()));
+      }
     }
   else
     {

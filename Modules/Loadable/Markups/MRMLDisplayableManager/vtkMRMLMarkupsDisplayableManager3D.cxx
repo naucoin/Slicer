@@ -66,10 +66,10 @@ vtkMRMLMarkupsDisplayableManager3D::vtkMRMLMarkupsDisplayableManager3D()
 
   this->Focus = "vtkMRMLMarkupsNode";
 
-  this->LastClickWorldCoordinates[0]=0;
-  this->LastClickWorldCoordinates[1]=0;
-  this->LastClickWorldCoordinates[2]=0;
-  this->LastClickWorldCoordinates[3]=1;
+  this->LastClickWorldCoordinates[0]=0.0;
+  this->LastClickWorldCoordinates[1]=0.0;
+  this->LastClickWorldCoordinates[2]=0.0;
+  this->LastClickWorldCoordinates[3]=1.0;
 }
 
 //---------------------------------------------------------------------------
@@ -997,14 +997,26 @@ bool vtkMRMLMarkupsDisplayableManager3D::IsCorrectDisplayableManager()
     vtkErrorMacro ( "IsCorrectDisplayableManager: No selection node in the scene." );
     return false;
     }
-  if ( selectionNode->GetActiveMarkupsNodeType() == 0)
+  if ( selectionNode->GetActivePlaceNodeClassName() == 0)
     {
     //vtkErrorMacro ( "IsCorrectDisplayableManager: no active markups");
     return false;
     }
   // the purpose of the displayableManager is hardcoded
-  return !strcmp(selectionNode->GetActiveMarkupsNodeType(), this->Focus);
+  return this->IsManageable(selectionNode->GetActivePlaceNodeClassName());
+}
 
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsDisplayableManager3D::IsManageable(vtkMRMLNode* node)
+{
+  return node->IsA(this->Focus);
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsDisplayableManager3D::IsManageable(const char* nodeClassName)
+{
+  std::cout << "IsManageable: node class name = " << (nodeClassName ? nodeClassName : "null") << ", focus = " << (this->Focus ? this->Focus : "null") << std::endl;
+  return nodeClassName && !strcmp(nodeClassName, this->Focus);
 }
 
 //---------------------------------------------------------------------------
