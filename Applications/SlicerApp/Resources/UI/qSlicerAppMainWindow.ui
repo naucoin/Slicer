@@ -1205,11 +1205,6 @@
    <header>qSlicerMouseModeToolBar.h</header>
   </customwidget>
   <customwidget>
-   <class>qSlicerMarkupsToolBar</class>
-   <extends>QToolBar</extends>
-   <header>qSlicerMarkupsToolBar.h</header>
-  </customwidget>
-  <customwidget>
    <class>ctkCollapsibleButton</class>
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
