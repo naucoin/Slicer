@@ -28,6 +28,8 @@ set(MODULE_INCLUDE_DIRECTORIES
 
 
 set(MODULE_SRCS
+  qSlicerMarkupsIO.cxx
+  qSlicerMarkupsIO.h
   qSlicerMarkupsModule.cxx
   qSlicerMarkupsModule.h
   qSlicerMarkupsModuleWidget.cxx
@@ -36,6 +38,7 @@ set(MODULE_SRCS
 
 
 set(MODULE_MOC_SRCS
+  qSlicerMarkupsIO.h
   qSlicerMarkupsModule.h
   qSlicerMarkupsModuleWidget.h
   )
