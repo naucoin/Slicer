@@ -68,7 +68,14 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
   if (!displayNode)
     {
     vtkWarningMacro("ReadDataInternal: no display node!");
-    // add one?
+    if (this->GetScene())
+      {
+      vtkWarningMacro("ReadDataInternal: adding a new display node.");
+      displayNode = vtkMRMLMarkupsDisplayNode::New();
+      this->GetScene()->AddNode(displayNode);
+      markupsNode->SetAndObserveDisplayNodeID(displayNode->GetID());
+      displayNode->Delete();
+      }
     }
   
   // open the file for reading input

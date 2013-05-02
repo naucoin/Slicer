@@ -54,6 +54,11 @@ public:
   /// jump the slice windows to the nth markup with the mrml id id
   void JumpSlicesToNthPointInMarkup(const char *id, int n);
 
+  /// Load a markups fiducial list from fileName, return NULL on error, node ID string
+  /// otherwise. Adds the appropriate storage and display nodes to the scene
+  /// as well.
+  char *LoadMarkupsFiducials(const char *fileName, const char *fidsName);
+
 protected:
   vtkSlicerMarkupsLogic();
   virtual ~vtkSlicerMarkupsLogic();

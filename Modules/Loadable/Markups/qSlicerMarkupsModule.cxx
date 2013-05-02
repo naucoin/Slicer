@@ -27,15 +27,16 @@
 #include <vtkMRMLSliceViewDisplayableManagerFactory.h>
 
 // QTGUI includes
-//#include <qSlicerApplication.h>
+#include <qSlicerApplication.h>
 //#include <qSlicerCoreApplication.h>
-//#include <qSlicerIOManager.h>
+#include <qSlicerIOManager.h>
+#include <qSlicerNodeWriter.h>
 
 // Markups includes
 #include "qSlicerMarkupsModule.h"
 #include "qSlicerMarkupsModuleWidget.h"
-//#include "vtkSlicerAnnotationModuleLogic.h"
-//#include "qSlicerAnnotationsIO.h"
+#include "qSlicerMarkupsIO.h"
+//#include "vtkSlicerMarkupsLogic.h"
 
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(qSlicerMarkupsModule, qSlicerMarkupsModule);
@@ -97,8 +98,6 @@ QStringList qSlicerMarkupsModule::contributors()const
 {
   QStringList moduleContributors;
   moduleContributors << QString("Nicole Aucoin (BWH)");
-  // moduleContributors << QString("Richard Roe (Organization2)");
-  // ...
   return moduleContributors;
 }
 
@@ -122,14 +121,12 @@ void qSlicerMarkupsModule::setup()
   vtkMRMLSliceViewDisplayableManagerFactory::GetInstance()->RegisterDisplayableManager("vtkMRMLMarkupsFiducialDisplayableManager2D");
 
   // Register IO
-/*
   qSlicerIOManager* ioManager = qSlicerApplication::application()->ioManager();
-  ioManager->registerIO(
-    new qSlicerMarkupsIO(vtkSlicerMarkupsModuleLogic::SafeDownCast(this->logic()), this));
+  qSlicerMarkupsIO *markupsIO = new qSlicerMarkupsIO(vtkSlicerMarkupsLogic::SafeDownCast(this->logic()), this);
+  ioManager->registerIO(markupsIO);
   ioManager->registerIO(new qSlicerNodeWriter(
-                          "Markups", qSlicerIO::MarkupsFile,
-                          QStringList() << "vtkMRMLMarkupsNode", this));
-*/
+                            "MarkupsFiducials", markupsIO->fileType(),
+                            QStringList() << "vtkMRMLMarkupsNode", this));
 }
 
 

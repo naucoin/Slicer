@@ -166,29 +166,30 @@ void qSlicerMarkupsModuleWidget::setup()
   Q_D(qSlicerMarkupsModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
+  // for now disable the combo box: when the combo box has it's mrml scene
+  // set, it sets the first markups node as the current node, which can end
+  // up over riding the selection node's active place node id
+  // d->activeMarkupMRMLNodeComboBox->setEnabled(false);
+  d->activeMarkupMRMLNodeComboBox->blockSignals(true);
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::enter()
 {
+  Q_D(qSlicerMarkupsModuleWidget);
+
   this->Superclass::enter();
 
   // qDebug() << "enter widget";
   this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
                  this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
 
+  // now enable the combo box and update
+  //d->activeMarkupMRMLNodeComboBox->setEnabled(true);
+  d->activeMarkupMRMLNodeComboBox->blockSignals(false);
+
   this->UpdateWidgetFromMRML();
 
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::exit()
-{
-  this->Superclass::exit();
-
-  // qDebug() << "exit widget";
-  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
-                 this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
 }
 
 //-----------------------------------------------------------------------------
@@ -208,9 +209,6 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
 
   // std::cout << "UpdateWidgetFromMRML" << std::endl;
 
-  // update the combo box
-  this->onSelectionNodeActivePlaceNodeIDChanged();
-
   // get the active markup
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
   vtkMRMLSelectionNode *selectionNode = NULL;
@@ -219,9 +217,11 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
     selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
     }
   vtkMRMLNode *markupsNodeMRML = NULL;
+  QString activePlaceNodeID;
   if (selectionNode)
     {
-    markupsNodeMRML = this->mrmlScene()->GetNodeByID(selectionNode->GetActivePlaceNodeID());
+    activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+    markupsNodeMRML = this->mrmlScene()->GetNodeByID(activePlaceNodeID.toLatin1());
     }
   vtkMRMLMarkupsNode *markupsNode = NULL;
   if (markupsNodeMRML)
@@ -235,6 +235,17 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
     d->activeMarkupTableWidget->clearContents();
     d->activeMarkupTableWidget->setRowCount(0);
     return;
+    }
+
+  // update the combo box
+//  this->onSelectionNodeActivePlaceNodeIDChanged();
+  QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+  //std::cout << "UpdateWidgetFromMRML: selection node's active place node id: " << qPrintable(activePlaceNodeID) << ", combo box current node id = " << qPrintable(currentNodeID) << std::endl;
+  if (currentNodeID == "" ||
+      (currentNodeID != activePlaceNodeID &&
+       activePlaceNodeID.contains("vtkMRMLMarkups")))
+    {
+    d->activeMarkupMRMLNodeComboBox->setCurrentNode(activePlaceNodeID);
     }
 
   // update the table
@@ -437,10 +448,23 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     {
     // check if changed
     const char *selectionNodeActivePlaceNodeID = selectionNode->GetActivePlaceNodeID();
-    if (!selectionNodeActivePlaceNodeID || !activeID ||
-        strcmp(selectionNodeActivePlaceNodeID, activeID) != 0)
+    // don't update the selection node if the active ID is null (can happen
+    // when entering the module)
+    if (activeID != NULL)
       {
-      selectionNode->SetReferenceActivePlaceNodeID(activeID);
+      if (!selectionNodeActivePlaceNodeID || !activeID ||
+          strcmp(selectionNodeActivePlaceNodeID, activeID) != 0)
+        {
+        selectionNode->SetReferenceActivePlaceNodeID(activeID);
+        }
+      }
+    else
+      {
+      if (selectionNodeActivePlaceNodeID != NULL)
+        {
+        //std::cout << "Setting combo box from selection node " << selectionNodeActivePlaceNodeID << std::endl;
+        d->activeMarkupMRMLNodeComboBox->setCurrentNode(selectionNodeActivePlaceNodeID);
+        }
       }
     }
   else
@@ -457,8 +481,8 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
-  //qDebug() << "\n\n******\nonSelectionNodeActivePlaceNodeIDChanged\n";
-
+  //qDebug() << "onSelectionNodeActivePlaceNodeIDChanged";
+  
   // get the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
   vtkMRMLSelectionNode *selectionNode = NULL;
@@ -466,18 +490,31 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
     {
     selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
     }
-  if (selectionNode && selectionNode->GetActivePlaceNodeID())
+  
+  if (selectionNode)
     {
-    std::string activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
-    std::cout << "\ttesting current node: " << activePlaceNodeID << std::endl;
-    if (activePlaceNodeID.find("vtkMRMLMarkups") != std::string::npos)
+    if (selectionNode->GetActivePlaceNodeID() != NULL)
       {
-      d->activeMarkupMRMLNodeComboBox->setCurrentNode(QString(activePlaceNodeID.c_str()));
+      QString activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+      //std::cout << "\ttesting selection node's active place node id: " << qPrintable(activePlaceNodeID) << std::endl;
+      QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+      //std::cout << "\t\tcombo box current node id = " << qPrintable(currentNodeID) << std::endl;
+      if (currentNodeID == "" ||
+          (currentNodeID != activePlaceNodeID &&
+           activePlaceNodeID.contains("vtkMRMLMarkups")))
+        {
+        d->activeMarkupMRMLNodeComboBox->setCurrentNode(activePlaceNodeID);
+        }
+      }
+    else
+      {
+      qDebug() << "onSelectionNodeActivePlaceNodeIDChanged: No current active place node id";
+      d->activeMarkupMRMLNodeComboBox->setCurrentNode("");
       }
     }
   else
     {
-    qDebug() << "Unable to update combo box from selection node";
+    qDebug() << "Unable to update combo box from selection node, node is " << (selectionNode ? selectionNode->GetID() : "null");
     }
 }
 

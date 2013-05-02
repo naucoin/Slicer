@@ -217,3 +217,43 @@ void vtkSlicerMarkupsLogic::JumpSlicesToNthPointInMarkup(const char *id, int n)
     }
 }
 
+//---------------------------------------------------------------------------
+char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const char *fidsName)
+{
+  char *nodeID = NULL;
+  std::string idList;
+  if (!fileName)
+    {
+    vtkErrorMacro("LoadMarkupsFiducials: null file name, cannot load");
+    return nodeID;
+    }
+
+  std::cout << "LoadMarkupsFiducials, file name = " << fileName << ", fidsName = " << fidsName << std::endl;
+
+  // turn on batch processing
+  this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
+
+  // make a storage node and fiducial node and set the file name
+  vtkSmartPointer<vtkMRMLMarkupsStorageNode> storageNode = vtkSmartPointer<vtkMRMLMarkupsStorageNode>::New();
+  storageNode->SetFileName(fileName);
+  vtkSmartPointer<vtkMRMLMarkupsFiducialNode> fidNode = vtkSmartPointer<vtkMRMLMarkupsFiducialNode>::New();
+  fidNode->SetName(fidsName);
+
+  // add the nodes to the scene and set up the observation on the storage node
+  this->GetMRMLScene()->AddNode(storageNode);
+  this->GetMRMLScene()->AddNode(fidNode);
+  fidNode->SetAndObserveStorageNodeID(storageNode->GetID());
+
+  // read the file
+  if (storageNode->ReadData(fidNode))
+    {
+    std::cout << "LoadMarkupsFiducials: storage node successfully read " << fileName << std::endl;
+    nodeID = fidNode->GetID();
+    }
+
+  // turn off batch processing
+  this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
+
+  return nodeID;
+
+}
