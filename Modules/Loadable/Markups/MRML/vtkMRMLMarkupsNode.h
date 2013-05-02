@@ -180,6 +180,15 @@ public:
   vtkGetMacro(UseListNameForMarkups, int);
   vtkBooleanMacro (UseListNameForMarkups, int);
 
+  /// Reimplemented to take into account the modified time of the markups
+  /// Returns true if the node (default behavior) or the markups are modified
+  /// since read/written.
+  /// Note: The MTime of the markups node is used to know if it has been modified.
+  /// So if you invoke class specific modified events without calling Modified() on the
+  /// markups, GetModifiedSinceRead() won't return true.
+  /// \sa vtkMRMLStorableNode::GetModifiedSinceRead()
+  virtual bool GetModifiedSinceRead();
+  
 protected:
   vtkMRMLMarkupsNode();
   ~vtkMRMLMarkupsNode();

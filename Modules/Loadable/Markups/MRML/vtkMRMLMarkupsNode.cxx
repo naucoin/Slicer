@@ -426,6 +426,7 @@ void vtkMRMLMarkupsNode::AddMarkup(Markup markup)
   this->Markups.push_back(markup);
   if (!this->GetDisableModifiedEvent())
     {
+    this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent);
     }
 }
@@ -453,6 +454,7 @@ int vtkMRMLMarkupsNode::AddMarkupWithNPoints(int n)
   markupIndex = this->GetNumberOfMarkups() - 1;
   if (!this->GetDisableModifiedEvent())
     {
+    this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent, (void*)&markupIndex);
     }
   
@@ -473,6 +475,7 @@ int vtkMRMLMarkupsNode::AddPointToNewMarkup(vtkVector3d point)
   
   if (!this->GetDisableModifiedEvent())
     {
+    this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent, (void*)&markupIndex);
     }
 
@@ -609,6 +612,7 @@ void vtkMRMLMarkupsNode::SetMarkupPoint(const int markupIndex, const int pointIn
   // throw an event to let listeners know teh position has changed
   if(!this->GetDisableModifiedEvent())
     {
+    this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::PointModifiedEvent, (void*)&markupIndex);
     }
 }
@@ -711,6 +715,7 @@ void vtkMRMLMarkupsNode::SetNthMarkupSelected(int n, bool flag)
         {
         markup->Selected = flag;
         int markupIndex = n;
+        this->Modified();
         this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&markupIndex);
         }
       }
@@ -743,6 +748,7 @@ void vtkMRMLMarkupsNode::SetNthMarkupVisibility(int n, bool flag)
         {
         markup->Visibility = flag;
         int markupIndex = n;
+        this->Modified();
         this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&markupIndex);
         }
       }
@@ -775,6 +781,7 @@ void vtkMRMLMarkupsNode::SetNthMarkupLabel(int n, std::string label)
         {
         markup->Label = label;
         int markupIndex = n;
+        this->Modified();
         this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&markupIndex);
         }
       }
@@ -873,5 +880,12 @@ void vtkMRMLMarkupsNode::WriteCLI(std::ostringstream& ss, std::string prefix)
         }
       }
     }
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsNode::GetModifiedSinceRead()
+{
+  return this->Superclass::GetModifiedSinceRead() ||
+    (this->GetMTime() > this->GetStoredTime());
 }
 
