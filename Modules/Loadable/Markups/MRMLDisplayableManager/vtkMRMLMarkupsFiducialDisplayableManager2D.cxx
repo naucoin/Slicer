@@ -590,7 +590,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     {
     // ignore events not caused by seed movement
     // return;
-    std::cout << "2D: Seed widget state is not moving: state = " << seedWidget->GetWidgetState() << " != " << vtkSeedWidget::MovingSeed << std::endl;
+    // std::cout << "2D: Seed widget state is not moving: state = " << seedWidget->GetWidgetState() << " != " << vtkSeedWidget::MovingSeed << std::endl;
     }
 
   // cast to the specific mrml node
@@ -1069,7 +1069,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupAddedEve
    }
 
   // this call will create a new handle and set it
-  std::cout << "OnMRMLMarkupsNodeMarkupAddedEvent: adding to markups node that currently has " << markupsNode->GetNumberOfMarkups() << std::endl;
+  // std::cout << "OnMRMLMarkupsNodeMarkupAddedEvent: adding to markups node that currently has " << markupsNode->GetNumberOfMarkups() << std::endl;
   int n = markupsNode->GetNumberOfMarkups() - 1;
   this->SetNthSeed(n, vtkMRMLMarkupsFiducialNode::SafeDownCast(markupsNode), seedWidget);
 

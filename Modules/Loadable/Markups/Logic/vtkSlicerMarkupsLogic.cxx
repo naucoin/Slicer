@@ -228,8 +228,8 @@ char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const c
     return nodeID;
     }
 
-  std::cout << "LoadMarkupsFiducials, file name = " << fileName << ", fidsName = " << fidsName << std::endl;
-
+  vtkDebugMacro("LoadMarkupsFiducials, file name = " << fileName << ", fidsName = " << (fidsName ? fidsName : "null"));
+  
   // turn on batch processing
   this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
 
@@ -247,7 +247,6 @@ char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const c
   // read the file
   if (storageNode->ReadData(fidNode))
     {
-    std::cout << "LoadMarkupsFiducials: storage node successfully read " << fileName << std::endl;
     nodeID = fidNode->GetID();
     }
 
