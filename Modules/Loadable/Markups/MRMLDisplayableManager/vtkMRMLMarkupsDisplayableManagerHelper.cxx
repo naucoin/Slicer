@@ -190,7 +190,7 @@ vtkAbstractWidget * vtkMRMLMarkupsDisplayableManagerHelper::GetWidget(vtkMRMLMar
   WidgetsIt it = this->Widgets.find(node);
   if (it == this->Widgets.end())
     {
-    std::cout << "GetWidget: no widget for node " << node->GetID() << std::endl;
+    // std::cout << "GetWidget: no widget for node " << node->GetID() << std::endl;
     return 0;
     }
 

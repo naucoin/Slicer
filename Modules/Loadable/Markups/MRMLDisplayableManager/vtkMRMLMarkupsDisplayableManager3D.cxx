@@ -641,7 +641,7 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLDisplayableNodeModifiedEvent(vtkO
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManager3D::UpdateWidgetVisibility(vtkMRMLMarkupsNode* markupsNode)
 {
-  std::cout << "UpdateWidgetVisibility" << std::endl;
+//  std::cout << "UpdateWidgetVisibility" << std::endl;
   if (!markupsNode)
     {
     vtkErrorMacro("UpdateWidgetVisibility: no markups node from which to work!");
@@ -1015,7 +1015,7 @@ bool vtkMRMLMarkupsDisplayableManager3D::IsManageable(vtkMRMLNode* node)
 //---------------------------------------------------------------------------
 bool vtkMRMLMarkupsDisplayableManager3D::IsManageable(const char* nodeClassName)
 {
-  std::cout << "IsManageable: node class name = " << (nodeClassName ? nodeClassName : "null") << ", focus = " << (this->Focus ? this->Focus : "null") << std::endl;
+//  std::cout << "IsManageable: node class name = " << (nodeClassName ? nodeClassName : "null") << ", focus = " << (this->Focus ? this->Focus : "null") << std::endl;
   return nodeClassName && !strcmp(nodeClassName, this->Focus);
 }
 

@@ -684,7 +684,7 @@ vtkMRMLSliceNode * vtkMRMLMarkupsDisplayableManager2D::GetSliceNode()
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManager2D::UpdateWidgetVisibility(vtkMRMLMarkupsNode* markupsNode)
 {
-  std::cout << "UpdateWidgetVisibility" << std::endl;
+//  std::cout << "UpdateWidgetVisibility" << std::endl;
   if (!markupsNode)
     {
     vtkErrorMacro("UpdateWidgetVisibility: no markups node from which to work!");
@@ -1338,7 +1338,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsManageable(vtkMRMLNode* node)
 //---------------------------------------------------------------------------
 bool vtkMRMLMarkupsDisplayableManager2D::IsManageable(const char* nodeClassName)
 {
-  std::cout << "IsManageable: node class name = " << (nodeClassName ? nodeClassName : "null") << ", focus = " << (this->Focus ? this->Focus : "null") << std::endl;
+//  std::cout << "IsManageable: node class name = " << (nodeClassName ? nodeClassName : "null") << ", focus = " << (this->Focus ? this->Focus : "null") << std::endl;
   return nodeClassName && !strcmp(nodeClassName, this->Focus);
 }
 
