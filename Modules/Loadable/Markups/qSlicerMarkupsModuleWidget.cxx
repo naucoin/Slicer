@@ -207,13 +207,7 @@ void qSlicerMarkupsModuleWidget::exit()
 
   // remove mrml scene observations, don't need to update the GUI while the
   // module is not showing
-  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
-                       this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
-  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::EndImportEvent,
-                       this, SLOT(onMRMLSceneEndImportEvent()));
-  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
-                       this, SLOT(onMRMLSceneEndCloseEvent()));
-
+  this->qvtkDisconnectAll();
 }
 
 //-----------------------------------------------------------------------------
@@ -243,6 +237,10 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
     markupsNode = vtkMRMLMarkupsNode::SafeDownCast(markupsNodeMRML);
     }
 
+  // make sure that the GUI updates on changes to the current mark up node,
+  // remove observations if no current node
+  this->observeMarkupsNode(markupsNode);
+  
   if (!markupsNode)
     {
     // qDebug() << "UpdateWidgetFromMRML: Unable to get active markups node, clearing out the table";
@@ -458,18 +456,8 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
   if (markupsNode)
     {
     activeID = markupsNode->GetID();
-    // make sure get updates from the active markups node
-    this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::LockModifiedEvent,
-                   this, SLOT(onActiveMarkupsNodeLockModifiedEvent()));
-    this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::PointModifiedEvent,
-                   this, SLOT(onActiveMarkupsNodePointModifiedEvent(vtkObject*,vtkObject*)));
-    this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::NthMarkupModifiedEvent,
-                      this, SLOT(onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject*,vtkObject*)));
-    this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::MarkupAddedEvent,
-                   this, SLOT(onActiveMarkupsNodeMarkupAddedEvent()));
-    //qDebug() << "onActiveMarkupMRMLNodeChanged: set up observations on markups node " << activeID;
     }
-
+    
   //qDebug() << "setActiveMarkupsNode: combo box says: " << qPrintable(activeMarkupsNodeID) << ", input node says " << (activeID ? activeID : "null");
   // update the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -505,7 +493,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     {
     qDebug() << "Failed to change active markups node id on selection node";
     }
-
+  
   // update the GUI
   this->UpdateWidgetFromMRML();
 }
@@ -714,6 +702,69 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
       }
     } 
 
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
+{
+  if (this->mrmlScene())
+    {
+    // remove all connections
+    int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
+    // qDebug() << "observeMarkupsNode: have " << numNodes << " markups nodes";
+    for (int i = 0; i < numNodes; i++)
+      {
+      vtkMRMLNode *node = this->mrmlScene()->GetNthNodeByClass(i, "vtkMRMLMarkupsNode");
+      if (node)
+        {
+        if (markupsNode)
+          {
+          // is this the markups node?
+          if (node->GetID() && markupsNode->GetID() && strcmp(node->GetID(), markupsNode->GetID()) == 0)
+            {
+            // don't disconnect
+            // qDebug() << "\tskipping disconnecting " << node->GetID();
+            continue;
+            }
+          }
+        // qDebug() << "\tdisconnecting " << node->GetID();
+        this->qvtkDisconnect(node, vtkMRMLMarkupsNode::LockModifiedEvent,
+                             this, SLOT(onActiveMarkupsNodeLockModifiedEvent()));
+        this->qvtkDisconnect(node, vtkMRMLMarkupsNode::PointModifiedEvent,
+                             this, SLOT(onActiveMarkupsNodePointModifiedEvent(vtkObject*,vtkObject*)));
+        this->qvtkDisconnect(node, vtkMRMLMarkupsNode::NthMarkupModifiedEvent,
+                             this, SLOT(onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject*,vtkObject*)));
+        this->qvtkDisconnect(node, vtkMRMLMarkupsNode::MarkupAddedEvent,
+                             this, SLOT(onActiveMarkupsNodeMarkupAddedEvent()));
+        }
+      }
+    }
+  else
+    {
+    qWarning() << "observeMarkupsNode: no scene";
+    }
+  if (markupsNode)
+    {
+    // is the node already connected?
+    if (this->qvtkIsConnected(markupsNode, vtkMRMLMarkupsNode::LockModifiedEvent,
+                                     this, SLOT(onActiveMarkupsNodeLockModifiedEvent())))
+      {
+      // qDebug() << "\tmarkups node is already connected: " << markupsNode->GetID();
+      }
+    else
+      {
+      // add connections for this node 
+      this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::LockModifiedEvent,
+                        this, SLOT(onActiveMarkupsNodeLockModifiedEvent()));
+      this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::PointModifiedEvent,
+                        this, SLOT(onActiveMarkupsNodePointModifiedEvent(vtkObject*,vtkObject*)));
+      this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::NthMarkupModifiedEvent,
+                        this, SLOT(onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject*,vtkObject*)));
+      this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::MarkupAddedEvent,
+                        this, SLOT(onActiveMarkupsNodeMarkupAddedEvent()));
+      // qDebug() << "\tconnected markups node " << markupsNode->GetID();
+      }
+    }
 }
 
 //-----------------------------------------------------------------------------
