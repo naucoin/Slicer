@@ -509,6 +509,33 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markup
     {
     vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->AddNewDisplayNodeForMarkupsNode(markupsNode);
     }
+  // make sure it's set up for the mouse mode tool bar to easily add points to
+  // it by making it active in the selection node
+  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+  vtkMRMLSelectionNode *selectionNode = NULL;
+  if (node)
+    {
+    selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
+    }
+  if (selectionNode)
+    {
+    // check if need to update the current type of node that's being placed
+    const char *activePlaceNodeClassName = selectionNode->GetActivePlaceNodeClassName();
+    if (!activePlaceNodeClassName ||
+        (activePlaceNodeClassName &&
+         strcmp(activePlaceNodeClassName, markupsNode->GetClassName()) != 0))
+      {
+      // call the set reference to make sure the event is invoked
+      selectionNode->SetReferenceActivePlaceNodeClassName(markupsNode->GetClassName());
+      }
+    // set this markup node active if it's not already
+    const char *activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+    if (!activePlaceNodeID ||
+        (activePlaceNodeID && strcmp(activePlaceNodeID, markupsNode->GetID()) != 0))
+      {
+      selectionNode->SetActivePlaceNodeID(markupsNode->GetID());
+      }
+    }
 }
 
 //-----------------------------------------------------------------------------
