@@ -53,9 +53,15 @@ public:
 
 public slots:
 
-  /// respond to the scene  node added/removed events
+  /// respond to the scene events
+  /// when a markups node is added, make it the active one in the combo box
   void onNodeAddedEvent(vtkObject* scene, vtkObject* node);
+  /// when a node is removed and it is the current one, clear out the gui
   void onNodeRemovedEvent(vtkObject* scene, vtkObject* node);
+  /// update the table after a scene is imported
+  void onMRMLSceneEndImportEvent();
+  /// clear out the gui when the scene is closed
+  void onMRMLSceneEndCloseEvent();
 
   /// update the selection node from the combo box
   void onActiveMarkupMRMLNodeChanged(vtkMRMLNode *markupsNode);

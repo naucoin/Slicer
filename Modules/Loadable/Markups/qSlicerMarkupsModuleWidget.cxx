@@ -181,9 +181,15 @@ void qSlicerMarkupsModuleWidget::enter()
   this->Superclass::enter();
 
   // qDebug() << "enter widget";
-  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
-                 this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
 
+  // set up mrml scene observations so that the GUI gets updated
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
+                    this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndImportEvent,
+                    this, SLOT(onMRMLSceneEndImportEvent()));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
+                    this, SLOT(onMRMLSceneEndCloseEvent()));
+  
   // now enable the combo box and update
   //d->activeMarkupMRMLNodeComboBox->setEnabled(true);
   d->activeMarkupMRMLNodeComboBox->blockSignals(false);
@@ -198,8 +204,16 @@ void qSlicerMarkupsModuleWidget::exit()
   this->Superclass::exit();
 
   // qDebug() << "exit widget";
+
+  // remove mrml scene observations, don't need to update the GUI while the
+  // module is not showing
   this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
-                 this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
+                       this, SLOT(onNodeAddedEvent(vtkObject*, vtkObject*)));
+  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::EndImportEvent,
+                       this, SLOT(onMRMLSceneEndImportEvent()));
+  this->qvtkDisconnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
+                       this, SLOT(onMRMLSceneEndCloseEvent()));
+
 }
 
 //-----------------------------------------------------------------------------
@@ -409,6 +423,26 @@ void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject*, vtkObject* node)
     QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
     std::cout << "onNodeRemovedEvent" << markupsNode->GetID() << ", node combo box = " << qPrintable(activeMarkupsNodeID) << std::endl;
     }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onMRMLSceneEndImportEvent()
+{
+  this->UpdateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent()
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
+    {
+    return;
+    }
+  std::cout << "qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent" << std::endl;
+  d->activeMarkupTableWidget->clearContents();
+  d->activeMarkupTableWidget->setRowCount(0);
 }
 
 //-----------------------------------------------------------------------------
