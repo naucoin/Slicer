@@ -51,6 +51,10 @@ public:
   /// markup node as defined by the selection node combo box
   void UpdateRow(int m);
 
+  /// add observations to the markups node, and remove them from other markups
+  /// nodes (from all nodes if markupsNode is null)
+  void observeMarkupsNode(vtkMRMLNode *markupsNode);
+
 public slots:
 
   /// respond to the scene events
