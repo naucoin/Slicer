@@ -13,7 +13,7 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
   vtkNew<vtkSlicerMarkupsLogic> logic1;
 
   // test without a scene
-  std::string id = logic1->AddNewMarkupsNode();
+  std::string id = logic1->AddNewFiducialNode();
   if (id.compare("") != 0)
     {
     std::cerr << "Failure to add a new markup node to empty scene, got id of '" << id.c_str() << "'" << std::endl;
@@ -27,7 +27,8 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
   // test with a scene
   logic1->SetMRMLScene(scene);
 
-  id = logic1->AddNewMarkupsNode();
+  const char *testName = "Test node 2";
+  id = logic1->AddNewFiducialNode(testName);
   if (id.compare("") == 0)
     {
     std::cerr << "Failure to add a new node to a valid scene, got id of '" << id.c_str() << "'" << std::endl;
@@ -35,7 +36,20 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     }
   else
     {
-    std::cout << "Added a new markup node to the scene, id = '" << id.c_str() << "'" << std::endl;
+    vtkMRMLNode *mrmlNode = scene->GetNodeByID(id.c_str());
+    if (!mrmlNode)
+      {
+      std::cerr << "Failure to add a new node to a valid scene, couldn't find node with id'" << id.c_str() << "'" << std::endl;
+      return EXIT_FAILURE;
+      }
+    char *name = mrmlNode->GetName();
+    if (!name || strcmp(testName, name) != 0)
+      {
+      std::cout << "Failed to set a name on the new node, got node name of '" << (name ? name : "null") << "'" << std::endl;
+      return EXIT_FAILURE;
+      }
+    std::cout << "Added a new markup node to the scene, id = '" << id.c_str() << "', name = '" << name << "'" <<  std::endl;
+    
     }
 
   // cleanup

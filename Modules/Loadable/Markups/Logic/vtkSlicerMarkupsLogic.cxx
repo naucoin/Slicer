@@ -132,7 +132,40 @@ void vtkSlicerMarkupsLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* vtkNotUsed(node)
 }
 
 //---------------------------------------------------------------------------
-std::string vtkSlicerMarkupsLogic::AddNewMarkupsNode()
+std::string vtkSlicerMarkupsLogic::AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *mrmlNode)
+{
+  std::string id;
+  if (!mrmlNode || !mrmlNode->GetScene())
+    {
+    vtkErrorMacro("AddNewDisplayNodeForMarkupsNode: unable to add a markups display node!");
+    }
+  else
+    {
+    // create and add the display node
+    vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
+    mrmlNode->GetScene()->AddNode(displayNode);
+
+    // get the node id to return
+    id = std::string(displayNode->GetID());
+
+    // cast to markups node
+    vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    if (markupsNode)
+      {
+      // observe the display node
+      markupsNode->DisableModifiedEventOn();
+      markupsNode->AddAndObserveDisplayNodeID(id.c_str());
+      markupsNode->DisableModifiedEventOff();
+      }
+    
+    // clean up
+    displayNode->Delete();
+    }
+  return id;
+}
+
+//---------------------------------------------------------------------------
+std::string vtkSlicerMarkupsLogic::AddNewFiducialNode(const char *name)
 {
   std::string id;
   if (!this->GetMRMLScene())
@@ -142,22 +175,36 @@ std::string vtkSlicerMarkupsLogic::AddNewMarkupsNode()
   else
     {
     // create and add the node
-    vtkMRMLMarkupsNode *mnode = vtkMRMLMarkupsNode::New();
+    vtkMRMLMarkupsFiducialNode *mnode = vtkMRMLMarkupsFiducialNode::New();
     this->GetMRMLScene()->AddNode(mnode);
-    // create and add the display node
-    vtkMRMLMarkupsDisplayNode *dnode = vtkMRMLMarkupsDisplayNode::New();
-    this->GetMRMLScene()->AddNode(dnode);
 
-    // observe the display node
-    mnode->DisableModifiedEventOn();
-    mnode->AddAndObserveDisplayNodeID(dnode->GetID());
-    mnode->DisableModifiedEventOff();
+    // add a display node
+    std::string displayID = this->AddNewDisplayNodeForMarkupsNode(mnode);
 
-    // get the node id to return
-    id = std::string(mnode->GetID());
-
+    if (displayID.compare("") != 0)
+      {
+      // get the node id to return
+      id = std::string(mnode->GetID());
+      if (name != NULL)
+        {
+        mnode->SetName(name);
+        }
+      // make it active so mouse mode tool bar clicks will add new fids to
+      // this list  
+      vtkMRMLNode *node = this->GetMRMLScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+      vtkMRMLSelectionNode *selectionNode = NULL;
+      if (node)
+        {
+        selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
+        }
+      if (selectionNode)
+        {
+        // call the set reference to make sure the event is invoked
+        selectionNode->SetReferenceActivePlaceNodeClassName(mnode->GetClassName());
+        selectionNode->SetActivePlaceNodeID(mnode->GetID());
+        }
+      }
     // clean up
-    dnode->Delete();
     mnode->Delete();
     }
   return id;
