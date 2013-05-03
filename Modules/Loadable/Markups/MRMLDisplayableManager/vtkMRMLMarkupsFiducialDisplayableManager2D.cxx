@@ -827,7 +827,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
       }
     else
       {
-      vtkErrorMacro("OnClickInRenderWindow: active markup id = " << (activeMarkupsID ? activeMarkupsID : "null") << ", mrml node is " << (mrmlNode ? mrmlNode->GetID() : "null") << ", not a vtkMRMLMarkupsFiducialNode");
+      vtkDebugMacro("OnClickInRenderWindow: active markup id = " << (activeMarkupsID ? activeMarkupsID : "null") << ", mrml node is " << (mrmlNode ? mrmlNode->GetID() : "null") << ", not a vtkMRMLMarkupsFiducialNode");
       }
     }
 
