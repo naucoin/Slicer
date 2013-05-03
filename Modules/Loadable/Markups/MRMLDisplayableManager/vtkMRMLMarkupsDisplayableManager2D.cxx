@@ -255,7 +255,7 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateFromMRML()
       // do we  have a widget for it?
       if (this->GetWidget(markupsNode) == NULL)
         {
-        vtkWarningMacro("UpdateFromMRML: creating a widget for node " << markupsNode->GetID());
+        vtkDebugMacro("UpdateFromMRML: creating a widget for node " << markupsNode->GetID());
         vtkAbstractWidget *widget = this->AddWidget(markupsNode);
         if (widget)
           {
@@ -431,7 +431,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
     return;
     }
 
-  vtkWarningMacro("OnMRMLSceneNodeAddedEvent:  node " << node->GetID());
+  vtkDebugMacro("OnMRMLSceneNodeAddedEvent:  node " << node->GetID());
 
   // Node added should not be already managed
   vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt it = std::find(
@@ -462,7 +462,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
     }
   else
     {
-    vtkWarningMacro("OnMRMLSceneNodeAddedEvent: widget was created, saved to helper Widgets map");
+    vtkDebugMacro("OnMRMLSceneNodeAddedEvent: widget was created, saved to helper Widgets map");
     }
 
   // tear down widget creation
@@ -1434,7 +1434,7 @@ void vtkMRMLMarkupsDisplayableManager2D::GetWorldToLocalCoordinates(vtkMRMLMarku
 /// Create a new widget for this markups node and save it to the helper.
 vtkAbstractWidget * vtkMRMLMarkupsDisplayableManager2D::AddWidget(vtkMRMLMarkupsNode *markupsNode)
 {
-  vtkWarningMacro("AddWidget: calling create widget");
+  vtkDebugMacro("AddWidget: calling create widget");
   vtkAbstractWidget* newWidget = this->CreateWidget(markupsNode);
   if (!newWidget)
     {
@@ -1445,7 +1445,7 @@ vtkAbstractWidget * vtkMRMLMarkupsDisplayableManager2D::AddWidget(vtkMRMLMarkups
   // record the mapping between node and widget in the helper
   this->Helper->RecordWidgetForNode(newWidget,markupsNode);
 
-  vtkWarningMacro("AddWidget: saved to helper ");
+  vtkDebugMacro("AddWidget: saved to helper ");
 //  vtkIndent indent;
 //  this->Helper->PrintSelf(std::cout, indent);
 

@@ -301,7 +301,7 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManagerHelper::PlaceSeed(double x, double y, vtkRenderWindowInteractor * interactor, vtkRenderer * renderer)
 {
-  vtkWarningMacro("PlaceSeed: " << x << ":" << y)
+  vtkDebugMacro("PlaceSeed: " << x << ":" << y)
 
   if (!interactor)
     {
