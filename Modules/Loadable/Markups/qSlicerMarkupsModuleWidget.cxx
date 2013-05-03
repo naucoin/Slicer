@@ -88,6 +88,8 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // set up the active markups node selector
   QObject::connect(this->activeMarkupMRMLNodeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
                    q, SLOT(onActiveMarkupMRMLNodeChanged(vtkMRMLNode*)));
+  QObject::connect(this->activeMarkupMRMLNodeComboBox, SIGNAL(nodeAddedByUser(vtkMRMLNode*)),
+                   q, SLOT(onActiveMarkupMRMLNodeAdded(vtkMRMLNode*)));
 
   vtkMRMLNode *selectionNode = NULL;
   if (q->mrmlScene())
@@ -364,7 +366,7 @@ void qSlicerMarkupsModuleWidget::onNodeAddedEvent(vtkObject*, vtkObject* node)
   if (markupsNode)
     {
     // make it active
-    std::cout << "onNodeAddedEvent" << markupsNode->GetID() << std::endl;
+    // qDebug() << "onNodeAddedEvent" << markupsNode->GetID();
     d->activeMarkupMRMLNodeComboBox->setCurrentNode(markupsNode->GetID());
     }
 }
@@ -438,7 +440,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent()
     {
     return;
     }
-  std::cout << "qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent" << std::endl;
+  // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent";
   d->activeMarkupTableWidget->clearContents();
   d->activeMarkupTableWidget->setRowCount(0);
 }
@@ -496,6 +498,17 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
   
   // update the GUI
   this->UpdateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markupsNode)
+{
+  // qDebug() << "onActiveMarkupMRMLNodeAdded, markupsNode is " << (markupsNode ? markupsNode->GetID() : "null");
+  
+  if (this->logic() != NULL && vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
+    {
+    vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->AddNewDisplayNodeForMarkupsNode(markupsNode);
+    }
 }
 
 //-----------------------------------------------------------------------------

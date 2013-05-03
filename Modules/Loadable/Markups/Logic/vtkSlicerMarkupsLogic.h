@@ -45,10 +45,15 @@ public:
   vtkTypeMacro(vtkSlicerMarkupsLogic,vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  /// Create a new markups node and associated display node, adding both to
-  /// the scene. On success, return the id, on failure return an empty string.
-  std::string AddNewMarkupsNode();
-
+  /// Create a new display node and observe it on the markups node
+  /// On success, return the id, on failure return an empty string.
+  std::string AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *mrmlNode);
+  
+  /// Create a new markups fiducial node and associated display node, adding both to
+  /// the scene. Also make it the active on on the selection node.
+  /// On success, return the id, on failure return an empty string.
+  std::string AddNewFiducialNode(const char *name = NULL);
+  
   /// jump the slice windows to the given coordinate
   void JumpSlicesToLocation(double x, double y, double z);
   /// jump the slice windows to the nth markup with the mrml id id

@@ -72,6 +72,10 @@ public slots:
   /// update the combo box from the selection node
   void onSelectionNodeActivePlaceNodeIDChanged();
 
+  /// when the user clicks in the comob box to create a new markups node,
+  /// make sure that a display node is added
+  void onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markupsNode);
+
   /// update the markup from the check box
   void onUseListNameForMarkupsCheckBoxToggled(bool flag);
 
