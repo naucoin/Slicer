@@ -55,12 +55,17 @@ public:
   /// nodes (from all nodes if markupsNode is null)
   void observeMarkupsNode(vtkMRMLNode *markupsNode);
 
+  /// reset the GUI elements: clear out the table
+  void clearGUI();
+
 public slots:
 
   /// respond to the scene events
   /// when a markups node is added, make it the active one in the combo box
   void onNodeAddedEvent(vtkObject* scene, vtkObject* node);
-  /// when a node is removed and it is the current one, clear out the gui
+  /// when a node is removed and it is the last one in the scene, clear out
+  /// the gui - the node combo box will signal that a remaining node has been
+  /// selected and the GUI will update separately in that case
   void onNodeRemovedEvent(vtkObject* scene, vtkObject* node);
   /// update the table after a scene is imported
   void onMRMLSceneEndImportEvent();
