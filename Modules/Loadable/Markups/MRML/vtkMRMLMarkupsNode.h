@@ -25,13 +25,17 @@ class vtkMatrix4x4;
 /// 1 for fiducials, 2 for rulers, 3 for angles, etc. 
 /// Each markup also has an associated node id, set when the markup 
 /// is placed on a data set to link the markup to the volume or model.
-/// Each markup can also be individually un/selected, in/visibile, and have a label.
+/// Each markup can also be individually un/selected, un/locked, in/visibile,
+/// and have a label (short, shown in the viewers) and description (longer,
+/// shown in the GUI).
 typedef struct
 {
   std::string Label;
+  std::string Description;
   std::string AssociatedNodeID;
   std::vector < vtkVector3d> points;
   bool Selected;
+  bool Locked;
   bool Visibility;
 } Markup;
 
@@ -159,14 +163,20 @@ public:
   std::string GetNthMarkupAssociatedNodeID(int n = 0);
   void SetNthMarkupAssociatedNodeID(int n, std::string id);
 
-  /// Get/Set the Selected and Visibility flags on the nth markup. Get returns false if markup doesn't exist
+  /// Get/Set the Selected, Locked and Visibility flags on the nth markup.
+  /// Get returns false if markup doesn't exist
   bool GetNthMarkupSelected(int n = 0);
   void SetNthMarkupSelected(int n, bool flag);
+  bool GetNthMarkupLocked(int n = 0);
+  void SetNthMarkupLocked(int n, bool flag);
   bool GetNthMarkupVisibility(int n = 0);
   void SetNthMarkupVisibility(int n, bool flag);
   /// Get/Set the Label on the nth markup
   std::string GetNthMarkupLabel(int n = 0);
   void SetNthMarkupLabel(int n, std::string label);
+  /// Get/Set the Description on the nth markup
+  std::string GetNthMarkupDescription(int n = 0);
+  void SetNthMarkupDescription(int n, std::string description);
 
   /// transform utility functions
   virtual bool CanApplyNonLinearTransforms()const;

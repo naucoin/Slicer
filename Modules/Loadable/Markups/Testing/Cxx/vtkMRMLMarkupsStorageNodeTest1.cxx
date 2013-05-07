@@ -53,8 +53,12 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
   markupsNode->SetNthMarkupAssociatedNodeID(index,associatedNodeID);
   markupsNode->SetNthMarkupSelected(index, 0);
   markupsNode->SetNthMarkupVisibility(index, 0);
+  markupsNode->SetNthMarkupLocked(index, 1);
+
   std::string label = std::string("Testing label");
   markupsNode->SetNthMarkupLabel(index, label);
+  std::string desc = std::string("description with spaces");
+  markupsNode->SetNthMarkupDescription(index, desc);
   double inputPoint[3] = {-9.9, 1.1, 0.87};
   markupsNode->SetMarkupPointFromArray(index, 0, inputPoint);
   // and add a markup with two points, default values
@@ -116,9 +120,19 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
     std::cerr << "After reading in, expected markup " << index << " vis of 0, got " << markupsNode2->GetNthMarkupVisibility(index) << std::endl;
     return EXIT_FAILURE;
     }
+  if (markupsNode2->GetNthMarkupLocked(index) != 1)
+    {
+    std::cerr << "After reading in, expected markup " << index << " locked of 0, got " << markupsNode2->GetNthMarkupLocked(index) << std::endl;
+    return EXIT_FAILURE;
+    }
   if (markupsNode2->GetNthMarkupLabel(index).compare(label) != 0)
     {
-    std::cerr << "After reading in, expected markup " << index << " label of " << label.c_str() << " got " << markupsNode2->GetNthMarkupLabel(index).c_str() << std::endl;
+    std::cerr << "After reading in, expected markup " << index << " label of " << label.c_str() << " got '" << markupsNode2->GetNthMarkupLabel(index).c_str() << "'" << std::endl;
+    return EXIT_FAILURE;
+    }
+  if (markupsNode2->GetNthMarkupDescription(index).compare(desc) != 0)
+    {
+    std::cerr << "After reading in, expected markup " << index << " description of " << desc.c_str() << " got '" << markupsNode2->GetNthMarkupDescription(index).c_str() << "'" << std::endl;
     return EXIT_FAILURE;
     }
   double outputPoint[3];

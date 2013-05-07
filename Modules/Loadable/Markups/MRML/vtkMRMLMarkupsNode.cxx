@@ -140,8 +140,10 @@ void vtkMRMLMarkupsNode::PrintSelf(ostream& os, vtkIndent indent)
     if (markup)
       {
       os << indent.GetNextIndent() << "Label = " << markup->Label.c_str() << "\n";
+      os << indent.GetNextIndent() << "Description = " << markup->Description.c_str() << "\n";
       os << indent.GetNextIndent() << "Associated node id = " << markup->AssociatedNodeID.c_str() << "\n";
       os << indent.GetNextIndent() << "Selected = " << markup->Selected << "\n";
+      os << indent.GetNextIndent() << "Locked = " << markup->Locked << "\n";
       os << indent.GetNextIndent() << "Visibility = " << markup->Visibility << "\n";
       for (int p = 0; p < numPoints; p++)
         {
@@ -415,8 +417,12 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
     markup->Label = std::string("M") + numberString;
     }
 
+  // use an empty description
+  markup->Description = std::string("");
+  
   // set the flags
   markup->Selected = true;
+  markup->Locked = false;
   markup->Visibility = true;
 }
 
@@ -679,7 +685,7 @@ void vtkMRMLMarkupsNode::SetNthMarkupAssociatedNodeID(int n, std::string id)
     Markup *markup = this->GetNthMarkup(n);
     if (markup)
       {
-      std::cout << "Changing markup " << n << " associated node id from " << markup->AssociatedNodeID.c_str() << " to " << id.c_str() << std::endl;
+      vtkDebugMacro("Changing markup " << n << " associated node id from " << markup->AssociatedNodeID.c_str() << " to " << id.c_str());
       markup->AssociatedNodeID = std::string(id.c_str());
       }
     }
@@ -717,6 +723,40 @@ void vtkMRMLMarkupsNode::SetNthMarkupSelected(int n, bool flag)
         int markupIndex = n;
         this->Modified();
         this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&markupIndex);
+        }
+      }
+    }
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsNode::GetNthMarkupLocked(int n)
+{
+  if (this->MarkupExists(n))
+    {
+    Markup *markup = this->GetNthMarkup(n);
+    if (markup)
+      {
+      return markup->Locked;
+      }
+    }
+  return false;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsNode::SetNthMarkupLocked(int n, bool flag)
+{
+  if (this->MarkupExists(n))
+    {
+    Markup *markup = this->GetNthMarkup(n);
+    if (markup)
+      {
+      if (markup->Locked != flag)
+        {
+        markup->Locked = flag;
+        int markupIndex = n;
+        this->Modified();
+        this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent,
+                          (void*)&markupIndex);
         }
       }
     }
@@ -780,6 +820,39 @@ void vtkMRMLMarkupsNode::SetNthMarkupLabel(int n, std::string label)
       if (markup->Label.compare(label))
         {
         markup->Label = label;
+        int markupIndex = n;
+        this->Modified();
+        this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&markupIndex);
+        }
+      }
+    }
+}
+
+//---------------------------------------------------------------------------
+std::string vtkMRMLMarkupsNode::GetNthMarkupDescription(int n)
+{
+  if (this->MarkupExists(n))
+    {
+    Markup *markup = this->GetNthMarkup(n);
+    if (markup)
+      {
+      return markup->Description;
+      }
+    }
+  return std::string("");
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsNode::SetNthMarkupDescription(int n, std::string description)
+{
+  if (this->MarkupExists(n))
+    {
+    Markup *markup = this->GetNthMarkup(n);
+    if (markup)
+      {
+      if (markup->Description.compare(description))
+        {
+        markup->Description = description;
         int markupIndex = n;
         this->Modified();
         this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&markupIndex);

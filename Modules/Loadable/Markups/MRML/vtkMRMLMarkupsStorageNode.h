@@ -50,6 +50,15 @@ protected:
   virtual int ReadDataInternal(vtkMRMLNode *refNode);
 
   /// Write data from a  referenced node
+  /// There can be any number of points associated with a
+  /// markup, so start by saying how many there are, for a fiducial:
+  /// 1,x,y,z,vis,sel,lock,label,desc,associatedNodeID
+  /// for a ruler:
+  /// 2,x,y,z,x,y,z,vis,sel,lock,label,desc,associatedNodeID
+  /// associatedNodeID can be "none"
+  /// 1,x,y,z,vis,sel,lock,label,desc,none
+  /// label can have spaces, everything up to next comma is used, no quotes
+  /// necessary, same with the description
   virtual int WriteDataInternal(vtkMRMLNode *refNode);
 };
 
