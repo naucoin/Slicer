@@ -354,10 +354,19 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
     seedWidget->GetSeed(n)->EnabledOff();
     }
 
+  
   // update locked
-  int locked = fiducialNode->GetLocked();
-  handleRep->SetPickable(!locked);
-  handleRep->SetDragable(!locked);
+  int listLocked = fiducialNode->GetLocked();
+  int seedLocked = fiducialNode->GetNthMarkupLocked(n);
+  if (listLocked || seedLocked)
+    {
+    seedWidget->GetSeed(n)->ProcessEventsOff();
+    }
+  else
+    {
+    seedWidget->GetSeed(n)->ProcessEventsOn();
+    }
+  
   
   // set the glyph type if a new handle was created, or the glyph type changed
   std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
@@ -458,6 +467,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
     }
 
   handleRep->SetUniformScale(displayNode->GetGlyphScale());
+
 }
 
 //---------------------------------------------------------------------------

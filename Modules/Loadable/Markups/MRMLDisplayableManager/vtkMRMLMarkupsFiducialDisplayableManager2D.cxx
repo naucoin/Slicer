@@ -539,9 +539,16 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       seedWidget->GetSeed(n)->EnabledOff();
       }
     // update locked
-    int locked = fiducialNode->GetLocked();
-    handleRep->SetPickable(!locked);
-    handleRep->SetDragable(!locked);
+    int listLocked = fiducialNode->GetLocked();
+    int seedLocked = fiducialNode->GetNthMarkupLocked(n);
+    if (listLocked || seedLocked)
+      {
+      seedWidget->GetSeed(n)->ProcessEventsOff();
+      }
+    else
+      {
+      seedWidget->GetSeed(n)->ProcessEventsOn();
+      }
     
     }
   else if (pointHandleRep)

@@ -175,6 +175,33 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode* no
   else if (!isLockedOnNode && isLockedOnWidget)
     {
     widget->ProcessEventsOn();
+    // is it a seed widget that can support individually locked seeds?
+    vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
+    if (seedWidget)
+      {
+      vtkDebugMacro("UpdateLocked: have a seed widget, list unlocked, checking seeds");
+      int numMarkups = node->GetNumberOfMarkups();
+      for (int i = 0; i < numMarkups; i++)
+        {
+        if (seedWidget->GetSeed(i) == NULL)
+          {
+          vtkErrorMacro("UpdateLocked: missing seed at index " << i);
+          continue;
+          }
+        bool isLockedOnNthMarkup = node->GetNthMarkupLocked(i);
+        bool isLockedOnNthSeed = seedWidget->GetSeed(i)->GetProcessEvents() == 0;
+        if (isLockedOnNthMarkup && !isLockedOnNthSeed)
+          {
+          // lock it
+          seedWidget->GetSeed(i)->ProcessEventsOff();
+          }
+        else if (!isLockedOnNthMarkup && isLockedOnNthSeed)
+          {
+          // unlock it
+          seedWidget->GetSeed(i)->ProcessEventsOn();
+          }
+        }
+      }
     }
 }
 

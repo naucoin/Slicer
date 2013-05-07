@@ -63,7 +63,7 @@ private:
 qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMarkupsModuleWidget& object)
   : q_ptr(&object)
 {
-  this->columnLabels << "Selected" << "Visible" << "Name" << "X" << "Y" << "Z";// << "Description";
+  this->columnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "X" << "Y" << "Z";
 }
 
 //-----------------------------------------------------------------------------
@@ -309,10 +309,28 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     {
     selectedItem->setCheckState(Qt::Unchecked);
     }
-  if (d->activeMarkupTableWidget->item(m,0) == NULL ||
-      (d->activeMarkupTableWidget->item(m,0)->checkState() != selectedItem->checkState()))
+  int selectedIndex = d->columnIndex("Selected");
+  if (d->activeMarkupTableWidget->item(m,selectedIndex) == NULL ||
+      (d->activeMarkupTableWidget->item(m,selectedIndex)->checkState() != selectedItem->checkState()))
     {
-    d->activeMarkupTableWidget->setItem(m,0,selectedItem);
+    d->activeMarkupTableWidget->setItem(m,selectedIndex,selectedItem);
+    }
+
+  // locked
+  QTableWidgetItem* lockedItem = new QTableWidgetItem();
+  if (markupsNode->GetNthMarkupLocked(m))
+    {
+    lockedItem->setCheckState(Qt::Checked);
+    }
+  else
+    {
+    lockedItem->setCheckState(Qt::Unchecked);
+    }
+  int lockedIndex = d->columnIndex("Locked");
+  if (d->activeMarkupTableWidget->item(m,lockedIndex) == NULL ||
+      (d->activeMarkupTableWidget->item(m,lockedIndex)->checkState() != lockedItem->checkState()))
+    {
+    d->activeMarkupTableWidget->setItem(m,lockedIndex,lockedItem);
     }
 
   // visible
@@ -325,22 +343,34 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     {
     visibleItem->setCheckState(Qt::Unchecked);
     }
-   if (d->activeMarkupTableWidget->item(m,1) == NULL ||
-      (d->activeMarkupTableWidget->item(m,1)->checkState() != visibleItem->checkState()))
+    int visibleIndex = d->columnIndex("Visible");
+   if (d->activeMarkupTableWidget->item(m,visibleIndex) == NULL ||
+      (d->activeMarkupTableWidget->item(m,visibleIndex)->checkState() != visibleItem->checkState()))
      {
-     d->activeMarkupTableWidget->setItem(m,1,visibleItem);
+     d->activeMarkupTableWidget->setItem(m,visibleIndex,visibleItem);
      }
 
-  // name
-  QString markupLabel = QString(markupsNode->GetNthMarkupLabel(m).c_str());
-  if (d->activeMarkupTableWidget->item(m,2) == NULL ||
-      d->activeMarkupTableWidget->item(m,2)->text() != markupLabel)
-    {
-    d->activeMarkupTableWidget->setItem(m,2,new QTableWidgetItem(markupLabel));
-    }
+   // name
+   int nameIndex = d->columnIndex("Name");
+   QString markupLabel = QString(markupsNode->GetNthMarkupLabel(m).c_str());
+   if (d->activeMarkupTableWidget->item(m,nameIndex) == NULL ||
+       d->activeMarkupTableWidget->item(m,nameIndex)->text() != markupLabel)
+     {
+     d->activeMarkupTableWidget->setItem(m,nameIndex,new QTableWidgetItem(markupLabel));
+     }
 
-  // point
-  double point[3];
+   // description
+   int descriptionIndex = d->columnIndex("Description");
+   QString markupDescription = QString(markupsNode->GetNthMarkupDescription(m).c_str());
+   if (d->activeMarkupTableWidget->item(m,descriptionIndex) == NULL ||
+       d->activeMarkupTableWidget->item(m,descriptionIndex)->text() != markupLabel)
+     {
+     d->activeMarkupTableWidget->setItem(m,descriptionIndex,new QTableWidgetItem(markupDescription));
+     }
+
+   // point
+   double point[3];
+>>>>>>> ENH: add per markup locked flag and description field
   markupsNode->GetMarkupPoint(m, 0, point);
   //    coordinate = QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(", ") + QString::number(point[2]);
   int xColumnIndex = d->columnIndex("X");
@@ -639,6 +669,11 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     bool flag = (item->checkState() == Qt::Unchecked ? false : true);
     listNode->SetNthMarkupSelected(n, flag);
     }
+  else if (column == d->columnIndex("Locked"))
+    {
+    bool flag = (item->checkState() == Qt::Unchecked ? false : true);
+    listNode->SetNthMarkupLocked(n, flag);
+    }
   else if (column == d->columnIndex("Visible"))
     {
     bool flag = (item->checkState() == Qt::Unchecked ? false : true);
@@ -648,6 +683,11 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     {
     std::string name = std::string(item->text().toLatin1());
     listNode->SetNthMarkupLabel(n, name);
+    }
+  else if (column ==  d->columnIndex("Description"))
+    {
+    std::string description = std::string(item->text().toLatin1());
+    listNode->SetNthMarkupDescription(n, description);
     }
   else if (column == d->columnIndex("X") ||
            column == d->columnIndex("Y") ||
@@ -705,7 +745,6 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
 
   if (item->column() == d->columnIndex(QString("Name")))
     {
-    std::cout << "onActiveMarkupTableCellClicked: Name column" << std::endl;
     if (0)
       {
       // get the coordinates from the table
