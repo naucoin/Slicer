@@ -132,7 +132,11 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // number of columns with headers
   this->activeMarkupTableWidget->setColumnCount(this->numberOfColumns());
   this->activeMarkupTableWidget->setHorizontalHeaderLabels(this->columnLabels);
-
+  // use an icon for some column headers
+  QTableWidgetItem *visibleHeader = this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Visible"));
+  visibleHeader->setText("");
+  visibleHeader->setIcon(QIcon(":/Icons/Small/SlicerVisibleInvisible.png"));
+  
   // listen for changes so can update mrml node
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(cellChanged(int, int)),
                    q, SLOT(onActiveMarkupTableCellChanged(int, int)));
@@ -335,17 +339,22 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
 
   // visible
   QTableWidgetItem* visibleItem = new QTableWidgetItem();
+  // disable checkable
+  visibleItem->setData(Qt::CheckStateRole, QVariant());
+  visibleItem->setFlags(visibleItem->flags() & ~Qt::ItemIsUserCheckable);
   if (markupsNode->GetNthMarkupVisibility(m))
     {
-    visibleItem->setCheckState(Qt::Checked);
+    visibleItem->setData(Qt::UserRole, QVariant(true));
+    visibleItem->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerVisible.png"));
     }
   else
     {
-    visibleItem->setCheckState(Qt::Unchecked);
+    visibleItem->setData(Qt::UserRole, QVariant(false));
+    visibleItem->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerInvisible.png"));
     }
     int visibleIndex = d->columnIndex("Visible");
    if (d->activeMarkupTableWidget->item(m,visibleIndex) == NULL ||
-      (d->activeMarkupTableWidget->item(m,visibleIndex)->checkState() != visibleItem->checkState()))
+       d->activeMarkupTableWidget->item(m,visibleIndex)->data(Qt::UserRole) != visibleItem->data(Qt::UserRole))
      {
      d->activeMarkupTableWidget->setItem(m,visibleIndex,visibleItem);
      }
@@ -676,7 +685,16 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     }
   else if (column == d->columnIndex("Visible"))
     {
-    bool flag = (item->checkState() == Qt::Unchecked ? false : true);
+    bool flag = item->data(Qt::UserRole) == QVariant(true) ? true : false;
+    // update the eye icon
+    if (flag)
+      {
+      item->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerVisible.png"));
+      }
+    else
+      {
+      item->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerInvisible.png"));
+      }
     listNode->SetNthMarkupVisibility(n, flag);
     }
   else if (column ==  d->columnIndex("Name"))
@@ -743,42 +761,39 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
     return;
     }
 
-  if (item->column() == d->columnIndex(QString("Name")))
+  int row = item->row();
+  int column = item->column();
+  //qDebug() << "onActiveMarkupTableCellClicked: row = " << row << ", col = " << column;
+
+  if (column == d->columnIndex(QString("Name")))
     {
-    if (0)
+    // use the node id + row index
+    // get the active list
+    vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+    if (!mrmlNode)
       {
-      // get the coordinates from the table
-      double x, y, z = 0.0;
-      int row = item->row();
-      x = d->activeMarkupTableWidget->item(row, d->columnIndex("X"))->text().toDouble();
-      y = d->activeMarkupTableWidget->item(row, d->columnIndex("Y"))->text().toDouble();
-      z = d->activeMarkupTableWidget->item(row, d->columnIndex("Z"))->text().toDouble();
-      // jump to it
-      if (this->logic() != NULL &&
-          vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
-        {
-        vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToLocation(x, y, z);
-        }
+      return;
+      }
+    // jump to it
+    if (this->logic() != NULL &&
+        vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
+      {
+      // qDebug() << "\tjumping to " << row << "th point in markup";
+      vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row);
+      }
+    }
+  else if (column == d->columnIndex(QString("Visible")))
+    {
+    // toggle the user role, the icon update is triggered by this change
+    if (item->data(Qt::UserRole) == QVariant(false))
+      {
+      item->setData(Qt::UserRole, QVariant(true));
       }
     else
       {
-      // use the node id + row index
-       // get the active list
-      vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
-      if (!mrmlNode)
-        {
-        return;
-        }
-      int row = item->row();
-      // jump to it
-      if (this->logic() != NULL &&
-          vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
-        {
-        vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row);
-        }
+      item->setData(Qt::UserRole, QVariant(false));
       }
-    } 
-
+    }
 }
 
 //-----------------------------------------------------------------------------
