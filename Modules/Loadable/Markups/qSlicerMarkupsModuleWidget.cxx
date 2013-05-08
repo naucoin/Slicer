@@ -133,9 +133,21 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   this->activeMarkupTableWidget->setColumnCount(this->numberOfColumns());
   this->activeMarkupTableWidget->setHorizontalHeaderLabels(this->columnLabels);
   // use an icon for some column headers
+  // selected is a check box
+  QTableWidgetItem *selectedHeader = this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Selected"));
+  selectedHeader->setText("");
+  selectedHeader->setIcon(QIcon(":/Icons/MarkupsSelected.png"));
+  selectedHeader->setToolTip(QString("Click in this column to select/deselect markups for passing to CLI modules"));
+  // locked is an open and closed lock
+  QTableWidgetItem *lockedHeader = this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Locked"));
+  lockedHeader->setText("");
+  lockedHeader->setIcon(QIcon(":/Icons/Small/SlicerLockUnlock.png"));
+  lockedHeader->setToolTip(QString("Click in this column to lock/unlock markups to prevent them from being moved by mistake"));
+  // visible is an open and closed eye
   QTableWidgetItem *visibleHeader = this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Visible"));
   visibleHeader->setText("");
   visibleHeader->setIcon(QIcon(":/Icons/Small/SlicerVisibleInvisible.png"));
+  visibleHeader->setToolTip(QString("Click in this column to show/hide markups in 2D and 3D"));
   
   // listen for changes so can update mrml node
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(cellChanged(int, int)),
@@ -322,17 +334,22 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
 
   // locked
   QTableWidgetItem* lockedItem = new QTableWidgetItem();
+  // disable checkable
+  lockedItem->setData(Qt::CheckStateRole, QVariant());
+  lockedItem->setFlags(lockedItem->flags() & ~Qt::ItemIsUserCheckable);
   if (markupsNode->GetNthMarkupLocked(m))
     {
-    lockedItem->setCheckState(Qt::Checked);
+    lockedItem->setData(Qt::UserRole, QVariant(true));
+    lockedItem->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerLock.png"));
     }
   else
     {
-    lockedItem->setCheckState(Qt::Unchecked);
+    lockedItem->setData(Qt::UserRole, QVariant(false));
+    lockedItem->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerUnlock.png"));
     }
   int lockedIndex = d->columnIndex("Locked");
   if (d->activeMarkupTableWidget->item(m,lockedIndex) == NULL ||
-      (d->activeMarkupTableWidget->item(m,lockedIndex)->checkState() != lockedItem->checkState()))
+      d->activeMarkupTableWidget->item(m,lockedIndex)->data(Qt::UserRole) != lockedItem->data(Qt::UserRole))
     {
     d->activeMarkupTableWidget->setItem(m,lockedIndex,lockedItem);
     }
@@ -680,7 +697,16 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     }
   else if (column == d->columnIndex("Locked"))
     {
-    bool flag = (item->checkState() == Qt::Unchecked ? false : true);
+    bool flag = item->data(Qt::UserRole) == QVariant(true) ? true : false;
+    // update the icon
+    if (flag)
+      {
+      item->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerLock.png"));
+      }
+    else
+      {
+      item->setData(Qt::DecorationRole, QPixmap(":/Icons/Small/SlicerUnlock.png"));
+      }
     listNode->SetNthMarkupLocked(n, flag);
     }
   else if (column == d->columnIndex("Visible"))
@@ -782,7 +808,8 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
       vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row);
       }
     }
-  else if (column == d->columnIndex(QString("Visible")))
+  else if (column == d->columnIndex(QString("Visible")) ||
+           column == d->columnIndex(QString("Locked")))
     {
     // toggle the user role, the icon update is triggered by this change
     if (item->data(Qt::UserRole) == QVariant(false))
@@ -794,6 +821,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
       item->setData(Qt::UserRole, QVariant(false));
       }
     }
+
 }
 
 //-----------------------------------------------------------------------------

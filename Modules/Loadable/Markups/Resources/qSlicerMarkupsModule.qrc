@@ -2,5 +2,7 @@
   <qresource>
     <file>Icons/Markups.png</file>
     <file>Icons/MarkupsMouseModePlace.png</file>
+    <file>Icons/MarkupsSelected.png</file>
+    <file>Icons/MarkupsUnselected.png</file>
   </qresource>
 </RCC>
