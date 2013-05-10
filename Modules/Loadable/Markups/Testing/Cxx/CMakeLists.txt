@@ -11,6 +11,7 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkMRMLMarkupsDisplayNodeTest1.cxx
   vtkMRMLMarkupsFiducialNodeTest1.cxx
   vtkMRMLMarkupsNodeTest1.cxx
+  vtkMRMLMarkupsNodeTest2.cxx
   vtkMRMLMarkupsStorageNodeTest1.cxx
   vtkSlicerMarkupsLogicTest1.cxx
   EXTRA_INCLUDE vtkMRMLDebugLeaksMacro.h
@@ -37,6 +38,7 @@ FILE(MAKE_DIRECTORY ${TEST_DIR} )
 SIMPLE_TEST( vtkMRMLMarkupsDisplayNodeTest1 )
 SIMPLE_TEST( vtkSlicerMarkupsLogicTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest1 )
+SIMPLE_TEST( vtkMRMLMarkupsNodeTest2 )
 
 SET (TEST_MCSV ${TEST_DIR}/markupsStorageNode.mcsv)
 FILE(TO_NATIVE_PATH ${TEST_MCSV} TEST_MCSV_NATIVE)

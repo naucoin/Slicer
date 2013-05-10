@@ -1,8 +1,8 @@
 // MRML includes
 #include "vtkMRMLCoreTestingMacros.h"
-#include "vtkSlicerMarkupsLogic.h"
+#include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLScene.h"
-
+#include "vtkSlicerMarkupsLogic.h"
 // VTK includes
 #include <vtkNew.h>
 
@@ -45,11 +45,37 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     char *name = mrmlNode->GetName();
     if (!name || strcmp(testName, name) != 0)
       {
-      std::cout << "Failed to set a name on the new node, got node name of '" << (name ? name : "null") << "'" << std::endl;
+      std::cerr << "Failed to set a name on the new node, got node name of '" << (name ? name : "null") << "'" << std::endl;
       return EXIT_FAILURE;
       }
     std::cout << "Added a new markup node to the scene, id = '" << id.c_str() << "', name = '" << name << "'" <<  std::endl;
-    
+    vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    if (!markupsNode)
+      {
+      std::cerr << "Failed to get the new node as a markups node" << std::endl;
+      return EXIT_FAILURE;
+      }
+    // test the list stuff
+    logic1->SetAllMarkupsVisibility(NULL, true);
+    logic1->SetAllMarkupsLocked(NULL, false);
+    logic1->SetAllMarkupsSelected(NULL, true);
+
+    // no points
+    logic1->SetAllMarkupsVisibility(markupsNode, false);
+    logic1->SetAllMarkupsVisibility(markupsNode, true);
+    logic1->SetAllMarkupsLocked(markupsNode, true);
+    logic1->SetAllMarkupsLocked(markupsNode, false);
+    logic1->SetAllMarkupsSelected(markupsNode, false);
+    logic1->SetAllMarkupsSelected(markupsNode, true);
+
+    // add some points
+    markupsNode->AddMarkupWithNPoints(5);
+    logic1->SetAllMarkupsVisibility(markupsNode, false);
+    logic1->SetAllMarkupsVisibility(markupsNode, true);
+    logic1->SetAllMarkupsLocked(markupsNode, true);
+    logic1->SetAllMarkupsLocked(markupsNode, false);
+    logic1->SetAllMarkupsSelected(markupsNode, false);
+    logic1->SetAllMarkupsSelected(markupsNode, true);
     }
 
   // cleanup

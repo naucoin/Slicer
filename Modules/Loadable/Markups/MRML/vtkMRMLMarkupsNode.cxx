@@ -125,6 +125,29 @@ void vtkMRMLMarkupsNode::ProcessMRMLEvents ( vtkObject *caller,
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLMarkupsNode::PrintMarkup(ostream& os, vtkIndent indent, Markup *markup)
+{
+  if (!markup)
+    {
+    return;
+    }
+
+  os << indent.GetNextIndent() << "Label = " << markup->Label.c_str() << "\n";
+  os << indent.GetNextIndent() << "Description = " << markup->Description.c_str() << "\n";
+  os << indent.GetNextIndent() << "Associated node id = " << markup->AssociatedNodeID.c_str() << "\n";
+  os << indent.GetNextIndent() << "Selected = " << markup->Selected << "\n";
+  os << indent.GetNextIndent() << "Locked = " << markup->Locked << "\n";
+  os << indent.GetNextIndent() << "Visibility = " << markup->Visibility << "\n";
+  int numPoints = markup->points.size();
+  for (int p = 0; p < numPoints; p++)
+    {
+    vtkVector3d point = markup->points[p];
+    os << indent.GetNextIndent() << "p" << p << ": " << point.X() << ", " << point.Y() << ", " << point.Z() << "\n";
+    }
+}
+
+
+//----------------------------------------------------------------------------
 void vtkMRMLMarkupsNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   Superclass::PrintSelf(os,indent);
@@ -135,22 +158,8 @@ void vtkMRMLMarkupsNode::PrintSelf(ostream& os, vtkIndent indent)
   for (int i = 0; i < this->GetNumberOfMarkups(); i++)
     {
     os << indent << "Markup " << i << ":\n";
-    int numPoints = this->GetNumberOfPointsInNthMarkup(i);
     Markup *markup = this->GetNthMarkup(i);
-    if (markup)
-      {
-      os << indent.GetNextIndent() << "Label = " << markup->Label.c_str() << "\n";
-      os << indent.GetNextIndent() << "Description = " << markup->Description.c_str() << "\n";
-      os << indent.GetNextIndent() << "Associated node id = " << markup->AssociatedNodeID.c_str() << "\n";
-      os << indent.GetNextIndent() << "Selected = " << markup->Selected << "\n";
-      os << indent.GetNextIndent() << "Locked = " << markup->Locked << "\n";
-      os << indent.GetNextIndent() << "Visibility = " << markup->Visibility << "\n";
-      for (int p = 0; p < numPoints; p++)
-        {
-        vtkVector3d point = markup->points[p];
-        os << indent.GetNextIndent() << "p" << p << ": " << point.X() << ", " << point.Y() << ", " << point.Z() << "\n";
-        }
-      }
+    this->PrintMarkup(os, indent, markup);
     }
   
   os << indent << "textList: "; 
@@ -179,6 +188,12 @@ void vtkMRMLMarkupsNode::RemoveAllMarkups()
 
   this->Locked = 0;
   this->UseListNameForMarkups = 1;
+
+  if (!this->GetDisableModifiedEvent())
+    {
+    this->Modified();
+    this->InvokeEvent(vtkMRMLMarkupsNode::MarkupRemovedEvent);
+    }
 }
 
 
@@ -419,6 +434,8 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
 
   // use an empty description
   markup->Description = std::string("");
+  // use an empty associated node id
+  markup->AssociatedNodeID = std::string("");
   
   // set the flags
   markup->Selected = true;
@@ -561,20 +578,66 @@ void vtkMRMLMarkupsNode::RemoveMarkup(int m)
     {
     std::cout << "RemoveMarkup: m = " << m << ", markups size = " << this->Markups.size() << std::endl;
     this->Markups.erase(this->Markups.begin() + m);
+
+    if (!this->GetDisableModifiedEvent())
+      {
+      this->Modified();
+      this->InvokeEvent(vtkMRMLMarkupsNode::MarkupRemovedEvent, (void*)&m);
+      }
+    }
+}
+
+//-----------------------------------------------------------
+void vtkMRMLMarkupsNode::CopyMarkup(Markup *source, Markup *target)
+{
+  if (source == NULL || target == NULL)
+    {
+    return;
+    }
+
+  target->Label = source->Label;
+  target->Description = source->Description;
+  target->AssociatedNodeID = source->AssociatedNodeID;
+  target->Selected = source->Selected;
+  target->Locked = source->Locked;
+  target->Visibility = source->Visibility;
+  // now iterate over the points
+  target->points.clear();
+  int numPoints = source->points.size();
+  for (int p = 0; p < numPoints; p++)
+    {
+    vtkVector3d point = source->points[p];
+    target->points.push_back(point);
     }
 }
 
 //-----------------------------------------------------------
 void vtkMRMLMarkupsNode::SwapMarkups(int m1, int m2)
 {
-  if (!this->MarkupExists(m1) ||
-      !this->MarkupExists(m1))
+  if (!this->MarkupExists(m1))
     {
-    vtkErrorMacro("SwapMarkups: one of the markup indices is out of range 0-" << this->GetNumberOfMarkups() -1 << ", m1 = " << m1 << ", m2 = " << m2);
+    vtkErrorMacro("SwapMarkups: first markup index is out of range 0-" << this->GetNumberOfMarkups() -1 << ", m1 = " << m1);
     return;
     }
-  vtkErrorMacro("SwapMarkups: not implemented yet");
-//  this->Markups[m1].swap(this->Markups[m2]);
+  if (!this->MarkupExists(m2))
+    {
+    vtkErrorMacro("SwapMarkups: second markup index is out of range 0-" << this->GetNumberOfMarkups() -1 << ", m2 = " << m2);
+    return;
+    }
+
+  Markup *m1Markup = this->GetNthMarkup(m1);
+  Markup m1MarkupBackup;
+  // make a copy of the first markup
+  this->CopyMarkup(m1Markup, &m1MarkupBackup);
+  // copy the second markup into the first
+  this->CopyMarkup(this->GetNthMarkup(m2), m1Markup);
+  // and copy the backup of the first one into the second
+  this->CopyMarkup(&m1MarkupBackup, this->GetNthMarkup(m2));
+
+  // and let listeners know that two markups have changed
+  this->Modified();
+  this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&m1);
+  this->InvokeEvent(vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&m2);
 }
 
 //-----------------------------------------------------------
