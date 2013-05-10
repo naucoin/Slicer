@@ -34,6 +34,7 @@
 
 #include "vtkSlicerMarkupsModuleLogicExport.h"
 
+class vtkMRMLMarkupsNode;
 
 /// \ingroup Slicer_QtModules_Markups
 class VTK_SLICER_MARKUPS_MODULE_LOGIC_EXPORT vtkSlicerMarkupsLogic :
@@ -63,6 +64,11 @@ public:
   /// otherwise. Adds the appropriate storage and display nodes to the scene
   /// as well.
   char *LoadMarkupsFiducials(const char *fileName, const char *fidsName);
+
+  /// Utility methods to operate on all markups in a markups node
+  void SetAllMarkupsVisibility(vtkMRMLMarkupsNode *node, bool flag);
+  void SetAllMarkupsLocked(vtkMRMLMarkupsNode *node, bool flag);
+  void SetAllMarkupsSelected(vtkMRMLMarkupsNode *node, bool flag);
 
 protected:
   vtkSlicerMarkupsLogic();

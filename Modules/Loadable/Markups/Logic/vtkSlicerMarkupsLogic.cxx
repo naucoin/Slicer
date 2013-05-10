@@ -303,3 +303,48 @@ char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const c
   return nodeID;
 
 }
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetAllMarkupsVisibility(vtkMRMLMarkupsNode *node, bool flag)
+{
+  if (!node)
+    {
+    vtkDebugMacro("SetAllMarkupsVisibility: No list");
+    return;
+    }
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    node->SetNthMarkupVisibility(i, flag);
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetAllMarkupsLocked(vtkMRMLMarkupsNode *node, bool flag)
+{
+  if (!node)
+    {
+    vtkDebugMacro("SetAllMarkupsLocked: No list");
+    return;
+    }
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    node->SetNthMarkupLocked(i, flag);
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetAllMarkupsSelected(vtkMRMLMarkupsNode *node, bool flag)
+{
+  if (!node)
+    {
+    vtkDebugMacro("SetAllMarkupsSelected: No list");
+    return;
+    }
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    node->SetNthMarkupSelected(i, flag);
+    }
+}

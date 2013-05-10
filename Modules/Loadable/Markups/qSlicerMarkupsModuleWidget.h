@@ -26,6 +26,7 @@
 class qSlicerMarkupsModuleWidgetPrivate;
 class vtkMRMLNode;
 class QTableWidgetItem;
+class vtkSlicerMarkupsLogic;
 
 /// \ingroup Slicer_QtModules_Markups
 class Q_SLICER_QTMODULES_MARKUPS_EXPORT qSlicerMarkupsModuleWidget :
@@ -43,6 +44,9 @@ public:
   virtual void enter();
   /// disconnect from scene when exiting
   virtual void exit();
+
+  /// get the logic in the proper class
+  vtkSlicerMarkupsLogic *markupsLogic();
 
   /// refresh the gui from the currently active markup node as determined by
   /// the selection node
@@ -72,6 +76,19 @@ public slots:
   /// clear out the gui when the scene is closed
   void onMRMLSceneEndCloseEvent();
 
+  /// button slots
+  void onVisibilityOnAllMarkupsInListPushButtonClicked();
+  void onVisibilityOffAllMarkupsInListPushButtonClicked();
+  void onLockAllMarkupsInListPushButtonClicked();
+  void onUnlockAllMarkupsInListPushButtonClicked();
+  void onSelectAllMarkupsInListPushButtonClicked();
+  void onDeselectAllMarkupsInListPushButtonClicked();
+  void onAddMarkupPushButtonClicked();
+  void onMoveMarkupUpPushButtonClicked();
+  void onMoveMarkupDownPushButtonClicked();
+  void onDeleteMarkupPushButtonClicked();
+  void onDeleteAllMarkupsInListPushButtonClicked();
+  
   /// update the selection node from the combo box
   void onActiveMarkupMRMLNodeChanged(vtkMRMLNode *markupsNode);
   /// update the combo box from the selection node
@@ -96,6 +113,8 @@ public slots:
   void onActiveMarkupsNodePointModifiedEvent(vtkObject *caller, vtkObject *callData);
   /// update the table with the new markup if the node is active
   void onActiveMarkupsNodeMarkupAddedEvent();//vtkMRMLNode *markupsNode);
+  /// update the table for the removed markup if the node is active
+  void onActiveMarkupsNodeMarkupRemovedEvent();//vtkMRMLNode *markupsNode);
   /// update a table row from a modified markup
   void onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject *caller, vtkObject *callData);
 

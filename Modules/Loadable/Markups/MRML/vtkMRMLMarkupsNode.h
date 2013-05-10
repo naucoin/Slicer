@@ -45,8 +45,10 @@ class  VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsNode : public vtkMRML
 public:
   static vtkMRMLMarkupsNode *New();
   vtkTypeMacro(vtkMRMLMarkupsNode,vtkMRMLDisplayableNode);
+
+  void PrintMarkup(ostream&  os, vtkIndent indent, Markup *markup);
   void PrintSelf(ostream& os, vtkIndent indent);
- 
+  
   virtual const char* GetIcon() {return "";};
 
   //--------------------------------------------------------------------------
@@ -96,6 +98,7 @@ public:
   /// invoke the point modified event when a markup's location changes
   /// invoke the NthMarkupModifiedEvent event when a markup's non location value
   /// invoke the markup added event when adding a new markup to a markups node
+  /// invoke the markup removed event when removing one or all markups from a node
   /// (caught by the displayable manager to make sure the widgets match the node)
   enum 
   {
@@ -103,6 +106,7 @@ public:
     PointModifiedEvent,
     NthMarkupModifiedEvent,
     MarkupAddedEvent,
+    MarkupRemovedEvent,
   };
   
   /// Description:
@@ -148,6 +152,9 @@ public:
 
   /// Remove a markup
   void RemoveMarkup(int m);
+
+  /// Copy settings from source markup to target markup
+  void CopyMarkup(Markup *source, Markup *target);
   
   /// Swap the position of two markups
   void SwapMarkups(int m1, int m2);

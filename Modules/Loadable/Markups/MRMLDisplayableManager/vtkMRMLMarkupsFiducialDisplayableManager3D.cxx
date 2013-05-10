@@ -940,3 +940,25 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLMarkupsNodeMarkupAddedEve
   seedRepresentation->NeedToRenderOn();
   seedWidget->Modified();
 }
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode)
+{
+  vtkDebugMacro("OnMRMLMarkupsNodeMarkupRemovedEvent");
+
+  if (!markupsNode)
+    {
+    return;
+    }
+  vtkAbstractWidget *widget = this->Helper->GetWidget(markupsNode);
+  if (!widget)
+    {
+    // TBD: create a widget?
+    vtkErrorMacro("OnMRMLMarkupsNodeMarkupRemovedEvent: a markup was removed from a node that doesn't already have a widget! Returning..");
+    return;
+    }
+ 
+  // for now, recreate the widget
+  this->Helper->RemoveWidgetAndNode(markupsNode);
+  this->AddWidget(markupsNode);
+}
