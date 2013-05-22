@@ -143,7 +143,13 @@ std::string vtkSlicerMarkupsLogic::AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *
     {
     // create and add the display node
     vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
-    mrmlNode->GetScene()->AddNode(displayNode);
+    //mrmlNode->GetScene()->AddNode(displayNode);
+    vtkMRMLNode *n = mrmlNode->GetScene()->InsertBeforeNode(mrmlNode, displayNode);
+    if (!n)
+      {
+      vtkErrorMacro("AddNewDisplayNodeForMarkupsNode: error on insert before node");
+      return id;
+      }
 
     // get the node id to return
     id = std::string(displayNode->GetID());
