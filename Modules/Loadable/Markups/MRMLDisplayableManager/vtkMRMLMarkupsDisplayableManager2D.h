@@ -137,6 +137,7 @@ protected:
   void OnMRMLMarkupsPointModifiedEvent(vtkMRMLNode *node, int n);
   /// subclasses need to react to new markups being added to a markups node or modified
   virtual void OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode)) {};
+  virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode)) {};
   virtual void OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode* vtkNotUsed(node), int vtkNotUsed(n)) {};
   //
   // Handling of interaction within the RenderWindow

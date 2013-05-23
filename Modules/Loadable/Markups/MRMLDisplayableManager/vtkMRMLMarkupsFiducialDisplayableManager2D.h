@@ -35,6 +35,8 @@ protected:
   virtual void OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * markupsNode);
   /// respond to the nth markup modified event
   virtual void OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode * markupsNode, int n);
+  /// respond to a markup being removed from the markups node
+  virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode);
   
   /// Gets called when widget was created
   virtual void OnWidgetCreated(vtkAbstractWidget * widget, vtkMRMLMarkupsNode * node);
@@ -56,9 +58,6 @@ protected:
   virtual bool UpdateNthMarkupPosition(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
   /// respond to control point modified events
   virtual void UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node);
-
-
-  std::map<vtkMRMLNode*, int> NodeGlyphTypes;
 
   // clean up when scene closes
   virtual void OnMRMLSceneEndClose();
