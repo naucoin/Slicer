@@ -126,6 +126,7 @@ void vtkMRMLMarkupsDisplayableManager2D::SetAndObserveNode(vtkMRMLMarkupsNode *m
   nodeEvents->InsertNextValue(vtkMRMLMarkupsNode::PointModifiedEvent);
   nodeEvents->InsertNextValue(vtkMRMLMarkupsNode::NthMarkupModifiedEvent);
   nodeEvents->InsertNextValue(vtkMRMLMarkupsNode::MarkupAddedEvent);
+  nodeEvents->InsertNextValue(vtkMRMLMarkupsNode::MarkupRemovedEvent);
   nodeEvents->InsertNextValue(vtkMRMLMarkupsNode::LockModifiedEvent);
   nodeEvents->InsertNextValue(vtkMRMLTransformableNode::TransformModifiedEvent);
 
@@ -328,6 +329,9 @@ void vtkMRMLMarkupsDisplayableManager2D
         break;
       case vtkMRMLMarkupsNode::MarkupAddedEvent:
         this->OnMRMLMarkupsNodeMarkupAddedEvent(markupsNode);
+        break;
+      case vtkMRMLMarkupsNode::MarkupRemovedEvent:
+        this->OnMRMLMarkupsNodeMarkupRemovedEvent(markupsNode);
         break;
       case vtkMRMLTransformableNode::TransformModifiedEvent:
         this->OnMRMLMarkupsNodeTransformModifiedEvent(markupsNode);

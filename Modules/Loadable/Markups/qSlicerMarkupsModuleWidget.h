@@ -62,6 +62,10 @@ public:
   /// reset the GUI elements: clear out the table
   void clearGUI();
 
+  /// utility methods to convert between Qt colors and c++ colors
+  static void toQColor(const double* color, QColor &qcolor);
+  static void toColor(const QColor &qcolor, double* color);
+
 public slots:
 
   /// respond to the scene events
@@ -76,7 +80,15 @@ public slots:
   /// clear out the gui when the scene is closed
   void onMRMLSceneEndCloseEvent();
 
-  /// button slots
+  /// display property slots
+  void onSelectedColorPickerButtonChanged(QColor qcolor);
+  void onUnselectedColorPickerButtonChanged(QColor qcolor);
+  void onGlyphTypeComboBoxChanged(QString value);
+  void onGlyphScaleSliderWidgetChanged(double value);
+  void onTextScaleSliderWidgetChanged(double value);
+  void onOpacitySliderWidgetChanged(double value);
+  
+  /// list button slots
   void onVisibilityOnAllMarkupsInListPushButtonClicked();
   void onVisibilityOffAllMarkupsInListPushButtonClicked();
   void onLockAllMarkupsInListPushButtonClicked();
@@ -98,6 +110,14 @@ public slots:
   /// make sure that a display node is added
   void onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markupsNode);
 
+  /// toggle the markups node visibility flag
+  void onListVisibileInvisiblePushButtonClicked();
+  /// update the icon and tool tip on the list visibility button
+  void updateListVisibileInvisiblePushButton(int visibleFlag);
+  
+  /// toggle the markups node locked flag
+  void onListLockedUnlockedPushButtonClicked();
+  
   /// update the markup from the check box
   void onUseListNameForMarkupsCheckBoxToggled(bool flag);
 

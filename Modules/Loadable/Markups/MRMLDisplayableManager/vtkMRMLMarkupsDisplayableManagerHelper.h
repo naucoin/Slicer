@@ -95,11 +95,24 @@ public:
   /// Remove all placed seeds
   void RemoveSeeds();
 
+  /// get the seed glyph type for the given display node
+  /// returns -1 if not found
+  int GetNodeGlyphType(vtkMRMLNode *displayNode, int index);
+  /// set the glyph type for the given display node, making a new entry if the
+  /// display node or the index are out of bounds
+  void SetNodeGlyphType(vtkMRMLNode *displayNode, int glyphType, int index);
+  /// remove the entry for this display node
+  void RemoveNodeGlyphType(vtkMRMLNode *displayNode);
+  /// clear out the saved list of glyph types, called on scene close or node removed
+  void ClearNodeGlyphTypes();
 
 protected:
 
   vtkMRMLMarkupsDisplayableManagerHelper();
   virtual ~vtkMRMLMarkupsDisplayableManagerHelper();
+
+  /// utility method to print out the current glyph types
+  void PrintNodeGlyphTypes();
 
 private:
 
@@ -113,6 +126,9 @@ private:
   /// .. and its associated convenient typedef
   typedef std::vector<vtkSmartPointer<vtkHandleWidget> >::iterator HandleWidgetListIt;
 
+  /// keep a record of the current glyph type for the handles in the widget
+  /// associated with this node, prevents changing them unnecessarily
+  std::map<vtkMRMLNode*, std::vector<int> > NodeGlyphTypes;
 };
 
 #endif /* VTKMRMLMARKUPSDISPLAYABLEMANAGERHELPER_H_ */

@@ -274,13 +274,14 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
     vtkMRMLMarkupsNode *node)
 {
   if (!node)
-  {
+    {
     return;
-  }
+    }
 
   // Make sure the map contains a vtkWidget associated with this node
   WidgetsIt widgetIterator = this->Widgets.find(node);
-  if (widgetIterator != this->Widgets.end()) {
+  if (widgetIterator != this->Widgets.end())
+    {
     // Delete and Remove vtkWidget from the map
     if (this->Widgets[node])
       {
@@ -288,10 +289,11 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
       this->Widgets[node]->Delete();
       }
     this->Widgets.erase(node);
-  }
+    }
 
   WidgetIntersectionsIt widgetIntersectionIterator = this->WidgetIntersections.find(node);
-  if (widgetIntersectionIterator != this->WidgetIntersections.end()) {
+  if (widgetIntersectionIterator != this->WidgetIntersections.end())
+    {
     // we have a vtkAbstractWidget to represent the slice intersections for this node
     // now delete it!
     if (this->WidgetIntersections[node])
@@ -300,7 +302,7 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
       this->WidgetIntersections[node]->Delete();
       }
     this->WidgetIntersections.erase(node);
-  }
+    }
 
 
   vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt nodeIterator = std::find(
@@ -319,6 +321,8 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
     this->MarkupsNodeList.erase(nodeIterator);
     }
 
+  // remove the entry for the node glyph types
+  this->RemoveNodeGlyphType(node->GetDisplayNode());
 }
 
 //---------------------------------------------------------------------------
@@ -459,4 +463,97 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RecordWidgetForNode(vtkAbstractWidg
   this->Widgets[node] = widget;
   // save the node
   this->MarkupsNodeList.push_back(node);
+}
+
+//---------------------------------------------------------------------------
+int vtkMRMLMarkupsDisplayableManagerHelper::GetNodeGlyphType(vtkMRMLNode *displayNode, int index)
+{
+  std::map<vtkMRMLNode*, std::vector<int> >::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  if (iter == this->NodeGlyphTypes.end())
+    {
+    // no record for this node
+    return -1;
+    }
+  if (iter->second.size() - 1 < (unsigned int)index)
+    {
+    // no entry for this index
+    return -1;
+    }
+  return iter->second[index];
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::SetNodeGlyphType(vtkMRMLNode *displayNode, int glyphType, int index)
+{
+  if (!displayNode)
+    {
+    return;
+    }
+  // is there already an entry for this node?
+  std::map<vtkMRMLNode*, std::vector<int> >::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  if (iter == this->NodeGlyphTypes.end())
+    {
+    // no? add one
+    std::vector<int> newEntry;
+    newEntry.resize(index + 1);
+    newEntry.at(index) = glyphType;
+    this->NodeGlyphTypes[displayNode] = newEntry;
+    return;
+    }
+
+  // is there already an entry at this index?
+  if (iter->second.size() <= (unsigned int)index)
+    {
+    // no? add space
+    this->NodeGlyphTypes[displayNode].resize(index + 1);
+    }
+  // set it
+  this->NodeGlyphTypes[displayNode].at(index) = glyphType;
+
+  //std::cout << "SetNodeGlyphType after setting for display node " << displayNode->GetID() << ", index " << index << " to glyph type " << glyphType << ", map = " << std::endl;
+  //this->PrintNodeGlyphTypes();
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::RemoveNodeGlyphType(vtkMRMLNode *displayNode)
+{
+  if (!displayNode)
+    {
+    return;
+    }
+  // is there an entry for this node?
+  std::map<vtkMRMLNode*, std::vector<int> >::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  if (iter == this->NodeGlyphTypes.end())
+    {
+    return;
+    }
+  // erase it
+  this->NodeGlyphTypes.erase(iter);
+  if (this->GetDebug())
+    {
+    std::cout << "RemoveNodeGlyphType for display node " << displayNode->GetID() << std::endl;
+    this->PrintNodeGlyphTypes();
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::ClearNodeGlyphTypes()
+{
+  this->NodeGlyphTypes.clear();
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::PrintNodeGlyphTypes()
+{
+  std::cout << "Node Glyph Types:" << std::endl;
+  for (std::map<vtkMRMLNode*, std::vector<int> >::iterator iter  = this->NodeGlyphTypes.begin();
+       iter !=  this->NodeGlyphTypes.end();
+       iter++)
+    {
+    std::cout << "\tDisplay node " << iter->first->GetID() << ": " << iter->first->GetName() << std::endl;
+    for (unsigned int i = 0; i < iter->second.size(); i++)
+      {
+      std::cout << "\t\t" << i << " glyph type = " << iter->second[i] << std::endl;
+      }
+    }
 }

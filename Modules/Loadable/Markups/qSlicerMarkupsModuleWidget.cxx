@@ -85,7 +85,61 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
 
   //std::cout << "setupUI\n";
 
-  // set up the buttons
+  // use the ctk color dialog on the color picker buttons
+  this->selectedColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->unselectedColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  
+  // set up the display properties
+  QObject::connect(this->selectedColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onSelectedColorPickerButtonChanged(QColor)));
+  QObject::connect(this->unselectedColorPickerButton, SIGNAL(colorChanged(QColor)),
+                q, SLOT(onUnselectedColorPickerButtonChanged(QColor)));
+  QObject::connect(this->glyphTypeComboBox, SIGNAL(currentIndexChanged(QString)),
+                q, SLOT(onGlyphTypeComboBoxChanged(QString)));
+  QObject::connect(this->glyphScaleSliderWidget, SIGNAL(valueChanged(double)),
+                   q, SLOT(onGlyphScaleSliderWidgetChanged(double)));
+  QObject::connect(this->textScaleSliderWidget, SIGNAL(valueChanged(double)),
+                   q, SLOT(onTextScaleSliderWidgetChanged(double)));
+  QObject::connect(this->opacitySliderWidget, SIGNAL(valueChanged(double)),
+                   q, SLOT(onOpacitySliderWidgetChanged(double)));
+
+  // populate the glyph type combo box
+  if (this->glyphTypeComboBox->count() == 0)
+    {
+    vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
+    int min = displayNode->GetMinimumGlyphType();
+    int max = displayNode->GetMaximumGlyphType();
+    bool enabled =  this->glyphTypeComboBox->isEnabled();
+    this->glyphTypeComboBox->setEnabled(false);
+    for (int i = min; i <= max; i++)
+      {
+      displayNode->SetGlyphType(i);
+      this->glyphTypeComboBox->addItem(displayNode->GetGlyphTypeAsString());
+      }
+    this->glyphTypeComboBox->setEnabled(enabled);
+    displayNode->Delete();
+    }
+  // set the default value if not set
+  if (this->glyphTypeComboBox->currentIndex() == 0)
+    {
+    vtkSmartPointer<vtkMRMLMarkupsDisplayNode> displayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();
+    QString glyphType = QString(displayNode->GetGlyphTypeAsString());
+    bool enabled = this->glyphTypeComboBox->isEnabled();
+    this->glyphTypeComboBox->setEnabled(false);
+    int index =  this->glyphTypeComboBox->findData(glyphType);
+    if (index != -1)
+      {
+      this->glyphTypeComboBox->setCurrentIndex(index);
+      }
+    else
+      {
+      // glyph types start at 1, combo box is 0 indexed
+      this->glyphTypeComboBox->setCurrentIndex(displayNode->GetGlyphType() - 1);
+      }
+    this->glyphTypeComboBox->setEnabled(enabled);
+    }
+  
+  // set up the list buttons
   // visibility
   QObject::connect(this->visibilityOnAllMarkupsInListPushButton, SIGNAL(clicked()),
                    q, SLOT(onVisibilityOnAllMarkupsInListPushButtonClicked()));
@@ -140,6 +194,13 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     //qDebug() << "No selection node found in scene!";
     }
 
+  //
+  // set up the list visibility/locked buttons
+  //
+  QObject::connect(this->listVisibileInvisiblePushButton, SIGNAL(clicked()),
+                   q, SLOT(onListVisibileInvisiblePushButtonClicked()));
+  QObject::connect(this->listLockedUnlockedPushButton, SIGNAL(clicked()),
+                   q, SLOT(onListLockedUnlockedPushButtonClicked()));
   // 
   // set up the use list name for markups check box
   //
@@ -168,17 +229,20 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   selectedHeader->setText("");
   selectedHeader->setIcon(QIcon(":/Icons/MarkupsSelected.png"));
   selectedHeader->setToolTip(QString("Click in this column to select/deselect markups for passing to CLI modules"));
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("Selected"), 30);
   // locked is an open and closed lock
   QTableWidgetItem *lockedHeader = this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Locked"));
   lockedHeader->setText("");
   lockedHeader->setIcon(QIcon(":/Icons/Small/SlicerLockUnlock.png"));
   lockedHeader->setToolTip(QString("Click in this column to lock/unlock markups to prevent them from being moved by mistake"));
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("Locked"), 30);
   // visible is an open and closed eye
   QTableWidgetItem *visibleHeader = this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Visible"));
   visibleHeader->setText("");
   visibleHeader->setIcon(QIcon(":/Icons/Small/SlicerVisibleInvisible.png"));
   visibleHeader->setToolTip(QString("Click in this column to show/hide markups in 2D and 3D"));
-  
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("Visible"), 30);
+
   // listen for changes so can update mrml node
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(cellChanged(int, int)),
                    q, SLOT(onActiveMarkupTableCellChanged(int, int)));
@@ -319,6 +383,91 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
        activePlaceNodeID.contains("vtkMRMLMarkups")))
     {
     d->activeMarkupMRMLNodeComboBox->setCurrentNode(activePlaceNodeID);
+    }
+
+  // update the display properties from the markups display node
+  vtkMRMLDisplayNode *displayNode = markupsNode->GetDisplayNode();
+  double *color;
+  QColor qColor;
+
+  if (displayNode)
+    {
+    // selected color
+    color = displayNode->GetSelectedColor();
+    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    d->selectedColorPickerButton->setColor(qColor);
+
+    // unselected color
+    color = displayNode->GetColor();
+    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    d->unselectedColorPickerButton->setColor(qColor);
+
+    // opacity
+    double opacity = displayNode->GetOpacity();
+    d->opacitySliderWidget->setValue(opacity);
+
+    // now for some markups specific display properties
+    vtkMRMLMarkupsDisplayNode *markupsDisplayNode = vtkMRMLMarkupsDisplayNode::SafeDownCast(displayNode);
+    if (markupsDisplayNode)
+      {
+      // does the glyph type combo box have entries?
+      if (d->glyphTypeComboBox->count() == 0)
+        {
+        qDebug() << "No entries in the glyph type combo box";
+        }
+      else
+        {
+        // glyph type
+        const char *glyphType = markupsDisplayNode->GetGlyphTypeAsString();
+        int index =  d->glyphTypeComboBox->findData(QString(glyphType));
+        if (index != -1)
+          {
+          d->glyphTypeComboBox->setCurrentIndex(index);
+          }
+        else
+          {
+          // glyph types start at 1, combo box is 0 indexed
+          d->glyphTypeComboBox->setCurrentIndex(markupsDisplayNode->GetGlyphType() - 1);
+          }
+        }
+
+      // glyph scale
+      double glyphScale = markupsDisplayNode->GetGlyphScale();
+      d->glyphScaleSliderWidget->setValue(glyphScale);
+
+      // text scale
+      double textScale = markupsDisplayNode->GetTextScale();
+      d->textScaleSliderWidget->setValue(textScale);
+      }
+    }
+  else
+    {
+    // reset to defaults
+    vtkMRMLMarkupsDisplayNode *defaultMarkupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
+    color = defaultMarkupsDisplayNode->GetSelectedColor();
+    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    d->selectedColorPickerButton->setColor(qColor);
+    color = defaultMarkupsDisplayNode->GetColor();
+    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    d->unselectedColorPickerButton->setColor(qColor);
+    d->opacitySliderWidget->setValue(defaultMarkupsDisplayNode->GetOpacity());
+    d->glyphTypeComboBox->setCurrentIndex(defaultMarkupsDisplayNode->GetGlyphType() - 1);
+    d->glyphScaleSliderWidget->setValue(defaultMarkupsDisplayNode->GetGlyphScale());
+    d->textScaleSliderWidget->setValue(defaultMarkupsDisplayNode->GetTextScale());
+    defaultMarkupsDisplayNode->Delete();
+    }
+  // update the visibility and locked buttons
+  this->updateListVisibileInvisiblePushButton(markupsNode->GetDisplayVisibility());
+
+  if (markupsNode->GetLocked())
+    {
+    d->listLockedUnlockedPushButton->setIcon(QIcon(":Icons/Medium/SlicerLock.png"));
+    d->listLockedUnlockedPushButton->setToolTip(QString("Click to unlock this markup list so that the markups can be moved by the mouse"));
+    }
+  else
+    {
+    d->listLockedUnlockedPushButton->setIcon(QIcon(":Icons/Medium/SlicerUnlock.png"));
+    d->listLockedUnlockedPushButton->setToolTip(QString("Click to lock this markup list so that the markups cannot be moved by the mouse"));
     }
 
   // update the table
@@ -540,6 +689,152 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent()
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onSelectedColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  
+  double color[3];
+  qSlicerMarkupsModuleWidget::toColor(qcolor, color);
+
+   // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (listNode)
+    {
+    displayNode = listNode->GetMarkupsDisplayNode();
+    }
+  if (displayNode)
+    {
+    displayNode->SetSelectedColor(color);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onUnselectedColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+   
+  double color[3];
+  qSlicerMarkupsModuleWidget::toColor(qcolor, color);
+
+   // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (listNode)
+    {
+    displayNode = listNode->GetMarkupsDisplayNode();
+    }
+  if (displayNode)
+    {
+    displayNode->SetColor(color);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onGlyphTypeComboBoxChanged(QString value)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (listNode)
+    {
+    displayNode = listNode->GetMarkupsDisplayNode();
+    }
+  if (displayNode)
+    {
+    displayNode->SetGlyphTypeFromString(value.toLatin1());
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onGlyphScaleSliderWidgetChanged(double value)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (listNode)
+    {
+    displayNode = listNode->GetMarkupsDisplayNode();
+    }
+  if (displayNode)
+    {
+    displayNode->SetGlyphScale(value);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onTextScaleSliderWidgetChanged(double value)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (listNode)
+    {
+    displayNode = listNode->GetMarkupsDisplayNode();
+    }
+  if (displayNode)
+    {
+    displayNode->SetTextScale(value);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onOpacitySliderWidgetChanged(double value)
+{
+   Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (listNode)
+    {
+    displayNode = listNode->GetMarkupsDisplayNode();
+    }
+  if (displayNode)
+    {
+    displayNode->SetOpacity(value);
+    }
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onVisibilityOnAllMarkupsInListPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
@@ -740,6 +1035,7 @@ void qSlicerMarkupsModuleWidget::onDeleteMarkupPushButtonClicked()
     return;
     }
   int numRows = selectedItems.size() / d->numberOfColumns();
+  qDebug() << "selectedItems size = " << selectedItems.size() << ", numRows = " << numRows;
   
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
@@ -748,18 +1044,35 @@ void qSlicerMarkupsModuleWidget::onDeleteMarkupPushButtonClicked()
     {
     listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
     }
-  if (listNode)
+  if (!listNode)
     {
-    // remove from the end
-    for (int r = numRows - 1; r >= 0; r++)
-      {
-      int itemIndex = r * d->numberOfColumns();
-      qDebug() << "Delete: r = " << r << ", number of columns = " <<  d->numberOfColumns() << ", item index = " << itemIndex;
-      int index = selectedItems.at(itemIndex)->row();
-      qDebug() << "Removing point " << r << " at row " << index;
-      listNode->RemoveMarkup(index);
-      }
+    qDebug() << "Delete markup: no active list from which to delete";
+    return;
     }
+
+  // iterate over the selected items and save their row numbers (there are
+  // selected indices for each column in a row, so jump by the number of
+  // columns), so can delete without relying on the table
+  QList<int> rows;
+  for (int i = 0; i < selectedItems.size(); i += d->numberOfColumns())
+    {
+    // get the row
+    int row = selectedItems.at(i)->row();
+    qDebug() << "Saving: i = " << i << ", row = " << row;
+    rows << row;
+    }
+  // sort the list
+  qSort(rows);
+  // delete from the end
+  for (int i = rows.size() - 1; i >= 0; --i)
+    {
+    int index = rows.at(i);
+    qDebug() << "Deleting: i = " << i << ", index = " << index;
+    // remove the markup at that row
+    listNode->RemoveMarkup(index);
+    }
+  // clear the selection on the table
+  d->activeMarkupTableWidget->clearSelection();
 }
 
 //-----------------------------------------------------------------------------
@@ -775,7 +1088,7 @@ void qSlicerMarkupsModuleWidget::onDeleteAllMarkupsInListPushButtonClicked()
     }
   if (listNode)
     {
-    qDebug() << "Removing markups from list " << listNode->GetName();
+    // qDebug() << "Removing markups from list " << listNode->GetName();
     listNode->RemoveAllMarkups();
     }
 }
@@ -844,6 +1157,18 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markup
     {
     this->markupsLogic()->AddNewDisplayNodeForMarkupsNode(markupsNode);
     }
+  // update the visibility button
+  vtkMRMLMarkupsNode *displayableNode = NULL;
+  if (markupsNode)
+    {
+    displayableNode = vtkMRMLMarkupsNode::SafeDownCast(markupsNode);
+    }
+  if (displayableNode)
+    {
+    int visibleFlag = displayableNode->GetDisplayVisibility();
+    this->updateListVisibileInvisiblePushButton(visibleFlag);
+    }
+  
   // make sure it's set up for the mouse mode tool bar to easily add points to
   // it by making it active in the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -912,6 +1237,79 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
   else
     {
     qDebug() << "Unable to update combo box from selection node, node is " << (selectionNode ? selectionNode->GetID() : "null");
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onListVisibileInvisiblePushButtonClicked()
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    }
+  if (!listNode)
+    {
+    return;
+    }
+  // toggle the visibility
+  int visibleFlag = listNode->GetDisplayVisibility();
+  visibleFlag = !visibleFlag;
+  listNode->SetDisplayVisibility(visibleFlag);
+  this->updateListVisibileInvisiblePushButton(visibleFlag);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::updateListVisibileInvisiblePushButton(int visibleFlag)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // update the list visibility button icon and tool tip
+  if (visibleFlag)
+    {
+    d->listVisibileInvisiblePushButton->setIcon(QIcon(":Icons/Medium/SlicerVisible.png"));
+    d->listVisibileInvisiblePushButton->setToolTip(QString("Click to hide this markup list"));
+    }
+  else
+    {
+    d->listVisibileInvisiblePushButton->setIcon(QIcon(":Icons/Medium/SlicerInvisible.png"));
+    d->listVisibileInvisiblePushButton->setToolTip(QString("Click to show this markup list"));
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onListLockedUnlockedPushButtonClicked()
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    }
+  if (!listNode)
+    {
+    return;
+    }
+  // toggle the lock
+  int locked = listNode->GetLocked();
+  locked = !locked;
+  listNode->SetLocked(locked);
+  
+  // update the button
+  if (locked)
+    {
+    d->listLockedUnlockedPushButton->setIcon(QIcon(":Icons/Medium/SlicerLock.png"));
+    d->listLockedUnlockedPushButton->setToolTip(QString("Click to unlock this markup list so that the markups can be moved by the mouse"));
+    }
+  else
+    {
+    d->listLockedUnlockedPushButton->setIcon(QIcon(":Icons/Medium/SlicerUnlock.png"));
+    d->listLockedUnlockedPushButton->setToolTip(QString("Click to lock this markup list so that the markups cannot be moved by the mouse"));
     }
 }
 
@@ -1163,7 +1561,7 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::MarkupAddedEvent,
                         this, SLOT(onActiveMarkupsNodeMarkupAddedEvent()));
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::MarkupRemovedEvent,
-                        this, SLOT(onActiveMarkupsNodeMarkupAddedEvent()));
+                        this, SLOT(onActiveMarkupsNodeMarkupRemovedEvent()));
       // qDebug() << "\tconnected markups node " << markupsNode->GetID();
       }
     }
@@ -1315,4 +1713,21 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupRemovedEvent()//vtkMRM
 {
   // do a general update
   this->UpdateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::toQColor(const double* color, QColor &qcolor)
+{
+  if (color)
+    {
+    qcolor = QColor::fromRgbF(color[0], color[1], color[2]);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::toColor(const QColor &qcolor, double* color)
+{
+  color[0] = qcolor.redF();
+  color[1] = qcolor.greenF();
+  color[2] = qcolor.blueF();
 }

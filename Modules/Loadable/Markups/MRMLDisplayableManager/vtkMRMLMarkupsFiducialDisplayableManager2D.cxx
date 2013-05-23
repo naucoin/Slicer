@@ -190,11 +190,11 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
     }
 
   // unset the glyph type which can be necessary when recreating a widget due to 2d/3d swap
-  std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
-  if (iter != this->NodeGlyphTypes.end())
+  int oldGlyphType = this->Helper->GetNodeGlyphType(displayNode, 0);
+  if (oldGlyphType != -1)
     {
-    vtkDebugMacro("CreateWidget: found a glyph type already defined for this node: " << iter->second);
-    this->NodeGlyphTypes[displayNode] = vtkMRMLMarkupsDisplayNode::GlyphMin - 1;
+    vtkDebugMacro("CreateWidget: found a glyph type already defined for this node: " << oldGlyphType);
+    this->Helper->SetNodeGlyphType(displayNode, vtkMRMLMarkupsDisplayNode::GlyphMin - 1, 0);
     }
 
   vtkNew<vtkSeedRepresentation> rep;
@@ -240,20 +240,8 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
     seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer(lightboxIndex));
     }
 
-
-  //seedWidget->ProcessEventsOff();
-
-  // create a new handle
-  vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
-  if (!newhandle)
-    {
-    vtkErrorMacro("CreateWidget: error creaing a new handle!");
-    }
   vtkDebugMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
   
-  // init the widget from the mrml node
-  //this->PropagateMRMLToWidget(fiducialNode, seedWidget);
-
   seedWidget->CompleteInteraction();
 
   return seedWidget;
@@ -411,9 +399,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
   if (handleRep)
     {
     // set the glyph type if a new handle was created, or the glyph type changed
-    std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+    int oldGlyphType = this->Helper->GetNodeGlyphType(displayNode, n);
     if (createdNewHandle ||
-        iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
+        oldGlyphType != displayNode->GetGlyphType())
       {
       vtkDebugMacro("DisplayNode glyph type = " << displayNode->GetGlyphType() << " = " << displayNode->GetGlyphTypeAsString() << ", is 3d glyph = " << (displayNode->GlyphTypeIs3D() ? "true" : "false") << ", is 2d disp manager.");
       // std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
@@ -449,13 +437,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         glyphSource->SetScale(1.0);
         handleRep->SetHandle(glyphSource->GetOutput());
         }
-//    if (!createdNewHandle)
-      {
       // TBD: keep with the assumption of one glyph type per markups node,
       // that each seed has to have the same type, but update if necessary
-      this->NodeGlyphTypes[displayNode] = displayNode->GetGlyphType();
-      }
-    }  // end of glyph type
+      this->Helper->SetNodeGlyphType(displayNode, displayNode->GetGlyphType(), n);
+      }  // end of glyph type
 
     // set the color
     vtkProperty *prop = NULL;
@@ -1022,7 +1007,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::UpdatePosition(vtkAbstractWidge
 void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLSceneEndClose()
 {
   // clear out the map of glyph types
-  this->NodeGlyphTypes.clear();
+  this->Helper->ClearNodeGlyphTypes();
 }
 
 //---------------------------------------------------------------------------
@@ -1083,4 +1068,26 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupAddedEve
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
   seedRepresentation->NeedToRenderOn();
   seedWidget->Modified();
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode)
+{
+  vtkDebugMacro("OnMRMLMarkupsNodeMarkupRemovedEvent");
+
+  if (!markupsNode)
+    {
+    return;
+    }
+  vtkAbstractWidget *widget = this->Helper->GetWidget(markupsNode);
+  if (!widget)
+    {
+    // TBD: create a widget?
+    vtkErrorMacro("OnMRMLMarkupsNodeMarkupRemovedEvent: a markup was removed from a node that doesn't already have a widget! Returning..");
+    return;
+    }
+ 
+  // for now, recreate the widget
+  this->Helper->RemoveWidgetAndNode(markupsNode);
+  this->AddWidget(markupsNode);
 }

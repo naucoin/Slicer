@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>696</width>
-    <height>473</height>
+    <width>709</width>
+    <height>516</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,23 +15,23 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ctkCollapsibleButton" name="displayPropertiesCollapsibleButton">
-     <property name="text">
+    <widget class="ctkCollapsibleGroupBox" name="displayPropertiesCollapsibleGroupBox">
+     <property name="title">
       <string>Display Properties</string>
      </property>
      <property name="collapsed">
       <bool>true</bool>
      </property>
-     <property name="contentsFrameShape">
-      <enum>QFrame::StyledPanel</enum>
+     <property name="collapsedHeight">
+      <number>10</number>
      </property>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>50</y>
-        <width>126</width>
-        <height>134</height>
+        <x>23</x>
+        <y>31</y>
+        <width>331</width>
+        <height>188</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
@@ -77,6 +77,53 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="glyphTypeComboBox"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="ctkSliderWidget" name="glyphScaleSliderWidget">
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>20.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="ctkColorPickerButton" name="selectedColorPickerButton">
+         <property name="displayColorName">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="ctkColorPickerButton" name="unselectedColorPickerButton">
+         <property name="displayColorName">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="ctkSliderWidget" name="textScaleSliderWidget">
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>20.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="ctkSliderWidget" name="opacitySliderWidget">
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -86,265 +133,299 @@
      <property name="text">
       <string>Add and Modify Markups</string>
      </property>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="addAndModifyLayoutWidget">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>30</y>
-        <width>671</width>
-        <height>401</height>
+        <width>639</width>
+        <height>361</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QPushButton" name="visibilityOnAllMarkupsInListPushButton">
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QPushButton" name="visibilityOnAllMarkupsInListPushButton">
+               <property name="toolTip">
+                <string>Set visibility flag to on for all markups in active list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/Medium/SlicerVisible.png</normaloff>:/Icons/Medium/SlicerVisible.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="visibilityOffAllMarkupsInListPushButton">
+               <property name="toolTip">
+                <string>Set visibility flag to off for all markups in active list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/Medium/SlicerInvisible.png</normaloff>:/Icons/Medium/SlicerInvisible.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QPushButton" name="lockAllMarkupsInListPushButton">
+               <property name="toolTip">
+                <string>Set the lock flag to true on all markups in the active list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/Medium/SlicerLock.png</normaloff>:/Icons/Medium/SlicerLock.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="unlockAllMarkupsInListPushButton">
+               <property name="toolTip">
+                <string>Set the lock flag to false on all markups in the active list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/Medium/SlicerUnlock.png</normaloff>:/Icons/Medium/SlicerUnlock.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QPushButton" name="selectAllMarkupsInListPushButton">
+               <property name="toolTip">
+                <string>Select all markups in selected list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/MarkupsSelected.png</normaloff>:/Icons/MarkupsSelected.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="deselectAllMarkupsInListPushButton">
+               <property name="toolTip">
+                <string>Deselect all markups in active markups list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/MarkupsUnselected.png</normaloff>:/Icons/MarkupsUnselected.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="addMarkupPushButton">
              <property name="toolTip">
-              <string>Set visibility flag to on for all markups in active list</string>
+              <string>Add a new markup to the active list, at origin</string>
              </property>
              <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/Medium/SlicerVisible.png</normaloff>:/Icons/Medium/SlicerVisible.png</iconset>
+              <string>+</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="visibilityOffAllMarkupsInListPushButton">
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QPushButton" name="moveMarkupUpPushButton">
+               <property name="toolTip">
+                <string>Move a selected markup up one spot in the list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/MarkupsMoveUp.png</normaloff>:/Icons/MarkupsMoveUp.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="moveMarkupDownPushButton">
+               <property name="toolTip">
+                <string>Move a selected markup down one spot in the list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/MarkupsMoveDown.png</normaloff>:/Icons/MarkupsMoveDown.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="QPushButton" name="deleteMarkupPushButton">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Delete the selected markup(s) from the active list</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>:/Icons/MarkupsDelete.png</normaloff>:/Icons/MarkupsDelete.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="deleteAllMarkupsInListPushButton">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Remove all markups from the active list</string>
+               </property>
+               <property name="text">
+                <string>Delete All</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="activeMarkupLabel">
+             <property name="text">
+              <string>Markup List:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="qMRMLNodeComboBox" name="activeMarkupMRMLNodeComboBox">
              <property name="toolTip">
-              <string>Set visibility flag to off for all markups in active list</string>
+              <string>Select or create a markups list</string>
+             </property>
+             <property name="nodeTypes">
+              <stringlist>
+               <string>vtkMRMLMarkupsFiducialNode</string>
+              </stringlist>
+             </property>
+             <property name="addEnabled">
+              <bool>true</bool>
+             </property>
+             <property name="renameEnabled">
+              <bool>true</bool>
+             </property>
+             <property name="baseName">
+              <string>Fiducial List</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="listVisibileInvisiblePushButton">
+             <property name="toolTip">
+              <string>Toggle the list visibility, which will over ride the visibility of markups in the list.</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>:/Icons/Medium/SlicerInvisible.png</normaloff>:/Icons/Medium/SlicerInvisible.png</iconset>
+               <normaloff>:Icons/Medium/SlicerVisible.png</normaloff>:Icons/Medium/SlicerVisible.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="listLockedUnlockedPushButton">
+             <property name="toolTip">
+              <string>Toggle the list lock state which will over ride the lock state of markups in the list.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>:Icons/Medium/SlicerUnlock.png</normaloff>:Icons/Medium/SlicerUnlock.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useListNameForMarkupsCheckBox">
+             <property name="toolTip">
+              <string>Prefix the labels of new markups with the list name</string>
+             </property>
+             <property name="text">
+              <string>Use List Name</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <widget class="QPushButton" name="lockAllMarkupsInListPushButton">
-             <property name="toolTip">
-              <string>Set the lock flag to true on all markups in the active list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/Medium/SlicerLock.png</normaloff>:/Icons/Medium/SlicerLock.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="unlockAllMarkupsInListPushButton">
-             <property name="toolTip">
-              <string>Set the lock flag to false on all markups in the active list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/Medium/SlicerUnlock.png</normaloff>:/Icons/Medium/SlicerUnlock.png</iconset>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <widget class="QPushButton" name="selectAllMarkupsInListPushButton">
-             <property name="toolTip">
-              <string>Select all markups in selected list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/MarkupsSelected.png</normaloff>:/Icons/MarkupsSelected.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="deselectAllMarkupsInListPushButton">
-             <property name="toolTip">
-              <string>Deselect all markups in active markups list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/MarkupsUnselected.png</normaloff>:/Icons/MarkupsUnselected.png</iconset>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="addMarkupPushButton">
+          <widget class="QTableWidget" name="activeMarkupTableWidget">
            <property name="toolTip">
-            <string>Add a new markup to the active list, at origin</string>
+            <string>The currently active markup node</string>
            </property>
-           <property name="text">
-            <string>+</string>
+           <property name="accessibleName">
+            <string>active markup table</string>
+           </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="QPushButton" name="moveMarkupUpPushButton">
-             <property name="toolTip">
-              <string>Move a selected markup up one spot in the list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/MarkupsMoveUp.png</normaloff>:/Icons/MarkupsMoveUp.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="moveMarkupDownPushButton">
-             <property name="toolTip">
-              <string>Move a selected markup down one spot in the list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/MarkupsMoveDown.png</normaloff>:/Icons/MarkupsMoveDown.png</iconset>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
-           <item>
-            <widget class="QPushButton" name="deleteMarkupPushButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Delete the selected markup(s) from the active list</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/Icons/MarkupsDelete.png</normaloff>:/Icons/MarkupsDelete.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="deleteAllMarkupsInListPushButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>Remove all markups from the active list</string>
-             </property>
-             <property name="text">
-              <string>Delete All</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="activeMarkupLabel">
-           <property name="text">
-            <string>Markup List:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="qMRMLNodeComboBox" name="activeMarkupMRMLNodeComboBox">
-           <property name="toolTip">
-            <string>Select or create a markups list</string>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLMarkupsFiducialNode</string>
-            </stringlist>
-           </property>
-           <property name="addEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="renameEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="baseName">
-            <string>Fiducial List</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="useListNameForMarkupsCheckBox">
-           <property name="toolTip">
-            <string>Prefix the labels of new markups with the list name</string>
-           </property>
-           <property name="text">
-            <string>Use List Name</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QTableWidget" name="activeMarkupTableWidget">
-         <property name="toolTip">
-          <string>The currently active markup node</string>
-         </property>
-         <property name="accessibleName">
-          <string>active markup table</string>
-         </property>
-         <property name="alternatingRowColors">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
+     <zorder>addAndModifyLayoutWidget</zorder>
+     <zorder>displayPropertiesCollapsibleGroupBox</zorder>
     </widget>
    </item>
   </layout>
@@ -355,6 +436,22 @@
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkColorPickerButton</class>
+   <extends>QPushButton</extends>
+   <header>ctkColorPickerButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkSliderWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkSliderWidget.h</header>
   </customwidget>
   <customwidget>
    <class>qMRMLNodeComboBox</class>

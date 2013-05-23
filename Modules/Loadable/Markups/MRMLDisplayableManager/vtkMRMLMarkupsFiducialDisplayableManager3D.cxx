@@ -124,7 +124,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::PrintSelf(ostream& os, vtkInden
 }
 
 //---------------------------------------------------------------------------
-/// Create a new text widget.
+/// Create a new widget.
 vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager3D::CreateWidget(vtkMRMLMarkupsNode* node)
 {
 
@@ -172,19 +172,8 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager3D::CreateWidget(vtk
   seedWidget->SetInteractor(this->GetInteractor());
   seedWidget->SetCurrentRenderer(this->GetRenderer());
 
-  //seedWidget->ProcessEventsOff();
-
-  // create a new handle
-  vtkHandleWidget* newhandle = seedWidget->CreateNewHandle();
-  if (!newhandle)
-    {
-    vtkErrorMacro("CreateWidget: error creaing a new handle!");
-    }
   vtkDebugMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
   
-  // init the widget from the mrml node
-  //this->PropagateMRMLToWidget(fiducialNode, seedWidget);
-
   seedWidget->CompleteInteraction();
 
   return seedWidget;
@@ -369,9 +358,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
   
   
   // set the glyph type if a new handle was created, or the glyph type changed
-  std::map<vtkMRMLNode*, int>::iterator iter  = this->NodeGlyphTypes.find(displayNode);
+  int oldGlyphType = this->Helper->GetNodeGlyphType(displayNode, n);
   if (createdNewHandle ||
-      iter == this->NodeGlyphTypes.end() || iter->second != displayNode->GetGlyphType())
+      oldGlyphType != displayNode->GetGlyphType())
     {
     vtkDebugMacro("3D: DisplayNode glyph type = " << displayNode->GetGlyphType() << " = " << displayNode->GetGlyphTypeAsString() << ", is 3d glyph = " << (displayNode->GlyphTypeIs3D() ? "true" : "false"));
     // std::cout << "SetNthSeed " << n << ": Display node glyph type = " << displayNode->GetGlyphType() << std::endl;
@@ -406,12 +395,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
       glyphSource->SetScale(1.0);
       handleRep->SetHandle(glyphSource->GetOutput());
       }
-//    if (!createdNewHandle)
-      {
-      // TBD: keep with the assumption of one glyph type per markups node,
-      // that each seed has to have the same type, but update if necessary
-      this->NodeGlyphTypes[displayNode] = displayNode->GetGlyphType();
-      }
+    // TBD: keep with the assumption of one glyph type per markups node,
+    // but they may have different glyphs during update
+    this->Helper->SetNodeGlyphType(displayNode, displayNode->GetGlyphType(), n);
     }  // end of glyph type
 
   // update the text display properties if there is text
@@ -879,7 +865,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::UpdatePosition(vtkAbstractWidge
 void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLSceneEndClose()
 {
   // clear out the map of glyph types
-  this->NodeGlyphTypes.clear();
+  this->Helper->ClearNodeGlyphTypes();
 }
 
 //---------------------------------------------------------------------------
