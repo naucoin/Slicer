@@ -61,9 +61,11 @@ public:
   bool              EditEnabled;
   bool              RenameEnabled;
 
-  bool SelectNodeUponCreation;
-  QString NoneDisplay;
-  bool AutoDefaultText;
+  bool              SelectNodeUponCreation;
+  QString           NoneDisplay;
+  bool              AutoDefaultText;
+
+  QList<QAction*> UserMenuActions;
 };
 
 #endif

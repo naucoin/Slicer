@@ -19,7 +19,9 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QAction>
 #include <QApplication>
+#include <QDebug>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -263,6 +265,13 @@ void qMRMLNodeComboBoxPrivate::updateActionItems(bool resetRootIndex)
       {
       extraItems.append(QObject::tr("Delete current ")  + this->nodeTypeLabel());
       }
+    if (this->UserMenuActions.size() > 0)
+      {
+      for (int i = 0; i < this->UserMenuActions.size(); ++i)
+        {
+        extraItems.append(this->UserMenuActions.at(i)->text());
+        }
+      }
     }
   this->MRMLSceneModel->setPostItems(extraItems, this->MRMLSceneModel->mrmlSceneItem());
   QObject::connect(this->ComboBox->view(), SIGNAL(clicked(QModelIndex)),
@@ -394,6 +403,19 @@ void qMRMLNodeComboBox::activateExtraItem(const QModelIndex& index)
     d->ComboBox->hidePopup();
     this->addNode();
     this->renameCurrentNode();
+    }
+  else
+    {
+    // check for user added items
+    for (int i = 0; i < d->UserMenuActions.size(); ++i)
+      {
+      if (data.startsWith(d->UserMenuActions.at(i)->text()))
+        {
+	d->ComboBox->hidePopup();
+        d->UserMenuActions.at(i)->trigger();
+        break;
+        }
+      }
     }
 
 }
@@ -966,4 +988,38 @@ void qMRMLNodeComboBox::changeEvent(QEvent *event)
     d->updateDelegate();
     }
   this->Superclass::changeEvent(event);
+}
+
+// --------------------------------------------------------------------------
+void qMRMLNodeComboBox::addMenuAction(QAction *newAction)
+{
+  Q_D(qMRMLNodeComboBox);
+
+  // is an action with the same text already in the user list?
+  for (int i = 0; i < d->UserMenuActions.size(); ++i)
+    {
+    if (d->UserMenuActions.at(i)->text().compare(newAction->text()) == 0)
+      {
+      qDebug() << "addMenuAction: duplicate action text of "
+               << newAction->text()
+               << ", not adding this action";
+      return;
+      }
+    else if (newAction->text().startsWith(QObject::tr("Create new ")) ||
+             newAction->text().startsWith(QObject::tr("Delete current ")) ||
+             newAction->text().startsWith(QObject::tr("Edit current ")) ||
+             newAction->text().startsWith(QObject::tr("Rename current ")) ||
+             newAction->text().startsWith(QObject::tr("Create and rename")))
+      {
+      qDebug() << "addMenuAction: warning: the text on this action, "
+               << newAction->text()
+               << ", matches the start of a default action text and will not get triggered, not adding it.";
+      return;
+      }
+    }
+
+  d->UserMenuActions.append(newAction);
+
+  // update with the new action
+  d->updateActionItems(false);
 }
