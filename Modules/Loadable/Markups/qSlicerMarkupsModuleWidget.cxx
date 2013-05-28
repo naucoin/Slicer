@@ -1752,8 +1752,6 @@ void qSlicerMarkupsModuleWidget::toColor(const QColor &qcolor, double* color)
 
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggered()
-//const QString &clickedText)
-//const QModelIndex &index)
 {
   Q_D(qSlicerMarkupsModuleWidget);
   
