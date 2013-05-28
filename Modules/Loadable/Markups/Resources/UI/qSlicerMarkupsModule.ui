@@ -25,62 +25,62 @@
      <property name="collapsedHeight">
       <number>10</number>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>23</x>
-        <y>31</y>
-        <width>331</width>
-        <height>188</height>
+        <y>21</y>
+        <width>611</width>
+        <height>221</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0">
+       <item row="1" column="0">
         <widget class="QLabel" name="glyphTypeLabel">
          <property name="text">
           <string>Glyph Type:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="selectedColorLabel">
          <property name="text">
           <string>Selected Color:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="unselectedColorLabel">
          <property name="text">
           <string>Unselected Color:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="glyphScaleLabel">
          <property name="text">
           <string>Glyph Scale:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="textScaleLabel">
          <property name="text">
           <string>Text Scale:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="opacityLabel">
          <property name="text">
           <string>Opacity:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="QComboBox" name="glyphTypeComboBox"/>
        </item>
-       <item row="3" column="1">
+       <item row="5" column="1">
         <widget class="ctkSliderWidget" name="glyphScaleSliderWidget">
          <property name="singleStep">
           <double>0.100000000000000</double>
@@ -90,21 +90,21 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="3" column="1">
         <widget class="ctkColorPickerButton" name="selectedColorPickerButton">
          <property name="displayColorName">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="4" column="1">
         <widget class="ctkColorPickerButton" name="unselectedColorPickerButton">
          <property name="displayColorName">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="6" column="1">
         <widget class="ctkSliderWidget" name="textScaleSliderWidget">
          <property name="singleStep">
           <double>0.100000000000000</double>
@@ -114,13 +114,36 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="7" column="1">
         <widget class="ctkSliderWidget" name="opacitySliderWidget">
          <property name="singleStep">
           <double>0.100000000000000</double>
          </property>
          <property name="maximum">
           <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="3">
+        <widget class="QPushButton" name="resetToDefaultDisplayPropertiesPushButton">
+         <property name="toolTip">
+          <string>Use default display properties.</string>
+         </property>
+         <property name="text">
+          <string>Reset to Defaults</string>
          </property>
         </widget>
        </item>
@@ -424,8 +447,6 @@
        </item>
       </layout>
      </widget>
-     <zorder>addAndModifyLayoutWidget</zorder>
-     <zorder>displayPropertiesCollapsibleGroupBox</zorder>
     </widget>
    </item>
   </layout>
