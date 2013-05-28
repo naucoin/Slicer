@@ -141,7 +141,7 @@ public slots:
 
   /// create a new markups node and copy the display node settings from the
   /// current markups node if set, otherwise just uses the defaults.
-  void onNewMarkupWithCurrentDisplayPropertiesTriggered();//const QString& clickedText);//const QModelIndex &index);
+  void onNewMarkupWithCurrentDisplayPropertiesTriggered();
 
 protected:
   QScopedPointer<qSlicerMarkupsModuleWidgetPrivate> d_ptr;
