@@ -88,7 +88,10 @@ public slots:
   void onGlyphScaleSliderWidgetChanged(double value);
   void onTextScaleSliderWidgetChanged(double value);
   void onOpacitySliderWidgetChanged(double value);
-  
+
+  /// display property button slots
+  void onResetToDefaultDisplayPropertiesPushButtonClicked();
+
   /// list button slots
   void onVisibilityOnAllMarkupsInListPushButtonClicked();
   void onVisibilityOffAllMarkupsInListPushButtonClicked();

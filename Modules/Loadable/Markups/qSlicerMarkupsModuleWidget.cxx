@@ -142,7 +142,10 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
       }
     this->glyphTypeComboBox->setEnabled(true);
     }
-  
+  // set up the display properties buttons
+  QObject::connect(this->resetToDefaultDisplayPropertiesPushButton,  SIGNAL(clicked()),
+                   q, SLOT(onResetToDefaultDisplayPropertiesPushButtonClicked()));
+
   // set up the list buttons
   // visibility
   QObject::connect(this->visibilityOnAllMarkupsInListPushButton, SIGNAL(clicked()),
@@ -850,6 +853,39 @@ void qSlicerMarkupsModuleWidget::onOpacitySliderWidgetChanged(double value)
     {
     displayNode->SetOpacity(value);
     }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onResetToDefaultDisplayPropertiesPushButtonClicked()
+{
+   Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+
+  // create a default display node
+  vtkSmartPointer<vtkMRMLMarkupsDisplayNode> defaultDisplayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();
+
+  // copy it into the list display node
+  displayNode->Copy(defaultDisplayNode);
+
+  // push an update on the GUI
+  this->UpdateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
