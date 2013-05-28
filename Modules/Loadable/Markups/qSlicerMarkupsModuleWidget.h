@@ -27,6 +27,7 @@ class qSlicerMarkupsModuleWidgetPrivate;
 class vtkMRMLNode;
 class QTableWidgetItem;
 class vtkSlicerMarkupsLogic;
+class QModelIndex;
 
 /// \ingroup Slicer_QtModules_Markups
 class Q_SLICER_QTMODULES_MARKUPS_EXPORT qSlicerMarkupsModuleWidget :
@@ -137,6 +138,10 @@ public slots:
   void onActiveMarkupsNodeMarkupRemovedEvent();//vtkMRMLNode *markupsNode);
   /// update a table row from a modified markup
   void onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject *caller, vtkObject *callData);
+
+  /// create a new markups node and copy the display node settings from the
+  /// current markups node if set, otherwise just uses the defaults.
+  void onNewMarkupWithCurrentDisplayPropertiesTriggered();//const QString& clickedText);//const QModelIndex &index);
 
 protected:
   QScopedPointer<qSlicerMarkupsModuleWidgetPrivate> d_ptr;
