@@ -17,12 +17,14 @@
 
 // Qt includes
 #include <QDebug>
+#include <QModelIndex>
 #include <QStringList>
 #include <QTableWidgetItem>
 
 // SlicerQt includes
 #include "qSlicerMarkupsModuleWidget.h"
 #include "ui_qSlicerMarkupsModule.h"
+#include "qMRMLSceneModel.h"
 
 // MRML includes
 #include "vtkMRMLScene.h"
@@ -54,6 +56,8 @@ public:
 
 private:
   QStringList columnLabels;
+
+  QAction*    newMarkupWithCurrentDisplayPropertiesAction;
 };
 
 //-----------------------------------------------------------------------------
@@ -64,6 +68,8 @@ qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMark
   : q_ptr(&object)
 {
   this->columnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "X" << "Y" << "Z";
+
+  this->newMarkupWithCurrentDisplayPropertiesAction = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -109,14 +115,13 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
     int min = displayNode->GetMinimumGlyphType();
     int max = displayNode->GetMaximumGlyphType();
-    bool enabled =  this->glyphTypeComboBox->isEnabled();
     this->glyphTypeComboBox->setEnabled(false);
     for (int i = min; i <= max; i++)
       {
       displayNode->SetGlyphType(i);
       this->glyphTypeComboBox->addItem(displayNode->GetGlyphTypeAsString());
       }
-    this->glyphTypeComboBox->setEnabled(enabled);
+    this->glyphTypeComboBox->setEnabled(true);
     displayNode->Delete();
     }
   // set the default value if not set
@@ -124,7 +129,6 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     {
     vtkSmartPointer<vtkMRMLMarkupsDisplayNode> displayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();
     QString glyphType = QString(displayNode->GetGlyphTypeAsString());
-    bool enabled = this->glyphTypeComboBox->isEnabled();
     this->glyphTypeComboBox->setEnabled(false);
     int index =  this->glyphTypeComboBox->findData(glyphType);
     if (index != -1)
@@ -136,7 +140,7 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
       // glyph types start at 1, combo box is 0 indexed
       this->glyphTypeComboBox->setCurrentIndex(displayNode->GetGlyphType() - 1);
       }
-    this->glyphTypeComboBox->setEnabled(enabled);
+    this->glyphTypeComboBox->setEnabled(true);
     }
   
   // set up the list buttons
@@ -194,6 +198,20 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
     //qDebug() << "No selection node found in scene!";
     }
 
+  //
+  // add an action to create a new markups list using the display node
+  // settings from the currently active list
+  //
+  
+  this->newMarkupWithCurrentDisplayPropertiesAction =
+    new QAction("New markups with current display properties",
+                this->activeMarkupMRMLNodeComboBox);
+  this->activeMarkupMRMLNodeComboBox->addMenuAction(this->newMarkupWithCurrentDisplayPropertiesAction);
+  this->activeMarkupMRMLNodeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+  
+  QObject::connect(this->newMarkupWithCurrentDisplayPropertiesAction, SIGNAL(triggered()),
+                    q, SLOT(onNewMarkupWithCurrentDisplayPropertiesTriggered()));
+  
   //
   // set up the list visibility/locked buttons
   //
@@ -1730,4 +1748,69 @@ void qSlicerMarkupsModuleWidget::toColor(const QColor &qcolor, double* color)
   color[0] = qcolor.redF();
   color[1] = qcolor.greenF();
   color[2] = qcolor.blueF();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggered()
+//const QString &clickedText)
+//const QModelIndex &index)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+  
+//  qDebug() << "onNewMarkupWithCurrentDisplayPropertiesTriggered";
+
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    // if there's no currently active markups list, trigger the default add
+    // node
+    d->activeMarkupMRMLNodeComboBox->addNode();
+    return;
+    }
+
+  // otherwise make a new one of the same class
+  vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (!markupsNode)
+    {
+    qDebug() << "Unable to get the currently active markups node";
+    return;
+    }
+
+  // get the display node
+  vtkMRMLDisplayNode *displayNode = markupsNode->GetDisplayNode();
+  if (!displayNode)
+    {
+    qDebug() << "Unable to get the display node on the markups node";
+    }
+
+  // create a new one
+  vtkMRMLNode *newDisplayNode = this->mrmlScene()->CreateNodeByClass(displayNode->GetClassName());
+  // copy the old one
+  newDisplayNode->Copy(displayNode);
+  /// add to the scene
+  this->mrmlScene()->AddNode(newDisplayNode);
+
+  // now create the new markups node
+  const char *className = markupsNode->GetClassName();
+  vtkMRMLNode *newMRMLNode = this->mrmlScene()->CreateNodeByClass(className);
+  // copy the name and let them rename it
+  newMRMLNode->SetName(markupsNode->GetName());
+  this->mrmlScene()->AddNode(newMRMLNode);
+  // and observe the copied display node
+  vtkMRMLDisplayableNode *newDisplayableNode = vtkMRMLDisplayableNode::SafeDownCast(newMRMLNode);
+  newDisplayableNode->SetAndObserveDisplayNodeID(newDisplayNode->GetID());
+
+  // set it active
+  d->activeMarkupMRMLNodeComboBox->setCurrentNode(newMRMLNode->GetID());
+  // let the user rename it
+  d->activeMarkupMRMLNodeComboBox->renameCurrentNode();
+
+  // update the display properties manually since the display node wasn't
+  // observed when it was added
+  this->UpdateWidgetFromMRML();
+  
+  // clean up
+  newDisplayNode->Delete();
+  newMRMLNode->Delete();
 }
