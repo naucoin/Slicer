@@ -18,6 +18,8 @@
 // MRML includes
 #include "vtkMRMLNode.h"
 
+class vtkMRMLUnitNode;
+
 // STD includes
 #include <vector>
 
@@ -124,10 +126,14 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
 
   /// Description
   /// a list of events that this node can throw
+  /// UnitModifiedEvent: Fired everytime a quantity unit node is changed
+  /// or an active quantity unit node is modified. The calldata contains
+  /// the node quantity
   enum
   {
     ActiveAnnotationIDChangedEvent = 19001,
     AnnotationIDListModifiedEvent,
+    UnitModifiedEvent,
   };
 
   /// Description:
@@ -150,6 +156,34 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
   std::string GetAnnotationResourceByID(std::string id);
   /// Get the number of ids in the list
   int GetNumberOfAnnotationIDsInList() { return static_cast<int>(this->AnnotationIDList.size()); };
+
+  /// -- Units --
+
+  /// Description:
+  /// Set/Get the current unit node associated with the given quantity.
+  /// This is how the GUI or the logic can access the current node for
+  /// a quantity. Changing the current node for a given quantity should only
+  /// be done through the unit node settings panel.
+  /// There can be no node (i.e. NULL) associated to a quantity.
+  /// To make sure to have the correct unit node, one should observe the
+  /// selection node for UnitModifiedEvent.
+  /// \sa GetNodeReferenceID(), SetAndObserveNodeReferenceID()
+  /// \sa UnitModifiedEvent
+  const char* GetUnitNodeID(const char* quantity);
+  void SetUnitNodeID(const char* quantity, const char* id);
+
+  /// Description:
+  /// Get all the unit node currently observed by the selection node.
+  /// \sa GetReferenceNodes()
+  /// \sa GetUnitNodeID(), SetUnitNodeID()
+  void GetUnitNodes(std::vector<vtkMRMLUnitNode*>& units);
+
+  /// Description:
+  /// Method to propagate events generated in units nodes.
+  /// \sa GetNodeReferenceID(), SetAndObserveNodeReferenceID()
+  /// \sa UnitModifiedEvent
+  void ProcessMRMLEvents(vtkObject *caller, unsigned long event, void *callData);
+
 protected:
   vtkMRMLSelectionNode();
   ~vtkMRMLSelectionNode();

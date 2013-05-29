@@ -478,10 +478,17 @@ vtkMRMLNode* qMRMLNodeComboBox::currentNode()const
 }
 
 // --------------------------------------------------------------------------
-QString qMRMLNodeComboBox::currentNodeId()const
+QString qMRMLNodeComboBox::currentNodeID()const
 {
   vtkMRMLNode* node = this->currentNode();
   return node ? node->GetID() : "";
+}
+
+// --------------------------------------------------------------------------
+QString qMRMLNodeComboBox::currentNodeId()const
+{
+  // \deprecated
+  return this->currentNodeID();
 }
 
 // --------------------------------------------------------------------------
@@ -526,6 +533,7 @@ void qMRMLNodeComboBox::emitCurrentNodeChanged()
     {
     emit currentNodeChanged(node);
     emit currentNodeChanged(node != 0);
+    emit currentNodeIDChanged(node ? node->GetID() : "");
     }
 }
 
@@ -612,14 +620,14 @@ void qMRMLNodeComboBox::setMRMLScene(vtkMRMLScene* scene)
   // vtkMRMLClipModels selector in the Models module)
   if (oldNodeCount)
     {
-    this->setCurrentNode(oldCurrentNode);
+    this->setCurrentNodeID(oldCurrentNode);
     }
   // if the new nodeCount is 0, then let's make sure to select 'invalid' node
   // (None(0) or -1). we can't do nothing otherwise the Scene index (rootmodelIndex)
   // would be selected and "Scene" would be displayed (see vtkMRMLNodeComboboxTest5)
   else
     {
-    this->setCurrentNode(this->currentNode());
+    this->setCurrentNodeID(this->currentNodeID());
     }
 
   this->setEnabled(scene != 0);
@@ -628,11 +636,11 @@ void qMRMLNodeComboBox::setMRMLScene(vtkMRMLScene* scene)
 // --------------------------------------------------------------------------
 void qMRMLNodeComboBox::setCurrentNode(vtkMRMLNode* newCurrentNode)
 {
-  this->setCurrentNode(newCurrentNode ? newCurrentNode->GetID() : "");
+  this->setCurrentNodeID(newCurrentNode ? newCurrentNode->GetID() : "");
 }
 
 // --------------------------------------------------------------------------
-void qMRMLNodeComboBox::setCurrentNode(const QString& nodeID)
+void qMRMLNodeComboBox::setCurrentNodeID(const QString& nodeID)
 {
   Q_D(qMRMLNodeComboBox);
   // A straight forward implementation of setCurrentNode would be:

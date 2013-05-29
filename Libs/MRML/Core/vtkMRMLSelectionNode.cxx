@@ -15,8 +15,10 @@ Version:   $Revision: 1.2 $
 // MRML includes
 #include "vtkMRMLScene.h"
 #include "vtkMRMLSelectionNode.h"
+#include "vtkMRMLUnitNode.h"
 
 // VTK includes
+#include <vtkCommand.h>
 #include <vtkObjectFactory.h>
 #include <vtkStdString.h>
 
@@ -452,4 +454,61 @@ void vtkMRMLSelectionNode::SetReferenceActiveAnnotationID (const char *id)
 {
   this->SetActiveAnnotationID(id);
   this->InvokeEvent(vtkMRMLSelectionNode::ActiveAnnotationIDChangedEvent);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLSelectionNode::GetUnitNodes(std::vector<vtkMRMLUnitNode*>& units)
+{
+  std::string unit = "Unit/";
+  for (NodeReferencesType::const_iterator it = this->NodeReferences.begin();
+    it != this->NodeReferences.end(); ++it)
+    {
+    if (it->first.compare(0, unit.size(), unit) == 0)
+      {
+      // there is only one referenced node per reference role
+      units.push_back(
+        vtkMRMLUnitNode::SafeDownCast(it->second[0]->ReferencedNode));
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+const char* vtkMRMLSelectionNode::GetUnitNodeID(const char* quantity)
+{
+  std::string referenceRole = "Unit/";
+  referenceRole += quantity ? quantity : "";
+  return this->GetNodeReferenceID(referenceRole.c_str());
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLSelectionNode::SetUnitNodeID(const char* quantity, const char* id)
+{
+  std::string safeQuantity = quantity ? quantity : "";
+  std::string referenceRole = "Unit/" + safeQuantity;
+
+  unsigned long mTime = this->GetMTime();
+  this->SetAndObserveNodeReferenceID(referenceRole.c_str(), id);
+
+  if (this->GetMTime() > mTime)
+    {
+    // Node changed, propaged unit modified event
+    this->InvokeEvent(vtkMRMLSelectionNode::UnitModifiedEvent, &safeQuantity);
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLSelectionNode::ProcessMRMLEvents(vtkObject *caller,
+                                             unsigned long event,
+                                             void *callData)
+{
+  this->Superclass::ProcessMRMLEvents(caller, event, callData);
+
+  vtkMRMLUnitNode* unitNode = vtkMRMLUnitNode::SafeDownCast(caller);
+  if (unitNode && event == vtkCommand::ModifiedEvent)
+    {
+    std::string quantity =
+      unitNode->GetQuantity() ? unitNode->GetQuantity() : "";
+    this->InvokeEvent(
+      vtkMRMLSelectionNode::UnitModifiedEvent, &quantity);
+    }
 }

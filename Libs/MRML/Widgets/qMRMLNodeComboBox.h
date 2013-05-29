@@ -56,7 +56,7 @@ class QMRML_WIDGETS_EXPORT qMRMLNodeComboBox
   : public QWidget
 {
   Q_OBJECT
-  Q_PROPERTY(QString currentNodeId READ currentNodeId WRITE setCurrentNode DESIGNABLE false)
+  Q_PROPERTY(QString currentNodeID READ currentNodeID WRITE setCurrentNodeID NOTIFY currentNodeIDChanged DESIGNABLE false)
   Q_PROPERTY(QStringList nodeTypes READ nodeTypes WRITE setNodeTypes)
   Q_PROPERTY(bool showHidden READ showHidden WRITE setShowHidden)
   Q_PROPERTY(bool showChildNodeTypes READ showChildNodeTypes WRITE setShowChildNodeTypes)
@@ -156,6 +156,10 @@ public:
 
   /// Return the currently selected node id . "" if no node is selected
   /// Utility function that is based on currentNode
+  QString currentNodeID()const;
+
+  /// \deprecated
+  /// Use currentNodeID instead
   QString currentNodeId()const;
 
   /// if true, when the user create a node using "Add node", the node will be
@@ -250,13 +254,13 @@ public slots:
   void setCurrentNode(vtkMRMLNode* node);
 
   /// Select the node to be current. If \nodeId is invalid (or can't be found
-  /// in the scene), the current node becomes 0. 
-  void setCurrentNode(const QString& nodeID);
+  /// in the scene), the current node becomes 0.
+  void setCurrentNodeID(const QString& nodeID);
 
   /// Select the current node by index. The index refers to the order of the nodes
   /// into the list. If \a index is 0, the first node will be selected (even if
   /// "NoneEnabled" is true).
-  /// \sa nodeCount, setCurrentNode(vtkMRMLNode* ), setCurrentNode(const QString&)
+  /// \sa nodeCount, setCurrentNode(vtkMRMLNode* ), setCurrentNodeId(const QString&)
   void setCurrentNodeIndex(int index);
 
   /// Creates a node of the same type than on the "node types" properties.
@@ -279,7 +283,11 @@ signals:
   /// This signal is sent anytime the current node is changed. NULL if
   /// no node is current or the current item is "None".
   void currentNodeChanged(vtkMRMLNode* node);
-  
+
+  /// This signal is sent anytime the current node is changed. "" if
+  /// no node is current or the current item is "None".
+  void currentNodeIDChanged(const QString& id);
+
   /// Advanced function.
   /// This signal is sent when the user chooses a node in the combobox.
   /// The item's node is passed. Note that this signal is sent even when the 
