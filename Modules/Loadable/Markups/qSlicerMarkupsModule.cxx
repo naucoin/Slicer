@@ -18,6 +18,7 @@
 // Qt includes
 #include <QDebug>
 #include <QtPlugin>
+//#include <QSettings>
 
 // Markups Logic includes
 #include <vtkSlicerMarkupsLogic.h>
@@ -36,6 +37,7 @@
 #include "qSlicerMarkupsModule.h"
 #include "qSlicerMarkupsModuleWidget.h"
 #include "qSlicerMarkupsIO.h"
+//#include "qSlicerMarkupsSettingsPanel.h"
 //#include "vtkSlicerMarkupsLogic.h"
 
 //-----------------------------------------------------------------------------
@@ -127,6 +129,29 @@ void qSlicerMarkupsModule::setup()
   ioManager->registerIO(new qSlicerNodeWriter(
                             "MarkupsFiducials", markupsIO->fileType(),
                             QStringList() << "vtkMRMLMarkupsNode", this));
+
+  // settings
+  /*
+  if (qSlicerApplication::application())
+    {
+    qSlicerMarkupsSettingsPanel* panel =
+      new qSlicerMarkupsSettingsPanel;
+    qSlicerApplication::application()->settingsDialog()->addPanel(
+      "Markups", panel);
+    panel->setMarkupsLogic(vtkSlicerMarkupsLogic::SafeDownCast(this->logic()));
+    }
+  */
+  // for now, don't use the settings panel as it's causing the logic values to
+  // be reset on start up, just set things directly
+  qSlicerMarkupsModuleWidget* moduleWidget = dynamic_cast<qSlicerMarkupsModuleWidget*>(this->widgetRepresentation());
+  if (!moduleWidget)
+    {
+    qDebug() << "qSlicerMarkupsModule::setup: unable to get the markups verion of the widget to set default display settings";
+    }
+  else
+    {
+    moduleWidget->updateLogicFromSettings();
+    }
 }
 
 

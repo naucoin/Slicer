@@ -742,6 +742,8 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
     // create a display node and add node and display node to scene
     vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
     this->GetMRMLScene()->AddNode(displayNode);
+    // let the logic know that it needs to set it to defaults
+    displayNode->InvokeEvent(vtkMRMLMarkupsDisplayNode::ResetToDefaultsEvent);
     activeFiducialNode->AddAndObserveDisplayNodeID(displayNode->GetID());
     this->GetMRMLScene()->AddNode(activeFiducialNode);
 

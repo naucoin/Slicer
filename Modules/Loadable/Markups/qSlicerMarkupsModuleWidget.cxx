@@ -18,6 +18,7 @@
 // Qt includes
 #include <QDebug>
 #include <QModelIndex>
+#include <QSettings>
 #include <QStringList>
 #include <QTableWidgetItem>
 
@@ -25,6 +26,7 @@
 #include "qSlicerMarkupsModuleWidget.h"
 #include "ui_qSlicerMarkupsModule.h"
 #include "qMRMLSceneModel.h"
+#include "qSlicerApplication.h"
 
 // MRML includes
 #include "vtkMRMLScene.h"
@@ -34,6 +36,7 @@
 #include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsFiducialNode.h"
 #include "vtkSlicerMarkupsLogic.h"
+#include "qSlicerMarkupsModule.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_Markups
@@ -145,6 +148,8 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // set up the display properties buttons
   QObject::connect(this->resetToDefaultDisplayPropertiesPushButton,  SIGNAL(clicked()),
                    q, SLOT(onResetToDefaultDisplayPropertiesPushButtonClicked()));
+  QObject::connect(this->saveToDefaultDisplayPropertiesPushButton,  SIGNAL(clicked()),
+                   q, SLOT(onSaveToDefaultDisplayPropertiesPushButtonClicked()));
 
   // set up the list buttons
   // visibility
@@ -288,6 +293,7 @@ qSlicerMarkupsModuleWidget::qSlicerMarkupsModuleWidget(QWidget* _parent)
 {
 }
 
+
 //-----------------------------------------------------------------------------
 qSlicerMarkupsModuleWidget::~qSlicerMarkupsModuleWidget()
 {
@@ -304,6 +310,8 @@ void qSlicerMarkupsModuleWidget::setup()
   // up over riding the selection node's active place node id
   // d->activeMarkupMRMLNodeComboBox->setEnabled(false);
   d->activeMarkupMRMLNodeComboBox->blockSignals(true);
+
+  // this->updateLogicFromSettings();
 }
 
 //-----------------------------------------------------------------------------
@@ -330,7 +338,6 @@ void qSlicerMarkupsModuleWidget::enter()
   d->activeMarkupMRMLNodeComboBox->blockSignals(false);
 
   this->UpdateWidgetFromMRML();
-
 }
 
 //-----------------------------------------------------------------------------
@@ -354,6 +361,7 @@ vtkSlicerMarkupsLogic *qSlicerMarkupsModuleWidget::markupsLogic()
     }
   return vtkSlicerMarkupsLogic::SafeDownCast(this->logic());
 }
+
 
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
@@ -463,19 +471,24 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
     }
   else
     {
-    // reset to defaults
-    vtkMRMLMarkupsDisplayNode *defaultMarkupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
-    color = defaultMarkupsDisplayNode->GetSelectedColor();
+    // reset to defaults from logic
+    color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeSelectedColor();
     qSlicerMarkupsModuleWidget::toQColor(color, qColor);
     d->selectedColorPickerButton->setColor(qColor);
-    color = defaultMarkupsDisplayNode->GetColor();
+    color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeColor();
     qSlicerMarkupsModuleWidget::toQColor(color, qColor);
     d->unselectedColorPickerButton->setColor(qColor);
-    d->opacitySliderWidget->setValue(defaultMarkupsDisplayNode->GetOpacity());
-    d->glyphTypeComboBox->setCurrentIndex(defaultMarkupsDisplayNode->GetGlyphType() - 1);
-    d->glyphScaleSliderWidget->setValue(defaultMarkupsDisplayNode->GetGlyphScale());
-    d->textScaleSliderWidget->setValue(defaultMarkupsDisplayNode->GetTextScale());
-    defaultMarkupsDisplayNode->Delete();
+    d->opacitySliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeOpacity());
+    QString glyphTypeString = QString(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphTypeAsString().c_str());
+    int glyphTypeInt = this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphType();
+    // glyph types start at 1, combo box is 0 indexed
+    int glyphTypeIndex = glyphTypeInt - 1;
+    if (glyphTypeIndex != -1)
+      {
+      d->glyphTypeComboBox->setCurrentIndex(glyphTypeIndex);
+      }
+    d->glyphScaleSliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphScale());
+    d->textScaleSliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeTextScale());
     }
   // update the visibility and locked buttons
   this->updateListVisibileInvisiblePushButton(markupsNode->GetDisplayVisibility());
@@ -767,6 +780,11 @@ void qSlicerMarkupsModuleWidget::onUnselectedColorPickerButtonChanged(QColor qco
 void qSlicerMarkupsModuleWidget::onGlyphTypeComboBoxChanged(QString value)
 {
   Q_D(qSlicerMarkupsModuleWidget);
+
+  if (value.isEmpty())
+    {
+    return;
+    }
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsFiducialNode *listNode = NULL;
@@ -878,14 +896,58 @@ void qSlicerMarkupsModuleWidget::onResetToDefaultDisplayPropertiesPushButtonClic
     return;
     }
 
-  // create a default display node
-  vtkSmartPointer<vtkMRMLMarkupsDisplayNode> defaultDisplayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();
-
-  // copy it into the list display node
-  displayNode->Copy(defaultDisplayNode);
-
+  // set the display node from the logic defaults
+  this->markupsLogic()->SetDisplayNodeToDefaults(displayNode);
+  
   // push an update on the GUI
   this->UpdateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onSaveToDefaultDisplayPropertiesPushButtonClicked()
+{
+   Q_D(qSlicerMarkupsModuleWidget);
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsFiducialNode *listNode = NULL;
+  if (mrmlNode)
+    {
+    listNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    }
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+
+  // save the settings
+  QSettings *settings = qSlicerApplication::application()->settingsDialog()->settings();
+  settings->setValue("Markups/GlyphType", displayNode->GetGlyphTypeAsString());
+  QColor qcolor;
+  double  *selectedColor = displayNode->GetSelectedColor();
+  if (selectedColor)
+    {
+    qcolor = QColor::fromRgbF(selectedColor[0], selectedColor[1], selectedColor[2]);
+    }
+  settings->setValue("Markups/SelectedColor", qcolor);
+  double *unselectedColor = displayNode->GetColor();
+  if (unselectedColor)
+    {
+    qcolor = QColor::fromRgbF(unselectedColor[0], unselectedColor[1], unselectedColor[2]);
+    }
+  settings->setValue("Markups/UnselectedColor", qcolor);
+  settings->setValue("Markups/GlyphScale", displayNode->GetGlyphScale());
+  settings->setValue("Markups/TextScale", displayNode->GetTextScale());
+  settings->setValue("Markups/Opacity", displayNode->GetOpacity());
+
+  // set the logic defaults from the settings
+  this->updateLogicFromSettings();
 }
 
 //-----------------------------------------------------------------------------
@@ -1088,9 +1150,7 @@ void qSlicerMarkupsModuleWidget::onDeleteMarkupPushButtonClicked()
     {
     return;
     }
-  int numRows = selectedItems.size() / d->numberOfColumns();
-  qDebug() << "selectedItems size = " << selectedItems.size() << ", numRows = " << numRows;
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -1112,7 +1172,7 @@ void qSlicerMarkupsModuleWidget::onDeleteMarkupPushButtonClicked()
     {
     // get the row
     int row = selectedItems.at(i)->row();
-    qDebug() << "Saving: i = " << i << ", row = " << row;
+    // qDebug() << "Saving: i = " << i << ", row = " << row;
     rows << row;
     }
   // sort the list
@@ -1121,7 +1181,7 @@ void qSlicerMarkupsModuleWidget::onDeleteMarkupPushButtonClicked()
   for (int i = rows.size() - 1; i >= 0; --i)
     {
     int index = rows.at(i);
-    qDebug() << "Deleting: i = " << i << ", index = " << index;
+    // qDebug() << "Deleting: i = " << i << ", index = " << index;
     // remove the markup at that row
     listNode->RemoveMarkup(index);
     }
@@ -1847,4 +1907,65 @@ void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggere
   // clean up
   newDisplayNode->Delete();
   newMRMLNode->Delete();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
+{
+  // update logic from settings
+  if (this->logic() == NULL)
+    {
+    qWarning() << "updateLogicFromSettings: no logic to set";
+    return;
+    }
+  
+  if (!qSlicerApplication::application() ||
+      !qSlicerApplication::application()->settingsDialog())
+    {
+    qWarning() << "updateLogicFromSettings: null applicaiton or settings dialog";
+    return;
+    }
+
+  QSettings *settings = qSlicerApplication::application()->settingsDialog()->settings();
+  if (!settings)
+    {
+    qWarning() << "updateLogicFromSettings: null settings";
+    return;
+    }
+
+  QString glyphType = settings->value("Markups/GlyphType").toString();
+  QColor qcolor;
+  QVariant variant = settings->value("Markups/SelectedColor");
+  qcolor = variant.value<QColor>();
+  double selectedColor[3];
+  qSlicerMarkupsModuleWidget::toColor(qcolor, selectedColor);
+  variant = settings->value("Markups/UnselectedColor");
+  QColor qcolorUnsel = variant.value<QColor>();
+  double unselectedColor[3];
+  qSlicerMarkupsModuleWidget::toColor(qcolorUnsel, unselectedColor);
+  double glyphScale = settings->value("Markups/GlyphScale").toDouble();
+  double textScale = settings->value("Markups/TextScale").toDouble();
+  double opacity = settings->value("Markups/Opacity").toDouble();
+
+  /*
+  qDebug() << "updateLogicFromSettings:";
+  qDebug() << "Settings glyph type = " << glyphType;
+  qDebug() << "Settings selected color = " << qcolor;
+  qDebug() << "Settings unselected color = " << qcolorUnsel;
+  qDebug() << "Settings glyph scale = " << glyphScale;
+  qDebug() << "Settings text scale = " << textScale;
+  qDebug() << "Settings opacity = " << opacity;
+  qDebug() << "Copying default settings to logic";
+  */
+  if (!this->markupsLogic())
+    {
+    qWarning() << "Unable to get markups logic";
+    return;
+    }
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeGlyphTypeFromString(glyphType.toLatin1());
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeGlyphScale(glyphScale);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeTextScale(textScale);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeSelectedColor(selectedColor);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeColor(unselectedColor);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeOpacity(opacity);
 }
