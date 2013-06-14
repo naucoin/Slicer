@@ -150,6 +150,11 @@ const char* vtkMRMLMarkupsDisplayNode::GetGlyphTypeAsString(int glyphType)
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayNode::SetGlyphTypeFromString(const char *glyphString)
 {
+  if (!glyphString)
+    {
+    vtkErrorMacro("SetGlyphTypeFromString: Null glyph type string!");
+    return;
+    }
   for (int ID = GlyphMin; ID <= GlyphMax; ID++)
     {
       if (!strcmp(glyphString,GlyphTypesNames[ID]))

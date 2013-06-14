@@ -98,7 +98,14 @@ public:
   void SetGlyphScale(double scale);
   vtkGetMacro(GlyphScale,double);
 
- protected:
+  /// An event that lets the markups logic know to reset this node to the
+  /// default values
+  enum
+  {
+    ResetToDefaultsEvent = 19001,
+  };
+
+protected:
   vtkMRMLMarkupsDisplayNode();
   ~vtkMRMLMarkupsDisplayNode();
   vtkMRMLMarkupsDisplayNode( const vtkMRMLMarkupsDisplayNode& );

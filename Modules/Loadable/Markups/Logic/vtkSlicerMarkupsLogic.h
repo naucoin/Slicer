@@ -35,6 +35,7 @@
 #include "vtkSlicerMarkupsModuleLogicExport.h"
 
 class vtkMRMLMarkupsNode;
+class vtkMRMLMarkupsDisplayNode;
 
 /// \ingroup Slicer_QtModules_Markups
 class VTK_SLICER_MARKUPS_MODULE_LOGIC_EXPORT vtkSlicerMarkupsLogic :
@@ -45,6 +46,10 @@ public:
   static vtkSlicerMarkupsLogic *New();
   vtkTypeMacro(vtkSlicerMarkupsLogic,vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  virtual void ProcessMRMLNodesEvents(vtkObject *caller,
+                                      unsigned long event,
+                                      void *callData );
 
   /// Create a new display node and observe it on the markups node
   /// On success, return the id, on failure return an empty string.
@@ -70,6 +75,32 @@ public:
   void SetAllMarkupsLocked(vtkMRMLMarkupsNode *node, bool flag);
   void SetAllMarkupsSelected(vtkMRMLMarkupsNode *node, bool flag);
 
+  /// set/get the default markups display node settings
+  int GetDefaultMarkupsDisplayNodeGlyphType();
+  void SetDefaultMarkupsDisplayNodeGlyphType(int glyphType);
+  void SetDefaultMarkupsDisplayNodeGlyphTypeFromString(const char *glyphType);
+  std::string GetDefaultMarkupsDisplayNodeGlyphTypeAsString();
+
+  double GetDefaultMarkupsDisplayNodeGlyphScale();
+  void SetDefaultMarkupsDisplayNodeGlyphScale(double scale);
+
+  double GetDefaultMarkupsDisplayNodeTextScale();
+  void SetDefaultMarkupsDisplayNodeTextScale(double scale);
+
+  double GetDefaultMarkupsDisplayNodeOpacity();
+  void SetDefaultMarkupsDisplayNodeOpacity(double opacity);
+
+  double *GetDefaultMarkupsDisplayNodeColor();
+  void SetDefaultMarkupsDisplayNodeColor(double *color);
+  void SetDefaultMarkupsDisplayNodeColor(double r, double g, double b);
+
+  double *GetDefaultMarkupsDisplayNodeSelectedColor();
+  void SetDefaultMarkupsDisplayNodeSelectedColor(double *color);
+  void SetDefaultMarkupsDisplayNodeSelectedColor(double r, double g, double b);
+
+  /// utility method to set up a display node from the defaults
+  void SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *displayNode);
+  
 protected:
   vtkSlicerMarkupsLogic();
   virtual ~vtkSlicerMarkupsLogic();
@@ -83,10 +114,15 @@ protected:
   virtual void UpdateFromMRMLScene();
   virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
   virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
+
 private:
 
   vtkSlicerMarkupsLogic(const vtkSlicerMarkupsLogic&); // Not implemented
   void operator=(const vtkSlicerMarkupsLogic&);               // Not implemented
+
+  /// keep a markups display node with default values that can be updated from
+  /// the application settings
+  vtkMRMLMarkupsDisplayNode *defaultMarkupsDisplayNode;
 };
 
 #endif

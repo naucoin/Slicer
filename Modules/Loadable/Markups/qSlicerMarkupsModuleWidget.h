@@ -40,7 +40,7 @@ public:
   typedef qSlicerAbstractModuleWidget Superclass;
   qSlicerMarkupsModuleWidget(QWidget *parent=0);
   virtual ~qSlicerMarkupsModuleWidget();
-
+  
   /// Set up the GUI from mrml when entering
   virtual void enter();
   /// disconnect from scene when exiting
@@ -67,6 +67,9 @@ public:
   static void toQColor(const double* color, QColor &qcolor);
   static void toColor(const QColor &qcolor, double* color);
 
+  /// Set up the logic default display settings from the appplication settings
+  void updateLogicFromSettings();
+
 public slots:
 
   /// respond to the scene events
@@ -91,7 +94,8 @@ public slots:
 
   /// display property button slots
   void onResetToDefaultDisplayPropertiesPushButtonClicked();
-
+  void onSaveToDefaultDisplayPropertiesPushButtonClicked();
+  
   /// list button slots
   void onVisibilityOnAllMarkupsInListPushButtonClicked();
   void onVisibilityOffAllMarkupsInListPushButtonClicked();

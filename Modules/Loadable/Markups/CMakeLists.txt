@@ -34,6 +34,8 @@ set(MODULE_SRCS
   qSlicerMarkupsModule.h
   qSlicerMarkupsModuleWidget.cxx
   qSlicerMarkupsModuleWidget.h
+  qSlicerMarkupsSettingsPanel.cxx
+  qSlicerMarkupsSettingsPanel.h
   )
 
 
@@ -41,10 +43,12 @@ set(MODULE_MOC_SRCS
   qSlicerMarkupsIO.h
   qSlicerMarkupsModule.h
   qSlicerMarkupsModuleWidget.h
+  qSlicerMarkupsSettingsPanel.h
   )
 
 set(MODULE_UI_SRCS
   Resources/UI/qSlicerMarkupsModule.ui
+  Resources/UI/qSlicerMarkupsSettingsPanel.ui
   )
 
 set(MODULE_TARGET_LIBRARIES

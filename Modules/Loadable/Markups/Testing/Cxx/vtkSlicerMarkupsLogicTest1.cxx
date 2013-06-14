@@ -2,6 +2,7 @@
 #include "vtkMRMLCoreTestingMacros.h"
 #include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLScene.h"
+#include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkSlicerMarkupsLogic.h"
 // VTK includes
 #include <vtkNew.h>
@@ -78,6 +79,50 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     logic1->SetAllMarkupsSelected(markupsNode, true);
     }
 
+  // test the default display node settings
+  vtkSmartPointer<vtkMRMLMarkupsDisplayNode> displayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();
+  TEST_SET_GET_INT_RANGE(logic1, DefaultMarkupsDisplayNodeGlyphType, displayNode->GetMinimumGlyphType(), displayNode->GetMaximumGlyphType());
+  TEST_SET_GET_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeGlyphScale, 0.0, 10.0);
+  TEST_SET_GET_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeTextScale, 0.0, 15.0);
+  TEST_SET_GET_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeOpacity, 0.0, 1.0);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeColor, 0.0, 1.0);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeSelectedColor, 0.0, 1.0);
+
+  // make a test display node and reset it to defaults
+  int originalGlyphType = logic1->GetDefaultMarkupsDisplayNodeGlyphType();
+  double originalGlyphScale = logic1->GetDefaultMarkupsDisplayNodeGlyphScale();
+  double originalTextScale = logic1->GetDefaultMarkupsDisplayNodeTextScale();
+  int glyphType = 3;
+  displayNode->SetGlyphType(glyphType);
+  double textScale = 3.33;
+  displayNode->SetTextScale(textScale);
+  double glyphScale = 0.33;
+  displayNode->SetGlyphScale(glyphScale);
+
+  // reset the display node to defaults
+  logic1->SetDisplayNodeToDefaults(displayNode);
+  // check that the logic didn't change
+  if (logic1->GetDefaultMarkupsDisplayNodeGlyphType() != originalGlyphType)
+    {
+    std::cerr << "Error resetting display node glyph type to " << originalGlyphType << ", logic was changed and now have glyph type: " << logic1->GetDefaultMarkupsDisplayNodeGlyphType() << std::endl;
+    return EXIT_FAILURE;
+    }
+  // check that the display node is changed
+  if (displayNode->GetGlyphType() != originalGlyphType)
+    {
+    std::cerr << "Error resetting display node glyph type to defaults, was expecting  " << originalGlyphType << ", but got " << displayNode->GetGlyphType() << std::endl;
+    return EXIT_FAILURE;
+    }
+  if (displayNode->GetGlyphScale() != originalGlyphScale)
+    {
+    std::cerr << "Error resetting display node glyph scale to defaults, was expecting  " << originalGlyphScale << ", but got " << displayNode->GetGlyphScale() << std::endl;
+    return EXIT_FAILURE;
+    }
+  if (displayNode->GetTextScale() != originalTextScale)
+    {
+    std::cerr << "Error resetting display node text scale to defaults, was expecting  " << originalTextScale << ", but got " << displayNode->GetTextScale() << std::endl;
+    return EXIT_FAILURE;
+    }
   // cleanup
   
   return EXIT_SUCCESS;
