@@ -408,7 +408,7 @@ void qMRMLNodeComboBox::activateExtraItem(const QModelIndex& index)
       {
       if (data.startsWith(action->text()))
         {
-	d->ComboBox->hidePopup();
+        d->ComboBox->hidePopup();
         action->trigger();
         break;
         }
