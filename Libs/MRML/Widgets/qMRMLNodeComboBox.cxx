@@ -265,9 +265,9 @@ void qMRMLNodeComboBoxPrivate::updateActionItems(bool resetRootIndex)
       {
       extraItems.append(QObject::tr("Delete current ")  + this->nodeTypeLabel());
       }
-    for (int i = 0; i < this->UserMenuActions.size(); ++i)
+    foreach (QAction *action, d->UserMenuActions)
       {
-      extraItems.append(this->UserMenuActions.at(i)->text());
+      extraItems.append(action->text());
       }
     }
   this->MRMLSceneModel->setPostItems(extraItems, this->MRMLSceneModel->mrmlSceneItem());
