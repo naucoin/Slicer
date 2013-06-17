@@ -1922,7 +1922,7 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
   if (!qSlicerApplication::application() ||
       !qSlicerApplication::application()->settingsDialog())
     {
-    qWarning() << "updateLogicFromSettings: null applicaiton or settings dialog";
+    qWarning() << "updateLogicFromSettings: null application or settings dialog";
     return;
     }
 
@@ -1930,6 +1930,18 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
   if (!settings)
     {
     qWarning() << "updateLogicFromSettings: null settings";
+    return;
+    }
+
+  // have settings been saved before?
+  if (!settings->contains("Markups/GlyphType") ||
+      !settings->contains("Markups/SelectedColor") ||
+      !settings->contains("Markups/UnselectedColor") ||
+      !settings->contains("Markups/GlyphScale") ||
+      !settings->contains("Markups/TextScale") ||
+      !settings->contains("Markups/Opacity"))
+    {
+    qDebug() << "Markups: display settings not saved yet, using defaults";
     return;
     }
 
