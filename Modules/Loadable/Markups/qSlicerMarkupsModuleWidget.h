@@ -40,7 +40,7 @@ public:
   typedef qSlicerAbstractModuleWidget Superclass;
   qSlicerMarkupsModuleWidget(QWidget *parent=0);
   virtual ~qSlicerMarkupsModuleWidget();
-  
+
   /// Set up the GUI from mrml when entering
   virtual void enter();
   /// disconnect from scene when exiting
@@ -81,6 +81,9 @@ public slots:
   void onNodeRemovedEvent(vtkObject* scene, vtkObject* node);
   /// update the table after a scene is imported
   void onMRMLSceneEndImportEvent();
+  /// update the table after batch processing is done, needed to trigger
+  /// an update after a markups file is read in
+  void onMRMLSceneEndBatchProcessEvent();
   /// clear out the gui when the scene is closed
   void onMRMLSceneEndCloseEvent();
 
@@ -95,7 +98,7 @@ public slots:
   /// display property button slots
   void onResetToDefaultDisplayPropertiesPushButtonClicked();
   void onSaveToDefaultDisplayPropertiesPushButtonClicked();
-  
+
   /// list button slots
   void onVisibilityOnAllMarkupsInListPushButtonClicked();
   void onVisibilityOffAllMarkupsInListPushButtonClicked();
@@ -108,7 +111,7 @@ public slots:
   void onMoveMarkupDownPushButtonClicked();
   void onDeleteMarkupPushButtonClicked();
   void onDeleteAllMarkupsInListPushButtonClicked();
-  
+
   /// update the selection node from the combo box
   void onActiveMarkupMRMLNodeChanged(vtkMRMLNode *markupsNode);
   /// update the combo box from the selection node
@@ -122,10 +125,10 @@ public slots:
   void onListVisibileInvisiblePushButtonClicked();
   /// update the icon and tool tip on the list visibility button
   void updateListVisibileInvisiblePushButton(int visibleFlag);
-  
+
   /// toggle the markups node locked flag
   void onListLockedUnlockedPushButtonClicked();
-  
+
   /// update the markup from the check box
   void onUseListNameForMarkupsCheckBoxToggled(bool flag);
 

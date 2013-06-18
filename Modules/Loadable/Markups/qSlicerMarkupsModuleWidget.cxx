@@ -97,7 +97,7 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // use the ctk color dialog on the color picker buttons
   this->selectedColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
   this->unselectedColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
-  
+
   // set up the display properties
   QObject::connect(this->selectedColorPickerButton, SIGNAL(colorChanged(QColor)),
                    q, SLOT(onSelectedColorPickerButtonChanged(QColor)));
@@ -180,7 +180,7 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
                    q, SLOT(onDeleteMarkupPushButtonClicked()));
   QObject::connect(this->deleteAllMarkupsInListPushButton, SIGNAL(clicked()),
                    q, SLOT(onDeleteAllMarkupsInListPushButtonClicked()));
-  
+
   // set up the active markups node selector
   QObject::connect(this->activeMarkupMRMLNodeComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
                    q, SLOT(onActiveMarkupMRMLNodeChanged(vtkMRMLNode*)));
@@ -210,16 +210,16 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // add an action to create a new markups list using the display node
   // settings from the currently active list
   //
-  
+
   this->newMarkupWithCurrentDisplayPropertiesAction =
     new QAction("New markups with current display properties",
                 this->activeMarkupMRMLNodeComboBox);
   this->activeMarkupMRMLNodeComboBox->addMenuAction(this->newMarkupWithCurrentDisplayPropertiesAction);
   this->activeMarkupMRMLNodeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-  
+
   QObject::connect(this->newMarkupWithCurrentDisplayPropertiesAction, SIGNAL(triggered()),
                     q, SLOT(onNewMarkupWithCurrentDisplayPropertiesTriggered()));
-  
+
   //
   // set up the list visibility/locked buttons
   //
@@ -227,7 +227,7 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
                    q, SLOT(onListVisibileInvisiblePushButtonClicked()));
   QObject::connect(this->listLockedUnlockedPushButton, SIGNAL(clicked()),
                    q, SLOT(onListLockedUnlockedPushButtonClicked()));
-  // 
+  //
   // set up the use list name for markups check box
   //
   QObject::connect(this->useListNameForMarkupsCheckBox, SIGNAL(toggled(bool)),
@@ -330,9 +330,11 @@ void qSlicerMarkupsModuleWidget::enter()
                     this, SLOT(onNodeRemovedEvent(vtkObject*, vtkObject*)));
   this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndImportEvent,
                     this, SLOT(onMRMLSceneEndImportEvent()));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndBatchProcessEvent,
+                    this, SLOT(onMRMLSceneEndBatchProcessEvent()));
   this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
                     this, SLOT(onMRMLSceneEndCloseEvent()));
-  
+
   // now enable the combo box and update
   //d->activeMarkupMRMLNodeComboBox->setEnabled(true);
   d->activeMarkupMRMLNodeComboBox->blockSignals(false);
@@ -393,13 +395,13 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
   // make sure that the GUI updates on changes to the current mark up node,
   // remove observations if no current node
   this->observeMarkupsNode(markupsNode);
-  
+
   if (!markupsNode)
     {
     // qDebug() << "UpdateWidgetFromMRML: Unable to get active markups node,
     // clearing out the table";
     this->clearGUI();
-    
+
     return;
     }
 
@@ -712,6 +714,43 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndImportEvent()
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
+{
+  if (!this->mrmlScene())
+    {
+    return;
+    }
+  // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent";
+  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+  vtkMRMLSelectionNode *selectionNode = NULL;
+  if (node)
+    {
+    selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
+    }
+  vtkMRMLNode *markupsNodeMRML = NULL;
+  QString activePlaceNodeID;
+  if (selectionNode)
+    {
+    activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+    }
+  if (activePlaceNodeID.isEmpty())
+    {
+    // this might have been triggered after a file load, set the last markups node active
+    int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
+    if (numNodes > 0)
+      {
+      vtkMRMLNode *lastNode = this->mrmlScene()->GetNthNodeByClass(numNodes - 1, "vtkMRMLMarkupsNode");
+      if (lastNode)
+        {
+        qDebug() << "onMRMLSceneEndBatchProcessEvent: setting active place node id to " << lastNode->GetID();
+        selectionNode->SetActivePlaceNodeID(lastNode->GetID());
+        }
+      }
+    }
+  this->UpdateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent()
 {
   if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
@@ -726,7 +765,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent()
 void qSlicerMarkupsModuleWidget::onSelectedColorPickerButtonChanged(QColor qcolor)
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   double color[3];
   qSlicerMarkupsModuleWidget::toColor(qcolor, color);
 
@@ -753,7 +792,7 @@ void qSlicerMarkupsModuleWidget::onSelectedColorPickerButtonChanged(QColor qcolo
 void qSlicerMarkupsModuleWidget::onUnselectedColorPickerButtonChanged(QColor qcolor)
 {
   Q_D(qSlicerMarkupsModuleWidget);
-   
+
   double color[3];
   qSlicerMarkupsModuleWidget::toColor(qcolor, color);
 
@@ -898,7 +937,7 @@ void qSlicerMarkupsModuleWidget::onResetToDefaultDisplayPropertiesPushButtonClic
 
   // set the display node from the logic defaults
   this->markupsLogic()->SetDisplayNodeToDefaults(displayNode);
-  
+
   // push an update on the GUI
   this->UpdateWidgetFromMRML();
 }
@@ -954,7 +993,7 @@ void qSlicerMarkupsModuleWidget::onSaveToDefaultDisplayPropertiesPushButtonClick
 void qSlicerMarkupsModuleWidget::onVisibilityOnAllMarkupsInListPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -972,7 +1011,7 @@ void qSlicerMarkupsModuleWidget::onVisibilityOnAllMarkupsInListPushButtonClicked
 void qSlicerMarkupsModuleWidget::onVisibilityOffAllMarkupsInListPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -1007,7 +1046,7 @@ void qSlicerMarkupsModuleWidget::onLockAllMarkupsInListPushButtonClicked()
 void qSlicerMarkupsModuleWidget::onUnlockAllMarkupsInListPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -1025,7 +1064,7 @@ void qSlicerMarkupsModuleWidget::onUnlockAllMarkupsInListPushButtonClicked()
 void qSlicerMarkupsModuleWidget::onSelectAllMarkupsInListPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -1043,7 +1082,7 @@ void qSlicerMarkupsModuleWidget::onSelectAllMarkupsInListPushButtonClicked()
 void qSlicerMarkupsModuleWidget::onDeselectAllMarkupsInListPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -1061,7 +1100,7 @@ void qSlicerMarkupsModuleWidget::onDeselectAllMarkupsInListPushButtonClicked()
 void qSlicerMarkupsModuleWidget::onAddMarkupPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   vtkMRMLMarkupsNode *listNode = NULL;
@@ -1080,7 +1119,7 @@ void qSlicerMarkupsModuleWidget::onAddMarkupPushButtonClicked()
 void qSlicerMarkupsModuleWidget::onMoveMarkupUpPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the selected rows
   QList<QTableWidgetItem *> selectedItems = d->activeMarkupTableWidget->selectedItems();
 
@@ -1111,7 +1150,7 @@ void qSlicerMarkupsModuleWidget::onMoveMarkupUpPushButtonClicked()
 void qSlicerMarkupsModuleWidget::onMoveMarkupDownPushButtonClicked()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   // get the selected rows
   QList<QTableWidgetItem *> selectedItems = d->activeMarkupTableWidget->selectedItems();
 
@@ -1145,7 +1184,7 @@ void qSlicerMarkupsModuleWidget::onDeleteMarkupPushButtonClicked()
   // get the selected rows
   QList<QTableWidgetItem *> selectedItems = d->activeMarkupTableWidget->selectedItems();
 
-  // first, check if nothing is selected 
+  // first, check if nothing is selected
   if (selectedItems.isEmpty())
     {
     return;
@@ -1221,7 +1260,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     {
     activeID = markupsNode->GetID();
     }
-    
+
   //qDebug() << "setActiveMarkupsNode: combo box says: " << qPrintable(activeMarkupsNodeID) << ", input node says " << (activeID ? activeID : "null");
   // update the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -1257,7 +1296,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     {
     qDebug() << "Failed to change active markups node id on selection node";
     }
-  
+
   // update the GUI
   this->UpdateWidgetFromMRML();
 }
@@ -1266,7 +1305,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
 void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markupsNode)
 {
   // qDebug() << "onActiveMarkupMRMLNodeAdded, markupsNode is " << (markupsNode ? markupsNode->GetID() : "null");
-  
+
   if (this->markupsLogic())
     {
     this->markupsLogic()->AddNewDisplayNodeForMarkupsNode(markupsNode);
@@ -1282,7 +1321,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markup
     int visibleFlag = displayableNode->GetDisplayVisibility();
     this->updateListVisibileInvisiblePushButton(visibleFlag);
     }
-  
+
   // make sure it's set up for the mouse mode tool bar to easily add points to
   // it by making it active in the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -1318,7 +1357,7 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
   Q_D(qSlicerMarkupsModuleWidget);
 
   //qDebug() << "onSelectionNodeActivePlaceNodeIDChanged";
-  
+
   // get the selection node
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
   vtkMRMLSelectionNode *selectionNode = NULL;
@@ -1326,7 +1365,7 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
     {
     selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
     }
-  
+
   if (selectionNode)
     {
     if (selectionNode->GetActivePlaceNodeID() != NULL)
@@ -1413,7 +1452,7 @@ void qSlicerMarkupsModuleWidget::onListLockedUnlockedPushButtonClicked()
   int locked = listNode->GetLocked();
   locked = !locked;
   listNode->SetLocked(locked);
-  
+
   // update the button
   if (locked)
     {
@@ -1665,7 +1704,7 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
       }
     else
       {
-      // add connections for this node 
+      // add connections for this node
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::LockModifiedEvent,
                         this, SLOT(onActiveMarkupsNodeLockModifiedEvent()));
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::PointModifiedEvent,
@@ -1685,7 +1724,7 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
 void qSlicerMarkupsModuleWidget::clearGUI()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
   d->activeMarkupTableWidget->clearContents();
   d->activeMarkupTableWidget->setRowCount(0);
 }
@@ -1850,7 +1889,7 @@ void qSlicerMarkupsModuleWidget::toColor(const QColor &qcolor, double* color)
 void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggered()
 {
   Q_D(qSlicerMarkupsModuleWidget);
-  
+
 //  qDebug() << "onNewMarkupWithCurrentDisplayPropertiesTriggered";
 
   // get the active list
@@ -1903,7 +1942,7 @@ void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggere
   // update the display properties manually since the display node wasn't
   // observed when it was added
   this->UpdateWidgetFromMRML();
-  
+
   // clean up
   newDisplayNode->Delete();
   newMRMLNode->Delete();
@@ -1918,7 +1957,7 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
     qWarning() << "updateLogicFromSettings: no logic to set";
     return;
     }
-  
+
   if (!qSlicerApplication::application() ||
       !qSlicerApplication::application()->settingsDialog())
     {
