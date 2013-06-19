@@ -430,7 +430,7 @@
          <item>
           <widget class="QTableWidget" name="activeMarkupTableWidget">
            <property name="toolTip">
-            <string>The currently active markup node</string>
+            <string>The currently active markup node. Click in the name column to jump slices.</string>
            </property>
            <property name="accessibleName">
             <string>active markup table</string>
