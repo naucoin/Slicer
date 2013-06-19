@@ -124,11 +124,21 @@ protected:
   /// Counter for clicks in Render Window
   vtkMRMLMarkupsClickCounter* ClickCounter;
 
-  /// Update a single markup position, implemented by the subclasses, return
+  /// Update a single seed from markup position, implemented by the subclasses, return
   /// true if the position changed
-  virtual bool UpdateNthMarkupPosition(int vtkNotUsed(n), vtkAbstractWidget *vtkNotUsed(widget), vtkMRMLMarkupsNode *vtkNotUsed(markupsNode)) { return false; };
+  virtual bool UpdateNthSeedPositionFromMRML(int vtkNotUsed(n),
+                 vtkAbstractWidget *vtkNotUsed(widget),
+		 vtkMRMLMarkupsNode *vtkNotUsed(markupsNode))
+    { return false; };
   /// Update just the position for the widget, implemented by subclasses.
   virtual void UpdatePosition(vtkAbstractWidget *vtkNotUsed(widget), vtkMRMLNode *vtkNotUsed(node)) {};
+
+  /// Update a single markup position from the seed widget, implemented by the subclasses,
+  /// return true if the position changed
+  //virtual bool UpdateNthMarkupPositionFromWidget(int vtkNotUsed(n),
+  //vtkMRMLMarkupsNode *vtkNotUsed(pointsNode),
+  //vtkAbstractWidget *vtkNotUsed(widget)) { return false; };
+
   //
   // Seeds for widget placement
   //

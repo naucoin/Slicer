@@ -22,6 +22,12 @@ public:
   vtkTypeRevisionMacro(vtkMRMLMarkupsFiducialDisplayableManager2D, vtkMRMLMarkupsDisplayableManager2D);
   void PrintSelf(ostream& os, vtkIndent indent);
 
+  /// update a single seed position from the node, return true if the position changed
+  virtual bool UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
+
+  /// Update a single markup position from the seed widget, return true if the position changed
+  virtual bool UpdateNthMarkupPositionFromWidget(int n, vtkMRMLMarkupsNode* pointsNode, vtkAbstractWidget * widget);
+
 protected:
 
   vtkMRMLMarkupsFiducialDisplayableManager2D(){this->Focus="vtkMRMLMarkupsFiducialNode";}
@@ -54,8 +60,6 @@ protected:
   /// respond to the interactor style event
   virtual void OnInteractorStyleEvent(int eventid);
 
-  /// update a single seed position from the node, return true if the position changed
-  virtual bool UpdateNthMarkupPosition(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
   /// respond to control point modified events
   virtual void UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node);
 

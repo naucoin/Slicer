@@ -74,13 +74,27 @@ public:
 
   /// Checks if this 2D displayable manager is in light box mode. Returns true
   /// if there is a slice node and it has grid columns or rows greater than 1,
-  /// and false otherwise. 
+  /// and false otherwise.
   bool IsInLightboxMode();
 
   /// Gets the world coordinate of the markups node point, transforms it to
   /// display coordinates, takes the z element to calculate the light box index.
   /// Returns -1 if not in lightbox mode or the indices are out of range.
   int GetLightboxIndex(vtkMRMLMarkupsNode *node, int markupIndex, int pointIndex);
+
+  /// Update a single seed from markup position, implemented by the subclasses, return
+  /// true if the position changed
+  virtual bool UpdateNthSeedPositionFromMRML(int vtkNotUsed(n),
+		 vtkAbstractWidget *vtkNotUsed(widget),
+                 vtkMRMLMarkupsNode *vtkNotUsed(markupsNode))
+    { return false; };
+
+  /// Update a single markup position from the seed widget, implemented by the subclasses,
+  /// return true if the position changed
+  virtual bool UpdateNthMarkupPositionFromWidget(int vtkNotUsed(n),
+                 vtkMRMLMarkupsNode *vtkNotUsed(pointsNode),
+                 vtkAbstractWidget *vtkNotUsed(widget))
+    { return false; };
 
 protected:
 
@@ -150,9 +164,6 @@ protected:
   /// Counter for clicks in Render Window
   vtkMRMLMarkupsClickCounter* ClickCounter;
 
-  /// Update a single markup position, implemented by the subclasses, return
-  /// true if the position changed
-  virtual bool UpdateNthMarkupPosition(int vtkNotUsed(n), vtkAbstractWidget *vtkNotUsed(widget), vtkMRMLMarkupsNode *vtkNotUsed(markupsNode)) { return false; };
   /// Update just the position for the widget, implemented by subclasses.
   virtual void UpdatePosition(vtkAbstractWidget *vtkNotUsed(widget), vtkMRMLNode *vtkNotUsed(node)) {};
   //
