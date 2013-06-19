@@ -525,6 +525,9 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
+  // this is updating the qt widget from MRML, and should not trigger any updates on the node, so turn off events
+  d->activeMarkupTableWidget->blockSignals(true);
+
   // qDebug() << QString("UpdateRow: row = ") + QString::number(m) + QString(", number of rows = ") + QString::number(d->activeMarkupTableWidget->rowCount());
   // get active markups node
   QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
@@ -623,7 +626,6 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
    double point[3];
 >>>>>>> ENH: add per markup locked flag and description field
   markupsNode->GetMarkupPoint(m, 0, point);
-  //    coordinate = QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(", ") + QString::number(point[2]);
   int xColumnIndex = d->columnIndex("X");
   for (int p = 0; p < 3; p++)
     {
@@ -635,6 +637,9 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
       d->activeMarkupTableWidget->setItem(m,xColumnIndex + p,new QTableWidgetItem(coordinate));
       }
     }
+
+  // unblock so that changes to the table will propagate to MRML
+  d->activeMarkupTableWidget->blockSignals(false);
 }
 
 //-----------------------------------------------------------------------------
