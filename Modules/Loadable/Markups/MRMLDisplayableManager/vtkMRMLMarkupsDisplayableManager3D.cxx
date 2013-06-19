@@ -571,7 +571,7 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsPointModifiedEvent(vtkMRML
   if (widget)
     {
     // Update the standard settings of all widgets.
-    this->UpdateNthMarkupPosition(n, widget, markupsNode);
+    this->UpdateNthSeedPositionFromMRML(n, widget, markupsNode);
 
     // Propagate MRML changes to widget
     this->PropagateMRMLToWidget(markupsNode, widget);

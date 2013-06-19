@@ -51,39 +51,48 @@ vtkCxxRevisionMacro (vtkMRMLMarkupsFiducialDisplayableManager2D, "$Revision: 1.0
 //---------------------------------------------------------------------------
 // vtkMRMLMarkupsFiducialDisplayableManager2D Callback
 /// \ingroup Slicer_QtModules_Markups
-class vtkMarkupsFiducialWidgetCallback : public vtkCommand
+class vtkMarkupsFiducialWidgetCallback2D : public vtkCommand
 {
 public:
-  static vtkMarkupsFiducialWidgetCallback *New()
-  { return new vtkMarkupsFiducialWidgetCallback; }
+  static vtkMarkupsFiducialWidgetCallback2D *New()
+  { return new vtkMarkupsFiducialWidgetCallback2D; }
 
-  vtkMarkupsFiducialWidgetCallback(){}
+  vtkMarkupsFiducialWidgetCallback2D(){}
 
   virtual void Execute (vtkObject *vtkNotUsed(caller), unsigned long event, void *callData)
   {
+    // sanity checks
+    if (!this->DisplayableManager)
+      {
+      return;
+      }
+    if (!this->Node)
+      {
+      return;
+      }
+    if (!this->Widget)
+      {
+      return;
+      }
+    // sanity checks end
+
+    // check which event it is
     if (event ==  vtkCommand::PlacePointEvent)
       {
       // std::cout << "Warning: PlacePointEvent not supported" << std::endl;
       }
-    else if ((event == vtkCommand::EndInteractionEvent) || (event == vtkCommand::InteractionEvent))
+    else if (event == vtkCommand::EndInteractionEvent)
       {
-      // sanity checks
-      if (!this->DisplayableManager)
+      // save the state of the node when done moving
+      if (this->Node->GetScene())
         {
-        return;
+        this->Node->GetScene()->SaveStateForUndo(this->Node);
         }
-      if (!this->Node)
-        {
-        return;
-        }
-      if (!this->Widget)
-        {
-        return;
-        }
-      // sanity checks end
-
+      }
+    else if (event == vtkCommand::InteractionEvent)
+      {
       // restrict the widget to the renderer
-        
+
       // we need the widgetRepresentation
       vtkSeedRepresentation * representation = vtkSeedRepresentation::SafeDownCast(this->Widget->GetRepresentation());
       if (!representation)
@@ -91,7 +100,7 @@ public:
         std::cerr << "Representation is null.\n";
         return;
         }
-        
+
       double displayCoordinates1[4];
       if (callData != NULL)
         {
@@ -102,34 +111,29 @@ public:
           {
           // first, we get the current displayCoordinates of the points
           representation->GetSeedDisplayPosition(*n,displayCoordinates1);
-          
+
           // second, we copy these to restrictedDisplayCoordinates
           double restrictedDisplayCoordinates1[4] = {displayCoordinates1[0], displayCoordinates1[1], displayCoordinates1[2], displayCoordinates1[3]};
-          
+
           // modify restrictedDisplayCoordinates 1 and 2, if these are outside the viewport of the current renderer
           this->DisplayableManager->RestrictDisplayCoordinatesToViewport(restrictedDisplayCoordinates1);
-          
+
           // only if we had to restrict the coordinates aka. if the coordinates changed, we update the positions
           if (this->DisplayableManager->GetDisplayCoordinatesChanged(displayCoordinates1,restrictedDisplayCoordinates1))
             {
             representation->SetSeedDisplayPosition(*n,restrictedDisplayCoordinates1);
             }
+
+          // propagate the changes to MRML
+          //std::cout << "callback: n = " << *n << std::endl;
+          this->DisplayableManager->UpdateNthMarkupPositionFromWidget(*n, this->Node, this->Widget);
           }
         }
-      
-      }
-
-    if (event == vtkCommand::EndInteractionEvent)
-      {
-      // save the state of the node when done moving, then call
-      // PropagateWidgetToMRML to update the node one last time
-      if (this->Node->GetScene())
+      else
         {
-        this->Node->GetScene()->SaveStateForUndo(this->Node);
+        std::cout << "Had an interaction event without the seed index!" << std::endl;
         }
       }
-    // the interaction with the widget ended, now propagate the changes to MRML
-    this->DisplayableManager->PropagateWidgetToMRML(this->Widget, this->Node);
   }
 
   void SetWidget(vtkAbstractWidget *w)
@@ -241,7 +245,7 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
     }
 
   vtkDebugMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
-  
+
   seedWidget->CompleteInteraction();
 
   return seedWidget;
@@ -266,7 +270,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnWidgetCreated(vtkAbstractWidg
     }
 
   // add the callback
-  vtkMarkupsFiducialWidgetCallback *myCallback = vtkMarkupsFiducialWidgetCallback::New();
+  vtkMarkupsFiducialWidgetCallback2D *myCallback = vtkMarkupsFiducialWidgetCallback2D::New();
   myCallback->SetNode(node);
   myCallback->SetWidget(widget);
   myCallback->SetDisplayableManager(this);
@@ -277,8 +281,60 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnWidgetCreated(vtkAbstractWidg
 }
 
 //---------------------------------------------------------------------------
-bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthMarkupPosition(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode)
+bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthMarkupPositionFromWidget(int n, vtkMRMLMarkupsNode* pointsNode, vtkAbstractWidget * widget)
 {
+//  std::cout << "UpdateNthMarkupPositionFromWidget: n = " << n << std::endl;
+
+  if (!pointsNode || !widget)
+    {
+    return false;
+    }
+  if (n > pointsNode->GetNumberOfMarkups())
+    {
+    return false;
+    }
+  vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
+  if (!seedWidget)
+    {
+    return false;
+    }
+  vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
+  if (!seedRepresentation)
+    {
+    return false;
+    }
+
+  bool positionChanged = false;
+
+  // for 2d managers, compare the display positions
+  double displayCoordinates1[4];
+  double displayCoordinatesBuffer1[4];
+
+  // get point in world coordinates using parent transforms
+  double pointTransformed[4];
+  // always only one point in a fiducial
+  pointsNode->GetMarkupPointWorld(n, 0, pointTransformed);
+
+  this->GetWorldToDisplayCoordinates(pointTransformed,displayCoordinates1);
+
+  seedRepresentation->GetSeedDisplayPosition(n,displayCoordinatesBuffer1);
+
+  if (this->GetDisplayCoordinatesChanged(displayCoordinates1,displayCoordinatesBuffer1))
+    {
+    positionChanged = true;
+    double worldCoordinates[4] = {0.0, 0.0, 0.0, 0.0};
+    this->GetDisplayToWorldCoordinates(displayCoordinatesBuffer1, worldCoordinates);
+    pointsNode->SetMarkupPointWorld(n, 0, worldCoordinates[0], worldCoordinates[1], worldCoordinates[2]);
+    }
+
+  return positionChanged;
+}
+
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode)
+{
+//  vtkWarningMacro("UpdateNthSeedPositionFromMRML: n = " << n);
+
   if (!pointsNode || !widget)
     {
     return false;
@@ -298,30 +354,36 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthMarkupPosition(int n, 
     return false;
     }
   bool positionChanged = false;
-  
+
+//  std::cout << "UpdateNthSeedPositionFromMRML: n = " << n << std::endl;
+
   // for 2d managers, compare the display positions
   double displayCoordinates1[4];
   double displayCoordinatesBuffer1[4];
-    
+
   // get point in world coordinates using parent transforms
   double pointTransformed[4];
   // always only one point in a fiducial
   pointsNode->GetMarkupPointWorld(n, 0, pointTransformed);
-  
+
   this->GetWorldToDisplayCoordinates(pointTransformed,displayCoordinates1);
-  
+
   seedRepresentation->GetSeedDisplayPosition(n,displayCoordinatesBuffer1);
-  
+
   if (this->GetDisplayCoordinatesChanged(displayCoordinates1,displayCoordinatesBuffer1))
     {
     // only update when really changed
-    vtkDebugMacro("UpdateNthMarkupPosition: " << this->GetSliceNode()->GetName() << ": display coordinates changed:\n\tseed display = " << displayCoordinatesBuffer1[0] << ", " << displayCoordinatesBuffer1[1] << "\n\tfid display =  " << displayCoordinates1[0] << ", " << displayCoordinates1[1] );
+    vtkDebugMacro("UpdateNthSeedPositionFromMRML: " << n << ": "
+                  << this->GetSliceNode()->GetName()
+                  << ": display coordinates changed:\n\tseed display = "
+                  << displayCoordinatesBuffer1[0] << ", " << displayCoordinatesBuffer1[1]
+                  << "\n\tfid display =  " << displayCoordinates1[0] << ", " << displayCoordinates1[1] );
     seedRepresentation->SetSeedDisplayPosition(n,displayCoordinates1);
     positionChanged = true;
     }
   else
     {
-    vtkDebugMacro("UpdateNthMarkupPosition: " <<  this->GetSliceNode()->GetName() << ": display coordinates unchanged!");
+    vtkDebugMacro("UpdateNthSeedPositionFromMRML: " <<  this->GetSliceNode()->GetName() << ": display coordinates unchanged!");
     }
   return positionChanged;
 }
@@ -347,7 +409,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
 
   int numberOfHandles = seedRepresentation->GetNumberOfSeeds();
   vtkDebugMacro("SetNthSeed, n = " << n << ", number of handles = " << numberOfHandles);
-  
+
   // does this handle need to be created?
   bool createdNewHandle = false;
   if (n >= numberOfHandles)
@@ -376,9 +438,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
   vtkPointHandleRepresentation2D *pointHandleRep = vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
 
   // update the postion
-  bool positionChanged = this->UpdateNthMarkupPosition(n, seedWidget, fiducialNode);
+  bool positionChanged = this->UpdateNthSeedPositionFromMRML(n, seedWidget, fiducialNode);
   vtkDebugMacro("Position changed? " << (positionChanged ? "yes" : "no"));
-  
+
   if (!handleRep && !pointHandleRep)
     {
     vtkErrorMacro("Failed to get a handle rep for n = " << n << ", number of seeds = " <<  seedRepresentation->GetNumberOfSeeds() << ", handle rep = " << (seedRepresentation->GetHandleRepresentation(n) ? seedRepresentation->GetHandleRepresentation(n)->GetClassName() : "null"));
@@ -457,7 +519,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         // use the unselected color
         prop->SetColor(displayNode->GetColor());
         }
-      
+
       // set the material properties
       prop->SetOpacity(displayNode->GetOpacity());
       prop->SetAmbient(displayNode->GetAmbient());
@@ -487,7 +549,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       textscale[0] *= this->GetScaleFactor2D();
       textscale[1] *= this->GetScaleFactor2D();
       textscale[2] *= this->GetScaleFactor2D();
-      
+
       handleRep->SetLabelTextScale(textscale);
       }
     // set the text colors
@@ -504,7 +566,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         }
       handleRep->GetLabelTextActor()->GetProperty()->SetOpacity(displayNode->GetOpacity());
       }
-  
+
     // set the text visibility
     if (fidVisible)
       {
@@ -534,14 +596,14 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       {
       seedWidget->GetSeed(n)->ProcessEventsOn();
       }
-    
+
     }
   else if (pointHandleRep)
     {
     // set the glyph type - TBD, swapping isn't working
     // set the color
     if (fiducialNode->GetNthFiducialSelected(n))
-      { 
+      {
       // use the selected color
       pointHandleRep->GetProperty()->SetColor(displayNode->GetSelectedColor());
       }
@@ -597,9 +659,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
   // disable processing of modified events
   this->Updating = 1;
 
-  
+
   // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
-  
+
 
   vtkMRMLMarkupsDisplayNode *displayNode = fiducialNode->GetMarkupsDisplayNode();
 
@@ -635,7 +697,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     if (pointHandleRep)
       {
       vtkDebugMacro("SetNthSeed: Not in light box, but have a point handle.");
-      updateHandleType = true;     
+      updateHandleType = true;
       }
     }
   if (updateHandleType)
@@ -646,9 +708,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
 
   // iterate over the fiducials in this markup
   int numberOfFiducials = fiducialNode->GetNumberOfMarkups();
-  
+
   vtkDebugMacro("Fids PropagateMRMLToWidget, node num markups = " << numberOfFiducials);
-  
+
   for (int n = 0; n < numberOfFiducials; n++)
     {
     // std::cout << "Fids PropagateMRMLToWidget: n = " << n << std::endl;
@@ -683,7 +745,6 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
 /// Propagate properties of widget to MRML node.
 void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node)
 {
-
   if (!widget)
     {
     vtkErrorMacro("PropagateWidgetToMRML: Widget was null!")
@@ -725,19 +786,19 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateWidgetToMRML(vtkAbstra
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
   int numberOfSeeds = seedRepresentation->GetNumberOfSeeds();
 
-  bool positionChanged = false;
+  bool atLeastOnePositionChanged = false;
   for (int n = 0; n < numberOfSeeds; n++)
     {
     double worldCoordinates1[4];
-
+    bool thisPositionChanged = false;
     // 2D widget was changed
-    
+
     double displayCoordinates1[4];
     seedRepresentation->GetSeedDisplayPosition(n,displayCoordinates1);
     vtkDebugMacro("PropagateWidgetToMRML: 2d displayable manager: widget display coords = " << displayCoordinates1[0] << ", " << displayCoordinates1[1] << ", " << displayCoordinates1[2]);
     this->GetDisplayToWorldCoordinates(displayCoordinates1,worldCoordinates1);
     vtkDebugMacro("PropagateWidgetToMRML: 2d: widget seed " << n << " world coords = " << worldCoordinates1[0] << ", " << worldCoordinates1[1] << ", "<< worldCoordinates1[2]);
-      
+
     // was there a change?
     double currentCoordinates[4];
     fiducialNode->GetNthFiducialWorldCoordinates(n,currentCoordinates);
@@ -754,21 +815,22 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateWidgetToMRML(vtkAbstra
     if (this->GetWorldCoordinatesChanged(currentCoords, newCoords))
       {
       vtkDebugMacro("PropagateWidgetToMRML: position changed.");
-      positionChanged = true;
+      atLeastOnePositionChanged = true;
+      thisPositionChanged = true;
       }
 
-    if (positionChanged)
+    if (thisPositionChanged)
       {
-      vtkDebugMacro("PropagateWidgetToMRML: position changed, setting fiducial coordinates");
+      vtkDebugMacro("PropagateWidgetToMRML: this position changed, setting fiducial coordinates");
       fiducialNode->SetNthFiducialWorldCoordinates(n,worldCoordinates1);
       }
     }
-  
+
   // enable processing of modified events
 //  fiducialNode->EndModify(disabledModify);
 
   // did any of the positions change?
-  if (positionChanged)
+  if (atLeastOnePositionChanged)
     {
     vtkDebugMacro("PropagateWidgetToMRML: position changed, calling point modified on the fiducial node");
     fiducialNode->Modified();
@@ -806,7 +868,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
 
   // Is there an active markups node that's a fiducial node?
   vtkMRMLMarkupsFiducialNode *activeFiducialNode = NULL;
-  
+
   vtkMRMLSelectionNode *selectionNode = this->GetSelectionNode();
   if (selectionNode)
     {
@@ -831,7 +893,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
     activeFiducialNode = vtkMRMLMarkupsFiducialNode::New();
     activeFiducialNode->SetName("Fiducial List");
     }
-  
+
   // add a fiducial: this will trigger an update of the widgets
   int fiducialIndex = activeFiducialNode->AddMarkupWithNPoints(1);
   if (fiducialIndex == -1)
@@ -886,6 +948,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnClickInRenderWindow(double x,
     this->GetMRMLScene()->AddNode(displayNode);
     // let the logic know that it needs to set it to defaults
     displayNode->InvokeEvent(vtkMRMLMarkupsDisplayNode::ResetToDefaultsEvent);
+
     activeFiducialNode->AddAndObserveDisplayNodeID(displayNode->GetID());
     this->GetMRMLScene()->AddNode(activeFiducialNode);
 
@@ -979,15 +1042,15 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::UpdatePosition(vtkAbstractWidge
    }
 
   // now get the widget properties (coordinates, measurement etc.) and if the mrml node has changed, propagate the changes
- 
-  
+
+
   // disable processing of modified events
   //this->Updating = 1;
   bool positionChanged = false;
   int numberOfFiducials = pointsNode->GetNumberOfMarkups();
   for (int n = 0; n < numberOfFiducials; n++)
     {
-    if (this->UpdateNthMarkupPosition(n, seedWidget, pointsNode))
+    if (this->UpdateNthSeedPositionFromMRML(n, seedWidget, pointsNode))
       {
       positionChanged = true;
       }
@@ -1021,14 +1084,14 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeNthMarkupModif
     vtkErrorMacro("OnMRMLMarkupsNodeNthMarkupModifiedEvent: n = " << n << " is out of range 0-" << numberOfMarkups);
     return;
     }
-  
+
   vtkAbstractWidget *widget = this->Helper->GetWidget(node);
   if (!widget)
     {
     vtkErrorMacro("OnMRMLMarkupsNodeNthMarkupModifiedEvent: a markup was added to a node that doesn't already have a widget! Returning..");
     return;
     }
-  
+
   vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
   if (!seedWidget)
    {
@@ -1054,7 +1117,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupAddedEve
     vtkErrorMacro("OnMRMLMarkupsNodeMarkupAddedEvent: a markup was added to a node that doesn't already have a widget! Returning..");
     return;
     }
-  
+
   vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
   if (!seedWidget)
    {
@@ -1088,7 +1151,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupRemovedE
     vtkErrorMacro("OnMRMLMarkupsNodeMarkupRemovedEvent: a markup was removed from a node that doesn't already have a widget! Returning..");
     return;
     }
- 
+
   // for now, recreate the widget
   this->Helper->RemoveWidgetAndNode(markupsNode);
   this->AddWidget(markupsNode);

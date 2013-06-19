@@ -55,7 +55,7 @@ protected:
   virtual void OnInteractorStyleEvent(int eventid);
 
   /// update a single seed position from the node, return true if the position changed
-  virtual bool UpdateNthMarkupPosition(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
+  virtual bool UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
   /// respond to control point modified events
   virtual void UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node);
 

@@ -588,7 +588,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLMarkupsPointModifiedEvent(vtkMRML
   if (widget)
     {
     // Update the standard settings of all widgets.
-    this->UpdateNthMarkupPosition(n, widget, markupsNode);
+    this->UpdateNthSeedPositionFromMRML(n, widget, markupsNode);
 
     // Propagate MRML changes to widget
     this->PropagateMRMLToWidget(markupsNode, widget);
@@ -1185,7 +1185,7 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToViewportCoordinates(double 
 
   int numberOfColumns = this->GetSliceNode()->GetLayoutGridColumns();
   int numberOfRows = this->GetSliceNode()->GetLayoutGridRows();
-  
+
   float tempX = x / windowWidth;
   float tempY = (windowHeight - y) / windowHeight;
 
@@ -1277,7 +1277,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::GetDisplayCoordinatesChanged(double * d
     {
     changed = true;
     }
-else
+  else
     {
     // if in lightbox mode, the third element in the vector may have changed
     if (this->IsInLightboxMode())
