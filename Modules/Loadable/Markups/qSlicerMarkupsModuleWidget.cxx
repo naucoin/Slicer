@@ -407,7 +407,7 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
 
   // update the combo box
 //  this->onSelectionNodeActivePlaceNodeIDChanged();
-  QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+  QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
   //std::cout << "UpdateWidgetFromMRML: selection node's active place node id: " << qPrintable(activePlaceNodeID) << ", combo box current node id = " << qPrintable(currentNodeID) << std::endl;
   if (currentNodeID == "" ||
       (currentNodeID != activePlaceNodeID &&
@@ -530,7 +530,7 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
 
   // qDebug() << QString("UpdateRow: row = ") + QString::number(m) + QString(", number of rows = ") + QString::number(d->activeMarkupTableWidget->rowCount());
   // get active markups node
-  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
   vtkMRMLNode *mrmlNode = this->mrmlScene()->GetNodeByID(activeMarkupsNodeID.toLatin1());
   vtkMRMLMarkupsNode *markupsNode = NULL;
   if (mrmlNode)
@@ -654,7 +654,6 @@ void qSlicerMarkupsModuleWidget::onNodeAddedEvent(vtkObject*, vtkObject* node)
   if (markupsNode)
     {
     // make it active
-    std::cout << "onNodeAddedEvent" << markupsNode->GetID() << std::endl;
     d->activeMarkupMRMLNodeComboBox->setCurrentNode(markupsNode->GetID());
     }
 }
@@ -668,12 +667,12 @@ void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject*, vtkObject* node)
     {
     return;
     }
-  vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
-  if (markupsNode)
+
+  // only respond if it was the last node that was removed
+  int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
+  if (numNodes == 0)
     {
-    // is it the current one? clear out the table
-    QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
-    std::cout << "onNodeRemovedEvent" << markupsNode->GetID() << ", node combo box = " << qPrintable(activeMarkupsNodeID) << std::endl;
+    this->clearGUI();
     }
 }
 
@@ -1224,7 +1223,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
   //qDebug() << "onActiveMarkupMRMLNodeChanged, markupsNode is " << (markupsNode ? markupsNode->GetID() : "null");
 
   // get the current node from the combo box
-  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
   const char *activeID = NULL;
   if (markupsNode)
     {
@@ -1342,7 +1341,7 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
       {
       QString activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
       //std::cout << "\ttesting selection node's active place node id: " << qPrintable(activePlaceNodeID) << std::endl;
-      QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+      QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
       //std::cout << "\t\tcombo box current node id = " << qPrintable(currentNodeID) << std::endl;
       if (currentNodeID == "" ||
           (currentNodeID != activePlaceNodeID &&
@@ -1704,7 +1703,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLockModifiedEvent()//vtkMRML
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
-  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
   QString nodeID;
   //if (markupsNode)
     {
@@ -1767,7 +1766,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupAddedEvent()//vtkMRMLN
 
   //qDebug() << "onActiveMarkupsNodeMarkupAddedEvent";
 
-  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeId();
+  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
 
   //qDebug() << QString("active markups node id from combo box = ") + activeMarkupsNodeID;
 
