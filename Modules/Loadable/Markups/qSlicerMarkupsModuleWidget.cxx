@@ -624,7 +624,6 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
 
    // point
    double point[3];
->>>>>>> ENH: add per markup locked flag and description field
   markupsNode->GetMarkupPoint(m, 0, point);
   int xColumnIndex = d->columnIndex("X");
   for (int p = 0; p < 3; p++)
@@ -640,40 +639,6 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
 
   // unblock so that changes to the table will propagate to MRML
   d->activeMarkupTableWidget->blockSignals(false);
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::onNodeAddedEvent(vtkObject*, vtkObject* node)
-{
-  Q_D(qSlicerMarkupsModuleWidget);
-
-  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
-    {
-    return;
-    }
-  vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
-  if (markupsNode)
-    {
-    // make it active
-    // qDebug() << "onNodeAddedEvent" << markupsNode->GetID();
-    d->activeMarkupMRMLNodeComboBox->setCurrentNode(markupsNode->GetID());
-    }
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject* vtkNotUsed(scene), vtkObject* vtkNotUsed(node))
-{
-  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
-    {
-    return;
-    }
-
-  // only respond if it was the last node that was removed
-  int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
-  if (numNodes == 0)
-    {
-    this->clearGUI();
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1750,55 +1715,6 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLockModifiedEvent()//vtkMRML
     {
     //qDebug() << "Got event from non active node " + nodeID + ", active id = " + activeMarkupsNodeID;
     }
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem* item)
-{
-  Q_D(qSlicerMarkupsModuleWidget);
-
-  if (item == 0)
-    {
-    return;
-    }
-
-  if (item->column() == d->columnIndex(QString("Name")))
-    {
-    std::cout << "onActiveMarkupTableCellClicked: Name column" << std::endl;
-    if (0)
-      {
-      // get the coordinates from the table
-      double x, y, z = 0.0;
-      int row = item->row();
-      x = d->activeMarkupTableWidget->item(row, d->columnIndex("X"))->text().toDouble();
-      y = d->activeMarkupTableWidget->item(row, d->columnIndex("Y"))->text().toDouble();
-      z = d->activeMarkupTableWidget->item(row, d->columnIndex("Z"))->text().toDouble();
-      // jump to it
-      if (this->logic() != NULL &&
-          vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
-        {
-        vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToLocation(x, y, z);
-        }
-      }
-    else
-      {
-      // use the node id + row index
-       // get the active list
-      vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
-      if (!mrmlNode)
-        {
-        return;
-        }
-      int row = item->row();
-      // jump to it
-      if (this->logic() != NULL &&
-          vtkSlicerMarkupsLogic::SafeDownCast(this->logic()) != NULL)
-        {
-        vtkSlicerMarkupsLogic::SafeDownCast(this->logic())->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row);
-        }
-      }
-    }
-
 }
 
 //-----------------------------------------------------------------------------

@@ -486,13 +486,6 @@ std::string vtkMRMLSelectionNode::GetPlaceNodeResourceByIndex(int n)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLSelectionNode::SetReferenceActiveAnnotationID (const char *id)
-{
-  this->SetActiveAnnotationID(id);
-  this->InvokeEvent(vtkMRMLSelectionNode::ActiveAnnotationIDChangedEvent);
-}
-
-//----------------------------------------------------------------------------
 void vtkMRMLSelectionNode::GetUnitNodes(std::vector<vtkMRMLUnitNode*>& units)
 {
   for (NodeReferencesType::const_iterator it = this->NodeReferences.begin();
