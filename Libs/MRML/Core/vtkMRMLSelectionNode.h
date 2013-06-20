@@ -91,15 +91,6 @@ class VTK_MRML_EXPORT vtkMRMLSelectionNode : public vtkMRMLNode
   void SetActiveFiducialListID(const char* id);
   void SetReferenceActiveFiducialListID (const char *id) { this->SetActiveFiducialListID(id); };
 
-  ///
-  /// the ID of a MRMLAnnotationNode
-  vtkGetStringMacro (ActiveAnnotationID);
-  void SetActiveAnnotationID(const char* id);
-  /// Set the active annotation id and fire the event
-  /// ActiveAnnotationIDChangedEvent.
-  void SetReferenceActiveAnnotationID (const char *id);
-
-
   /// Set/Get the classname of the active placeNode type.
   /// The active placeNode is used to control what placeNode is being
   /// dropped by the user.
