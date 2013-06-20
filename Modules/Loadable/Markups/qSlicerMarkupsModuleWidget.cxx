@@ -18,7 +18,9 @@
 // Qt includes
 #include <QDebug>
 #include <QModelIndex>
+#include <QMouseEvent>
 #include <QSettings>
+#include <QShortcut>
 #include <QStringList>
 #include <QTableWidgetItem>
 
@@ -291,6 +293,7 @@ qSlicerMarkupsModuleWidget::qSlicerMarkupsModuleWidget(QWidget* _parent)
   : Superclass( _parent )
     , d_ptr( new qSlicerMarkupsModuleWidgetPrivate(*this) )
 {
+  this->pToAddShortcut = 0;
 }
 
 
@@ -339,7 +342,34 @@ void qSlicerMarkupsModuleWidget::enter()
   //d->activeMarkupMRMLNodeComboBox->setEnabled(true);
   d->activeMarkupMRMLNodeComboBox->blockSignals(false);
 
+  // install some shortcuts for use while in this module
+  this->installShortcuts();
+
   this->UpdateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::installShortcuts()
+{
+  // add some shortcut keys
+  if (this->pToAddShortcut == 0)
+    {
+    this->pToAddShortcut = new QShortcut(QKeySequence(QString("p")), this);
+    }
+  QObject::connect(this->pToAddShortcut, SIGNAL(activated()),
+                   this, SLOT(onPKeyActivated()));
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::removeShortcuts()
+{
+  if (this->pToAddShortcut != 0)
+    {
+    //qDebug() << "removeShortcuts";
+    this->pToAddShortcut->disconnect(SIGNAL(activated()));
+    // TODO: when parent is set to null, using the mouse to place a fid when outside the Markups module is triggering a crash
+//    this->pToAddShortcut->setParent(NULL);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -348,6 +378,8 @@ void qSlicerMarkupsModuleWidget::exit()
   this->Superclass::exit();
 
   // qDebug() << "exit widget";
+
+  this->removeShortcuts();
 
   // remove mrml scene observations, don't need to update the GUI while the
   // module is not showing
@@ -728,6 +760,24 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent()
     }
   // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndCloseEvent";
   this->clearGUI();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onPKeyActivated()
+{
+  QPoint pos = QCursor::pos();
+
+  // find out which widget it was over
+  QWidget *widget = qSlicerApplication::application()->widgetAt(pos);
+
+  // simulate a mouse press inside the widget
+  QPoint widgetPos = widget->mapFromGlobal(pos);
+  QMouseEvent click(QEvent::MouseButtonRelease, widgetPos, Qt::LeftButton, 0, 0);
+  click.setAccepted(true);
+
+  // and send it to the widget
+  //qDebug() << "onPKeyActivated: sending event with pos " << widgetPos;
+  QCoreApplication::sendEvent(widget, &click);
 }
 
 //-----------------------------------------------------------------------------

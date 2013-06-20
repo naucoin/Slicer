@@ -28,6 +28,7 @@ class vtkMRMLNode;
 class QTableWidgetItem;
 class vtkSlicerMarkupsLogic;
 class QModelIndex;
+class QShortcut;
 
 /// \ingroup Slicer_QtModules_Markups
 class Q_SLICER_QTMODULES_MARKUPS_EXPORT qSlicerMarkupsModuleWidget :
@@ -45,6 +46,10 @@ public:
   virtual void enter();
   /// disconnect from scene when exiting
   virtual void exit();
+
+  /// manage short cuts that allow key bindings for certain functions
+  void installShortcuts();
+  void removeShortcuts();
 
   /// get the logic in the proper class
   vtkSlicerMarkupsLogic *markupsLogic();
@@ -86,6 +91,8 @@ public slots:
   void onMRMLSceneEndBatchProcessEvent();
   /// clear out the gui when the scene is closed
   void onMRMLSceneEndCloseEvent();
+  /// respond to the p key being pressed
+  void onPKeyActivated();
 
   /// display property slots
   void onSelectedColorPickerButtonChanged(QColor qcolor);
@@ -161,6 +168,8 @@ protected:
 private:
   Q_DECLARE_PRIVATE(qSlicerMarkupsModuleWidget);
   Q_DISABLE_COPY(qSlicerMarkupsModuleWidget);
+
+  QShortcut *pToAddShortcut;
 };
 
 #endif
