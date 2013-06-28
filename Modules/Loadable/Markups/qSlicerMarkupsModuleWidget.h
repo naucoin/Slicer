@@ -144,6 +144,15 @@ public slots:
   /// react to clicks in the table
   void onActiveMarkupTableCellClicked(QTableWidgetItem* item);
 
+  /// provide a right click menu in the table
+  void onRightClickActiveMarkupTableWidget(QPoint pos);
+  /// right click action slots
+  void onMoveToOtherListActionTriggered(QString destinationPosition);
+  /// respond to the user selecting another list to move selected markups to
+  /// the named list, calls logic method to do the move if it can find both
+  /// markups nodes in the scene
+  void moveSelectedToNamedList(QString listName);
+
   /// enable/disable editing the table if the markups node is un/locked
   void onActiveMarkupsNodeLockModifiedEvent();//vtkMRMLNode *markupsNode);
   /// update the table with the modified point information if the node is

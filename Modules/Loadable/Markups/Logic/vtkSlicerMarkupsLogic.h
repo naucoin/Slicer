@@ -100,6 +100,16 @@ public:
 
   /// utility method to set up a display node from the defaults
   void SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *displayNode);
+
+  /// utility method to move a markup from one list to another, trying to
+  /// insert it at the given new index. If the new index is larger than the
+  /// number of markups in the list, adds it to the end. If new index is
+  /// smaller than 0, adds it at the beginning. Otherwise inserts at
+  /// that index.
+  /// \sa vtkMRMLMarkupsNode::InsertMarkup
+  /// Returns true on success, false on failure
+  bool MoveNthMarkupToNewListAtIndex(int n, vtkMRMLMarkupsNode *markupsNode,
+                                   vtkMRMLMarkupsNode *newMarkupsNode, int newIndex);
   
 protected:
   vtkSlicerMarkupsLogic();

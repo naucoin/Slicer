@@ -576,7 +576,7 @@ void vtkMRMLMarkupsNode::RemoveMarkup(int m)
 {
   if (this->MarkupExists(m))
     {
-    std::cout << "RemoveMarkup: m = " << m << ", markups size = " << this->Markups.size() << std::endl;
+    vtkDebugMacro("RemoveMarkup: m = " << m << ", markups size = " << this->Markups.size());
     this->Markups.erase(this->Markups.begin() + m);
 
     if (!this->GetDisableModifiedEvent())
@@ -585,6 +585,49 @@ void vtkMRMLMarkupsNode::RemoveMarkup(int m)
       this->InvokeEvent(vtkMRMLMarkupsNode::MarkupRemovedEvent, (void*)&m);
       }
     }
+}
+
+//-----------------------------------------------------------
+bool vtkMRMLMarkupsNode::InsertMarkup(Markup m, int targetIndex)
+{
+  int listSize = this->GetNumberOfMarkups();
+
+  int destIndex = targetIndex;
+  if (targetIndex < 0)
+    {
+    destIndex = 0;
+    }
+  else if (targetIndex > listSize)
+    {
+    destIndex = listSize;
+    }
+  vtkDebugMacro("InsertMarkup: list size = " << listSize
+                << ", input target index = " << targetIndex
+                << ", adjusted destination index = " << destIndex);
+
+  std::vector < Markup >::iterator pos;
+  pos = this->Markups.begin() + destIndex;
+
+  std::vector < Markup >::iterator result;
+  result = this->Markups.insert(pos, m);
+
+  // sanity check
+  if (result->Label.compare(m.Label) != 0)
+    {
+    vtkErrorMacro("InsertMarkup: failed to insert a markup at index " << destIndex
+                  << ", expected label on that markup to be " << m.Label.c_str()
+                  << " but got " << result->Label.c_str());
+    return false;
+    }
+
+  // let observers know that a markup was added
+  if (!this->GetDisableModifiedEvent())
+    {
+    this->Modified();
+    this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent);
+    }
+
+  return true;
 }
 
 //-----------------------------------------------------------

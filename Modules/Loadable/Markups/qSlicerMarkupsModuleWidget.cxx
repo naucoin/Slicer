@@ -17,9 +17,13 @@
 
 // Qt includes
 #include <QDebug>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMessageBox>
 #include <QModelIndex>
 #include <QMouseEvent>
 #include <QSettings>
+#include <QSignalMapper>
 #include <QShortcut>
 #include <QStringList>
 #include <QTableWidgetItem>
@@ -278,6 +282,10 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // listen for click on a markup
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)),
                    q, SLOT(onActiveMarkupTableCellClicked(QTableWidgetItem*)));
+  // listen for a right click
+  this->activeMarkupTableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+  QObject::connect(this->activeMarkupTableWidget, SIGNAL(customContextMenuRequested(QPoint)),
+                   q, SLOT(onRightClickActiveMarkupTableWidget(QPoint)));
 }
 
 //-----------------------------------------------------------------------------
@@ -691,9 +699,10 @@ void qSlicerMarkupsModuleWidget::onNodeAddedEvent(vtkObject*, vtkObject* node)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject*, vtkObject* node)
+void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject* scene, vtkObject* node)
 {
-  Q_D(qSlicerMarkupsModuleWidget);
+  Q_UNUSED(scene);
+  Q_UNUSED(node);
 
   if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
     {
@@ -728,7 +737,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
     {
     selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
     }
-  vtkMRMLNode *markupsNodeMRML = NULL;
+
   QString activePlaceNodeID;
   if (selectionNode)
     {
@@ -1672,6 +1681,174 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
       }
     }
 
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRightClickActiveMarkupTableWidget(QPoint pos)
+{
+  Q_UNUSED(pos);
+
+  // qDebug() << "onRightClickActiveMarkupTableWidget: pos = " << pos;
+
+  QMenu menu;
+  QMenu *moveMenu = menu.addMenu(QString("Move fiducial to another list"));
+
+  QAction *moveToSameIndexInListAction =
+    new QAction(QString("Move fiducial to same index in another list"), moveMenu);
+  QAction *moveToTopOfListAction =
+    new QAction(QString("Move fiducial to top of another list"), moveMenu);
+  QAction *moveToBottomOfListAction =
+    new QAction(QString("Move fiducial to bottom of another list"), moveMenu);
+
+  moveMenu->addAction(moveToSameIndexInListAction);
+  moveMenu->addAction(moveToTopOfListAction);
+  moveMenu->addAction(moveToBottomOfListAction);
+
+  QSignalMapper *signalMapper = new QSignalMapper(this);
+  QObject::connect(moveToSameIndexInListAction, SIGNAL(triggered()),
+          signalMapper, SLOT(map()));
+  QObject::connect(moveToTopOfListAction, SIGNAL(triggered()),
+          signalMapper, SLOT(map()));
+  QObject::connect(moveToBottomOfListAction, SIGNAL(triggered()),
+          signalMapper, SLOT(map()));
+  signalMapper->setMapping(moveToSameIndexInListAction, QString("Same"));
+  signalMapper->setMapping(moveToTopOfListAction, QString("Top"));
+  signalMapper->setMapping(moveToBottomOfListAction, QString("Bottom"));
+  QObject::connect(signalMapper, SIGNAL(mapped(QString)),
+                   this, SLOT(onMoveToOtherListActionTriggered(QString)));
+
+  menu.exec(QCursor::pos());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destinationPosition)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  if (this->mrmlScene() == 0)
+    {
+    return;
+    }
+
+  // qDebug() << "onMoveToOtherListActionTriggered: " << destinationPosition;
+
+  // sanity check: is there another list to move to?
+  int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
+  if (numNodes < 2)
+    {
+    qWarning() << "No other list to move it to! Define another list first.";
+    return;
+    }
+
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (!markupsNode)
+    {
+    return;
+    }
+  // get the target list
+  QStringList otherLists;
+  for (int n = 0; n < numNodes; n++)
+    {
+    vtkMRMLNode *listNodeN = this->mrmlScene()->GetNthNodeByClass(n, "vtkMRMLMarkupsNode");
+    if (strcmp(listNodeN->GetID(), markupsNode->GetID()) != 0)
+      {
+      otherLists.append(QString(listNodeN->GetName()));
+      }
+    }
+
+  // make a dialog with the other lists to select
+  QInputDialog listDialog;
+  listDialog.setWindowTitle("Pick destination list");
+  listDialog.setLabelText("Destination list:");
+  listDialog.setComboBoxItems(otherLists);
+  listDialog.setInputMode(QInputDialog::TextInput);
+  // hack: set the object name and get it in the slot
+  listDialog.setObjectName(destinationPosition);
+  QObject::connect(&listDialog, SIGNAL(textValueSelected(const QString &)),
+                   this,SLOT(moveSelectedToNamedList(const QString &)));
+  listDialog.exec();
+}
+
+//-----------------------------------------------------------------------------
+  void qSlicerMarkupsModuleWidget::moveSelectedToNamedList(QString listName)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // qDebug() << "moveSelectedToNamedList: " << listName;
+
+  QString destinationPosition = QString("Same");
+  if (sender() != 0)
+    {
+    destinationPosition = sender()->objectName();
+    }
+  // qDebug() << "\tdestinationPosition: " << destinationPosition;
+
+  // get the selected point
+  QList<QTableWidgetItem *> selectedItems = d->activeMarkupTableWidget->selectedItems();
+  int rowNumber = selectedItems.at(0)->row();
+  if (selectedItems.size() / d->numberOfColumns() > 1)
+    {
+    QMessageBox msgBox;
+    msgBox.setText(QString("Move is only implemented for one row."));
+    msgBox.setInformativeText(QString("Click Ok to move single markup from row ") + QString::number(rowNumber));
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    int ret = msgBox.exec();
+    if (ret != QMessageBox::Ok)
+      {
+      // bail out
+      return;
+      }
+    }
+
+  if (!this->markupsLogic())
+    {
+    qWarning() << "No markups logic class, unable to move markup";
+    return;
+    }
+
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (!markupsNode)
+    {
+    return;
+    }
+  // get the new list
+  vtkMRMLNode *newNode = this->mrmlScene()->GetFirstNodeByName(listName.toLatin1());
+  if (!newNode)
+    {
+    qWarning() << "Unable to find list named " << listName << " in scene!";
+    return;
+    }
+  vtkMRMLMarkupsNode *newMarkupsNode = vtkMRMLMarkupsNode::SafeDownCast(newNode);
+
+  // calculate the index based on the destination position
+  int newIndex = rowNumber;
+  if (destinationPosition == QString("Top"))
+    {
+    newIndex = 0;
+    }
+  else if (destinationPosition == QString("Bottom"))
+    {
+    newIndex = newMarkupsNode->GetNumberOfMarkups();
+    }
+
+  // and move
+  bool retval = this->markupsLogic()->MoveNthMarkupToNewListAtIndex(rowNumber, markupsNode, newMarkupsNode, newIndex);
+  if (!retval)
+    {
+    qWarning() << "Failed to move " << rowNumber << " markup to list named " << listName;
+    }
 }
 
 //-----------------------------------------------------------------------------
