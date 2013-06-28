@@ -54,16 +54,16 @@ public:
   /// Create a new display node and observe it on the markups node
   /// On success, return the id, on failure return an empty string.
   std::string AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *mrmlNode);
-  
+
   /// Create a new markups fiducial node and associated display node, adding both to
   /// the scene. Also make it the active on on the selection node.
   /// On success, return the id, on failure return an empty string.
   std::string AddNewFiducialNode(const char *name = NULL);
-  
+
   /// jump the slice windows to the given coordinate
-  void JumpSlicesToLocation(double x, double y, double z);
+  void JumpSlicesToLocation(double x, double y, double z, bool centered);
   /// jump the slice windows to the nth markup with the mrml id id
-  void JumpSlicesToNthPointInMarkup(const char *id, int n);
+  void JumpSlicesToNthPointInMarkup(const char *id, int n, bool centered = false);
 
   /// Load a markups fiducial list from fileName, return NULL on error, node ID string
   /// otherwise. Adds the appropriate storage and display nodes to the scene
@@ -110,7 +110,7 @@ public:
   /// Returns true on success, false on failure
   bool MoveNthMarkupToNewListAtIndex(int n, vtkMRMLMarkupsNode *markupsNode,
                                    vtkMRMLMarkupsNode *newMarkupsNode, int newIndex);
-  
+
 protected:
   vtkSlicerMarkupsLogic();
   virtual ~vtkSlicerMarkupsLogic();

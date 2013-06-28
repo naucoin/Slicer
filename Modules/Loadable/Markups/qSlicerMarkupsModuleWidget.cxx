@@ -1653,18 +1653,28 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
 
   if (column == d->columnIndex(QString("Name")))
     {
-    // use the node id + row index
-    // get the active list
-    vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
-    if (!mrmlNode)
+    // is jumping enabled?
+    if (d->jumpSlicesGroupBox->isChecked())
       {
-      return;
-      }
-    // jump to it
-    if (this->markupsLogic())
-      {
-      // qDebug() << "\tjumping to " << row << "th point in markup";
-      this->markupsLogic()->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row);
+      // use the node id + row index
+      // get the active list
+      vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+      if (!mrmlNode)
+        {
+        return;
+        }
+      // offset or center?
+      bool jumpCentered = false;
+      if (d->jumpCenteredRadioButton->isChecked())
+        {
+        jumpCentered = true;
+        }
+      // jump to it
+      if (this->markupsLogic())
+        {
+        // qDebug() << "\tjumping to " << row << "th point in markup";
+        this->markupsLogic()->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row, jumpCentered);
+        }
       }
     }
   else if (column == d->columnIndex(QString("Visible")) ||
