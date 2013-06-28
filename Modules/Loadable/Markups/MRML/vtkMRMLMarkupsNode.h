@@ -153,6 +153,12 @@ public:
   /// Remove a markup
   void RemoveMarkup(int m);
 
+  /// Insert a markup in this list at targetIndex.
+  /// If targetIndex is < 0, insert at the start of the list.
+  /// If targetIndex is > list size - 1, append to end of list.
+  /// Returns true on success, false on failure.
+  bool InsertMarkup(Markup m, int targetIndex);
+
   /// Copy settings from source markup to target markup
   void CopyMarkup(Markup *source, Markup *target);
   

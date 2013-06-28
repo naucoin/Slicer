@@ -575,3 +575,38 @@ void vtkSlicerMarkupsLogic::SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *
   displayNode->SetGlyphScale(this->GetDefaultMarkupsDisplayNodeGlyphScale());
   displayNode->SetTextScale(this->GetDefaultMarkupsDisplayNodeTextScale());
 }
+
+//---------------------------------------------------------------------------
+bool vtkSlicerMarkupsLogic::MoveNthMarkupToNewListAtIndex(int n, vtkMRMLMarkupsNode *markupsNode,
+                                                          vtkMRMLMarkupsNode *newMarkupsNode, int newIndex)
+{
+  if (!markupsNode || !newMarkupsNode)
+    {
+    vtkErrorMacro("MoveNthMarkupToNewListAtIndex: at least one of the markup list nodes are null!");
+    return false;
+    }
+
+  if (n < 0 || n >= markupsNode->GetNumberOfMarkups())
+    {
+    vtkErrorMacro("MoveNthMarkupToNewListAtIndex: source index n " << n
+                  << " is not in list of size " << markupsNode->GetNumberOfMarkups());
+    return false;
+    }
+
+  // get the markup
+  Markup newMarkup;
+  markupsNode->CopyMarkup(markupsNode->GetNthMarkup(n), &newMarkup);
+
+  // add it to the destination list
+  bool insertVal = newMarkupsNode->InsertMarkup(newMarkup, newIndex);
+  if (!insertVal)
+    {
+    vtkErrorMacro("MoveNthMarkupToNewListAtIndex: failed to insert new markup at " << newIndex << ", markup is still on source list.");
+    return false;
+    }
+
+  // remove it from the source list
+  markupsNode->RemoveMarkup(n);
+
+  return true;
+}
