@@ -307,7 +307,7 @@ std::string vtkSlicerMarkupsLogic::AddNewFiducialNode(const char *name)
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerMarkupsLogic::JumpSlicesToLocation(double x, double y, double z)
+void vtkSlicerMarkupsLogic::JumpSlicesToLocation(double x, double y, double z, bool centered)
 {
   if (!this->GetMRMLScene())
     {
@@ -315,25 +315,36 @@ void vtkSlicerMarkupsLogic::JumpSlicesToLocation(double x, double y, double z)
     return;
     }
 
- vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNthNodeByClass(0,"vtkMRMLSliceNode");
-  if (!mrmlNode)
+  // save the whole state as iterating over all slice nodes
+  this->GetMRMLScene()->SaveStateForUndo();
+
+  // jump all the slice nodes in the scene
+  int numSliceNodes = this->GetMRMLScene()->GetNumberOfNodesByClass("vtkMRMLSliceNode");
+  for (int n = 0; n < numSliceNodes; ++n)
     {
-    vtkErrorMacro("JumpSlicesToLocation: could not get first slice node from scene");
-    return;
-    }
-  vtkMRMLSliceNode *sliceNode = vtkMRMLSliceNode::SafeDownCast(mrmlNode);
-  if (sliceNode)
-    {
-    this->GetMRMLScene()->SaveStateForUndo();
-    sliceNode->JumpAllSlices(x,y,z);
-    // JumpAllSlices jumps all the other slices, not self, so JumpSlice on
-    // this node as well
-    sliceNode->JumpSlice(x,y,z);
+    vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNthNodeByClass(n,"vtkMRMLSliceNode");
+    if (!mrmlNode)
+      {
+      vtkErrorMacro("JumpSlicesToLocation: could not get slice node " << n << " from scene");
+      return;
+      }
+    vtkMRMLSliceNode *sliceNode = vtkMRMLSliceNode::SafeDownCast(mrmlNode);
+    if (sliceNode)
+      {
+      if (centered)
+        {
+        sliceNode->JumpSliceByCentering(x,y,z);
+        }
+      else
+        {
+        sliceNode->JumpSliceByOffsetting(x,y,z);
+        }
+      }
     }
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerMarkupsLogic::JumpSlicesToNthPointInMarkup(const char *id, int n)
+void vtkSlicerMarkupsLogic::JumpSlicesToNthPointInMarkup(const char *id, int n, bool centered)
 {
   if (!id)
     {
@@ -356,7 +367,7 @@ void vtkSlicerMarkupsLogic::JumpSlicesToNthPointInMarkup(const char *id, int n)
     double point[4];
     // get the first point for now
     markup->GetMarkupPointWorld(n, 0, point);
-    this->JumpSlicesToLocation(point[0], point[1], point[2]);
+    this->JumpSlicesToLocation(point[0], point[1], point[2], centered);
     }
 }
 
@@ -372,7 +383,7 @@ char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const c
     }
 
   vtkDebugMacro("LoadMarkupsFiducials, file name = " << fileName << ", fidsName = " << (fidsName ? fidsName : "null"));
-  
+
   // turn on batch processing
   this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
 
