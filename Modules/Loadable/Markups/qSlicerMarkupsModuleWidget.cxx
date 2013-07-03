@@ -453,7 +453,7 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
       (currentNodeID != activePlaceNodeID &&
        activePlaceNodeID.contains("vtkMRMLMarkups")))
     {
-    d->activeMarkupMRMLNodeComboBox->setCurrentNode(activePlaceNodeID);
+    d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(activePlaceNodeID);
     }
 
   // update the display properties from the markups display node
@@ -694,7 +694,7 @@ void qSlicerMarkupsModuleWidget::onNodeAddedEvent(vtkObject*, vtkObject* node)
   if (markupsNode)
     {
     // make it active
-    d->activeMarkupMRMLNodeComboBox->setCurrentNode(markupsNode->GetID());
+    d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(markupsNode->GetID());
     }
 }
 
@@ -1316,7 +1316,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
       if (selectionNodeActivePlaceNodeID != NULL)
         {
         //std::cout << "Setting combo box from selection node " << selectionNodeActivePlaceNodeID << std::endl;
-        d->activeMarkupMRMLNodeComboBox->setCurrentNode(selectionNodeActivePlaceNodeID);
+        d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(selectionNodeActivePlaceNodeID);
         }
       }
     }
@@ -1406,13 +1406,13 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
           (currentNodeID != activePlaceNodeID &&
            activePlaceNodeID.contains("vtkMRMLMarkups")))
         {
-        d->activeMarkupMRMLNodeComboBox->setCurrentNode(activePlaceNodeID);
+        d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(activePlaceNodeID);
         }
       }
     else
       {
       qDebug() << "onSelectionNodeActivePlaceNodeIDChanged: No current active place node id";
-      d->activeMarkupMRMLNodeComboBox->setCurrentNode("");
+      d->activeMarkupMRMLNodeComboBox->setCurrentNodeID("");
       }
     }
   else
@@ -2092,7 +2092,7 @@ void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggere
   newDisplayableNode->SetAndObserveDisplayNodeID(newDisplayNode->GetID());
 
   // set it active
-  d->activeMarkupMRMLNodeComboBox->setCurrentNode(newMRMLNode->GetID());
+  d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(newMRMLNode->GetID());
   // let the user rename it
   d->activeMarkupMRMLNodeComboBox->renameCurrentNode();
 
