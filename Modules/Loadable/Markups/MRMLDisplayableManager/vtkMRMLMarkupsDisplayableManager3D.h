@@ -60,8 +60,9 @@ public:
   /// Returns widget on success, null on failure.
   vtkAbstractWidget *AddWidget(vtkMRMLMarkupsNode *markupsNode);
 
-  vtkMRMLMarkupsDisplayableManagerHelper *  GetHelper() { return this->Helper; };
-  
+//  vtkMRMLMarkupsDisplayableManagerHelper *  GetHelper() { return this->Helper; };
+  vtkGetObjectMacro(Helper, vtkMRMLMarkupsDisplayableManagerHelper);
+
 protected:
 
   vtkMRMLMarkupsDisplayableManager3D();
