@@ -752,7 +752,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
       vtkMRMLNode *lastNode = this->mrmlScene()->GetNthNodeByClass(numNodes - 1, "vtkMRMLMarkupsNode");
       if (lastNode)
         {
-        qDebug() << "onMRMLSceneEndBatchProcessEvent: setting active place node id to " << lastNode->GetID();
+        // qDebug() << "onMRMLSceneEndBatchProcessEvent: setting active place node id to " << lastNode->GetID();
         selectionNode->SetActivePlaceNodeID(lastNode->GetID());
         }
       }
