@@ -694,7 +694,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
     newNode = true;
     // create the MRML node
     activeFiducialNode = vtkMRMLMarkupsFiducialNode::New();
-    activeFiducialNode->SetName("Fiducial List");
+    activeFiducialNode->SetName("F");
     }
 
   // add a fiducial: this will trigger an update of the widgets
@@ -754,6 +754,13 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
 
     activeFiducialNode->AddAndObserveDisplayNodeID(displayNode->GetID());
     this->GetMRMLScene()->AddNode(activeFiducialNode);
+
+    // have to reset the fid id since the fiducial node generates a scene
+    // unique id only if the node was in the scene when the point was added
+    if (!activeFiducialNode->ResetNthMarkupID(0))
+      {
+      vtkWarningMacro("Failed to reset the unique ID on the first fiducial in a new list: " << activeFiducialNode->GetNthMarkupID(0));
+      }
 
     // save it as the active markups list
     if (selectionNode)

@@ -24,7 +24,7 @@ vtkMRMLMarkupsStorageNode::~vtkMRMLMarkupsStorageNode()
 
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsStorageNode::PrintSelf(ostream& os, vtkIndent indent)
-{  
+{
   vtkMRMLStorageNode::PrintSelf(os,indent);
 }
 
@@ -57,7 +57,7 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
     {
     return 0;
     }
-  
+
   // get the display node
   vtkMRMLMarkupsDisplayNode *displayNode = NULL;
   vtkMRMLDisplayNode * mrmlNode = markupsNode->GetDisplayNode();
@@ -77,7 +77,7 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
       displayNode->Delete();
       }
     }
-  
+
   // open the file for reading input
   fstream fstr;
 
@@ -91,14 +91,11 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
       // clear out the list
       markupsNode->RemoveAllMarkups();
       }
-    
+
     // turn off modified events
 //    int modFlag = markupsNode->GetDisableModifiedEvent();
 //    markupsNode->DisableModifiedEventOn();
     char line[1024];
-
-    // default column ordering
-    // numPoints,([x,y,z]*numPoints),vis,sel,associatedNodeID,label
 
     // save the valid lines in a vector, parse them once know the max id
     std::vector<std::string>lines;
@@ -292,78 +289,11 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
           int numPoints = 0;
           double x = 0.0, y = 0.0, z = 0.0;
           int sel = 1, vis = 1, lock = 0;
+          std::string id = std::string("");
           std::string associatedNodeID = std::string("");
           std::string label = std::string("");
           std::string desc = std::string("");
 
-          bool useTok = false;
-
-          if (useTok)
-            {
-            char *ptr;
-            ptr = strtok(line, ",");
-
-            // first off is the number of points
-            numPoints = atof(ptr);
-            vtkDebugMacro("there are " << numPoints << " points on this line");
-            markupsNode->AddMarkupWithNPoints(numPoints);
-            ptr = strtok(NULL, ",");
-            for (int p = 0; p < numPoints; p++)
-              {
-              std::cout << "ptr = " << ptr << std::endl;
-              x = atof(ptr);
-              ptr = strtok(NULL, ",");
-              y = atof(ptr);
-              ptr = strtok(NULL, ",");
-              z = atof(ptr);
-              ptr = strtok(NULL, ",");
-              vtkDebugMacro("setting point " << p << " to " << x << "," << y << "," << z);
-              markupsNode->SetMarkupPoint(thisMarkupNumber,p,x,y,z);
-              }
-            
-            // point visible?
-            vis = atoi(ptr);
-            markupsNode->SetNthMarkupVisibility(thisMarkupNumber,vis);
-            
-            // point selected?
-            ptr = strtok(NULL, ",");
-            sel = atoi(ptr);
-            markupsNode->SetNthMarkupSelected(thisMarkupNumber,sel);
-            
-            // point locked?
-            ptr = strtok(NULL, ",");
-            lock = atoi(ptr);
-            markupsNode->SetNthMarkupLocked(thisMarkupNumber,lock);
-            
-            // label
-            ptr = strtok(NULL, ",");
-            // there might not be a label
-            if (ptr)
-              {
-              label = std::string(ptr);
-              markupsNode->SetNthMarkupLabel(thisMarkupNumber,label);
-              }
-            
-            // description
-            ptr = strtok(NULL, ",");
-            if (ptr)
-              {
-              desc = std::string(ptr);
-              markupsNode->SetNthMarkupDescription(thisMarkupNumber,desc);
-              }
-            
-            // associated node id
-            ptr = strtok(NULL, ",");
-            if (ptr)
-              {
-              vtkDebugMacro("associated node id ptr = " << (ptr ? ptr : "null"));
-              associatedNodeID = std::string(ptr);
-              markupsNode->SetNthMarkupAssociatedNodeID(thisMarkupNumber,associatedNodeID);
-              }
-            
-            }
-          else // !useTok
-            {
             std::stringstream ss(line);
             int lineElementIndex = 0;
             std::string numPointsStr;
@@ -429,6 +359,22 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
               vtkDebugMacro("No label");
               markupsNode->SetNthMarkupLabel(thisMarkupNumber,"");
               }
+            // ID
+            getline(ss, component, ',');
+            if (component.size())
+              {
+              vtkDebugMacro("Got id = " << component.c_str());
+              id = component;
+              markupsNode->SetNthMarkupID(thisMarkupNumber,id);
+              }
+            else
+              {
+              vtkDebugMacro("No ID");
+              if (this->GetScene())
+                {
+                markupsNode->SetNthMarkupID(thisMarkupNumber,this->GetScene()->GenerateUniqueName(this->GetID()));
+                }
+              }
             // desc
             getline(ss, component, ',');
             if (component.size())
@@ -456,10 +402,12 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
               vtkDebugMacro("no associated node id");
               markupsNode->SetNthMarkupAssociatedNodeID(thisMarkupNumber,"");
               }
-            
-            }
+
           thisMarkupNumber++;
-          vtkDebugMacro("got vis = " << vis << ", sel = " << sel << ", associatedNodeID = " << associatedNodeID.c_str() << ", label = '" << label.c_str() << "', markup number is now " << thisMarkupNumber);
+          vtkDebugMacro("got vis = " << vis << ", sel = " << sel
+                        << ", associatedNodeID = " << associatedNodeID.c_str()
+                        << ", label = '" << label.c_str() << "', id = "
+                        << id << ", markup number is now " << thisMarkupNumber);
           } // point line
         }
       }
@@ -483,7 +431,7 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
 int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
 {
   std::string fullName = this->GetFullNameFromFileName();
-  if (fullName == std::string("")) 
+  if (fullName == std::string(""))
     {
     vtkErrorMacro("vtkMRMLMarkupsStorageNode: File name not specified");
     return 0;
@@ -509,7 +457,7 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
     {
     displayNode = vtkMRMLMarkupsDisplayNode::SafeDownCast(mrmlNode);
     }
-  
+
   // open the file for writing
   fstream of;
 
@@ -521,7 +469,7 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
     return 0;
     }
   int numberOfMarkups = markupsNode->GetNumberOfMarkups();
-  
+
   // put down a header
   of << "# Markups file " << (this->GetFileName() != NULL ? this->GetFileName() : "null") << endl;
   of << "# name = " << markupsNode->GetName() << endl;
@@ -549,14 +497,14 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
     }
   // label the columns, there can be any number of points associated with a
   // markup, so start by saying how many there are, for a fiducial:
-  // 1,x,y,z,vis,sel,lock,label,desc,associatedNodeID
+  // 1,x,y,z,vis,sel,lock,label,id,desc,associatedNodeID
   // for a ruler:
-  // 2,x,y,z,x,y,z,vis,sel,lock,label,desc,associatedNodeID
+  // 2,x,y,z,x,y,z,vis,sel,lock,label,id,desc,associatedNodeID
   // associatedNodeID and description can be empty strings
-  // 1,x,y,z,vis,sel,lock,label,,
+  // 1,x,y,z,vis,sel,lock,label,id,,
   // label can have spaces, everything up to next comma is used, no quotes
   // necessary, same with the description
-  of << "# columns = numPoints,([x,y,z]*numPoints),vis,sel,lock,label,desc,associatedNodeID" << endl;
+  of << "# columns = numPoints,([x,y,z]*numPoints),vis,sel,lock,label,id,desc,associatedNodeID" << endl;
   for (int i = 0; i < numberOfMarkups; i++)
     {
     int numberOfPoints = markupsNode->GetNumberOfPointsInNthMarkup(i);
@@ -570,10 +518,9 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
     bool vis = markupsNode->GetNthMarkupVisibility(i);
     bool sel = markupsNode->GetNthMarkupSelected(i);
     bool lock = markupsNode->GetNthMarkupLocked(i);
-    
-    
+
     std::string label = markupsNode->GetNthMarkupLabel(i);
-    
+    std::string id = markupsNode->GetNthMarkupID(i);
     std::string desc = markupsNode->GetNthMarkupDescription(i);
     if (desc.size() == 0)
       {
@@ -588,10 +535,11 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
     
     of << "," << vis << "," << sel << "," << lock;
     of << "," << label;
+    of << "," << id;
     of << "," << desc;
-    of << "," << associatedNodeID;    
+    of << "," << associatedNodeID;
 
-    of << endl;   
+    of << endl;
     }
 
   of.close();

@@ -199,6 +199,24 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     }
 
   //
+  // ID
+  //
+  std::cout << "IDs:" << std::endl;
+  for (int n = 0; n < node1->GetNumberOfMarkups(); ++n)
+    {
+    std::cout << n << ": id = " << node1->GetNthMarkupID(n).c_str() << std::endl;
+    }
+  // reset one
+  std::string oldID = node1->GetNthMarkupID(0);
+  bool retval = node1->ResetNthMarkupID(0);
+  if (!retval)
+    {
+    std::cerr << "Failed to reset 0th markup id from " << oldID.c_str() << std::endl;
+    return EXIT_FAILURE;
+    }
+  std::cout << "After resetting 0th markup id from " << oldID.c_str() << ", new one is " << node1->GetNthMarkupID(0).c_str() << std::endl;
+
+  //
   // Selected/Visib
   //
   bool sel = node1->GetNthMarkupSelected();
