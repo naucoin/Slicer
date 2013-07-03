@@ -21,8 +21,12 @@
 class vtkStringArray;
 class vtkMatrix4x4;
 
+/// Each markup has a unique ID.
 /// Each markup is defined by a certain number of RAS points,
 /// 1 for fiducials, 2 for rulers, 3 for angles, etc.
+/// Each markup has an orientation defined by a quaternion. It's represented
+/// by a 4 element vector: [0] = the angle of rotation, [1,2,3] = the axis of
+/// rotation. Default is 0.0, 0.0, 0.0, 1.0
 /// Each markup also has an associated node id, set when the markup
 /// is placed on a data set to link the markup to the volume or model.
 /// Each markup can also be individually un/selected, un/locked, in/visibile,
@@ -35,6 +39,7 @@ typedef struct
   std::string Description;
   std::string AssociatedNodeID;
   std::vector < vtkVector3d> points;
+  double OrientationWXYZ[4];
   bool Selected;
   bool Locked;
   bool Visibility;
@@ -178,6 +183,13 @@ public:
   void SetMarkupPoint(const int markupIndex, const int pointIndex, const double x, const double y, const double z);
   /// Set the mth markup's point p to xyz transformed by the inverse of the transform to world for the node. Calls SetMarkupPoint after transforming the passed in coordinate
   void SetMarkupPointWorld(const int markupIndex, const int pointIndex, const double x, const double y, const double z);
+
+  /// Set the orientation for a markup
+  void SetNthMarkupOrientationFromPointer(int n, const double *orientation);
+  void SetNthMarkupOrientationFromArray(int n, const double orientation[4]);
+  void SetNthMarkupOrientation(int n, double w, double x, double y, double z);
+  /// Get the orientation for a markup
+  void GetNthMarkupOrientation(int n, double orientation[4]);
 
   /// Get/Set the associated node id for the nth markup
   std::string GetNthMarkupAssociatedNodeID(int n = 0);

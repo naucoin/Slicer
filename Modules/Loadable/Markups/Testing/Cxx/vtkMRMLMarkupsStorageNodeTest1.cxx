@@ -46,10 +46,13 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
   std::cout << "Display node: " << std::endl;
   vtkIndent indent;
   displayNode->PrintSelf(std::cout, indent);
-  
+
   // add a markup with one point with non default values
   int index =  markupsNode->AddMarkupWithNPoints(1);
-  std::string associatedNodeID = std::string("testingID");
+  double orientation[4] = {0.2, 1.0, 0.0, 0.0};
+  markupsNode->SetNthMarkupOrientationFromArray(index, orientation);
+  markupsNode->ResetNthMarkupID(index);
+  std::string associatedNodeID = std::string("testingAssociatedID");
   markupsNode->SetNthMarkupAssociatedNodeID(index,associatedNodeID);
   markupsNode->SetNthMarkupSelected(index, 0);
   markupsNode->SetNthMarkupVisibility(index, 0);
@@ -66,9 +69,9 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
   // and another one unsetting the label
   index = markupsNode->AddMarkupWithNPoints(1);
   markupsNode->SetNthMarkupLabel(index,"");
-  
+
   // test write
-  
+
   std::cout << "\nWriting this markup to file:" << std::endl;
   markupsNode->PrintSelf(std::cout, indent);
   std::cout << std::endl;
@@ -81,7 +84,7 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
     std::cerr << "Failed to write to file " << node1->GetFileName() << std::endl;
     return EXIT_FAILURE;
     }
-  
+
   // test read
   vtkNew<vtkMRMLMarkupsStorageNode> snode2;
   vtkNew<vtkMRMLMarkupsNode> markupsNode2;
@@ -98,13 +101,33 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
     std::cerr << "Failed to read from file " << snode2->GetFileName() << std::endl;
     return EXIT_FAILURE;
     }
- 
+
   std::cout << "\nMarkup read from file = " << std::endl;
   markupsNode2->PrintSelf(std::cout, indent);
   std::cout << std::endl;
-  
+
   // test values on the first markup
   index = 0;
+  double newOrientation[4];
+  markupsNode2->GetNthMarkupOrientation(index, newOrientation);
+  for (int r = 0; r < 4; r++)
+    {
+    if (newOrientation[r] != orientation[r])
+      {
+      std::cerr << "Failed to set orientation! "
+                << "Expected: "
+                << orientation[0] << ", "
+                << orientation[1] << ", "
+                << orientation[2] << ", "
+                << orientation[3]
+                << " but got: "
+                << newOrientation[0] << ", "
+                << newOrientation[1] << ", "
+                << newOrientation[2] << ", "
+                << newOrientation[3] << std::endl;
+      return EXIT_FAILURE;
+      }
+    }
   if (markupsNode2->GetNthMarkupAssociatedNodeID(index).compare(associatedNodeID) != 0)
     {
     std::cerr << "After reading in, expected markup " << index << " associatedNodeID of " << associatedNodeID.c_str() << " got " << markupsNode2->GetNthMarkupAssociatedNodeID(index).c_str() << std::endl;
@@ -163,7 +186,7 @@ int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
     std::cerr << "Failed second read from file " << snode2->GetFileName() << std::endl;
     return EXIT_FAILURE;
     }
- 
+
   std::cout << "\nDisplay node read from file = " << std::endl;
   displayNode2->PrintSelf(std::cout, indent);
   std::cout << std::endl;
