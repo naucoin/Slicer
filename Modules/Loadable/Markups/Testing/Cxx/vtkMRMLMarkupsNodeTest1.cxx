@@ -57,7 +57,7 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
   //
   // test methods with no markups
   //
-  
+
   // MarkupExists
   std::cout << "Checking if markup exists in empty markups node" << std::endl;
   for (int m = -1; m < 3; m++)
@@ -216,6 +216,102 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     }
   std::cout << "After resetting 0th markup id from " << oldID.c_str() << ", new one is " << node1->GetNthMarkupID(0).c_str() << std::endl;
 
+  //
+  // orientation
+  //
+  std::cout << "Orientations:" << std::endl;
+  double orientation[4];
+  for (int n = 0; n < node1->GetNumberOfMarkups(); ++n)
+    {
+    node1->GetNthMarkupOrientation(n, orientation);
+    std::cout << n << ": orientation = "
+              << orientation[0] << ","
+              << orientation[1] << ","
+              << orientation[2] << ","
+              << orientation[3] << std::endl;
+    // test for default
+    if (orientation[0] != 0.0 ||
+        orientation[1] != 0.0 ||
+        orientation[2] != 0.0 ||
+        orientation[3] != 1.0)
+      {
+      std::cerr << "Incorrect default orientation for markup " << n
+                << "! Expected 0.0, 0.0, 0.0, 1.0," << std::endl;
+      return EXIT_FAILURE;
+      }
+    }
+  double testOrientation[4] = {0.5, 1.0, 0.0, 0.0};
+  node1->SetNthMarkupOrientation(0,
+                                 testOrientation[0], testOrientation[1],
+                                 testOrientation[2], testOrientation[3]);
+  double newOrientation[4];
+  node1->GetNthMarkupOrientation(0, newOrientation);
+  for (int r = 0; r < 4; r++)
+    {
+    if (newOrientation[r] != testOrientation[r])
+      {
+      std::cerr << "Failed to set orientation! "
+                << "Expected: "
+                << testOrientation[0] << ", "
+                << testOrientation[1] << ", "
+                << testOrientation[2] << ", "
+                << testOrientation[3]
+                << " but got: "
+                << newOrientation[0] << ", "
+                << newOrientation[1] << ", "
+                << newOrientation[2] << ", "
+                << newOrientation[3] << std::endl;
+      return EXIT_FAILURE;
+      }
+    }
+
+  testOrientation[0] = 0.333;
+  node1->SetNthMarkupOrientationFromArray(0, testOrientation);
+  node1->GetNthMarkupOrientation(0, newOrientation);
+  for (int r = 0; r < 4; r++)
+    {
+    if (newOrientation[r] != testOrientation[r])
+      {
+      std::cerr << "Failed to set orientation from array! "
+                << "Expected: "
+                << testOrientation[0] << ", "
+                << testOrientation[1] << ", "
+                << testOrientation[2] << ", "
+                << testOrientation[3]
+                << " but got: "
+                << newOrientation[0] << ", "
+                << newOrientation[1] << ", "
+                << newOrientation[2] << ", "
+                << newOrientation[3] << std::endl;
+      return EXIT_FAILURE;
+      }
+    }
+
+  testOrientation[0] = 0.111;
+  testOrientation[1] = 0.0;
+  testOrientation[2] = 1.0;
+  testOrientation[3] = 0.0;
+  double *orientationPointer = testOrientation;
+  node1->SetNthMarkupOrientationFromPointer(0, orientationPointer);
+  node1->GetNthMarkupOrientation(0, newOrientation);
+  for (int r = 0; r < 4; r++)
+    {
+    if (newOrientation[r] != testOrientation[r])
+      {
+      std::cerr << "Failed to set orientation from pointer! "
+                << "Expected: "
+                << testOrientation[0] << ", "
+                << testOrientation[1] << ", "
+                << testOrientation[2] << ", "
+                << testOrientation[3]
+                << " but got: "
+                << newOrientation[0] << ", "
+                << newOrientation[1] << ", "
+                << newOrientation[2] << ", "
+                << newOrientation[3] << std::endl;
+      return EXIT_FAILURE;
+      }
+    }
   //
   // Selected/Visib
   //

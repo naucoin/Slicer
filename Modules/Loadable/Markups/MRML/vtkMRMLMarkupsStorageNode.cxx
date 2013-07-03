@@ -44,7 +44,7 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
 
   std::string fullName = this->GetFullNameFromFileName();
 
-  if (fullName == std::string("")) 
+  if (fullName == std::string(""))
     {
     vtkErrorMacro("vtkMRMLMarkupsStorageNode: File name not specified");
     return 0;
@@ -107,7 +107,7 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
     while (fstr.good())
       {
       fstr.getline(line, 1024);
-      
+
       // does it start with a #?
       if (line[0] == '#')
         {
@@ -288,6 +288,7 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
           vtkDebugMacro("\n\n\n\ngot a line: \n\"" << line << "\"");
           int numPoints = 0;
           double x = 0.0, y = 0.0, z = 0.0;
+          double ow = 0.0, ox = 0.0, oy = 0.0, oz = 1.0;
           int sel = 1, vis = 1, lock = 0;
           std::string id = std::string("");
           std::string associatedNodeID = std::string("");
@@ -331,8 +332,20 @@ int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
                 }
               lineElementIndex++;
               }
-            // parse the end of the line
+            // parse the rest of the line
             std::string component;
+
+            // orientatation
+            getline(ss, component, ',');
+            ow = atof(component.c_str());
+            getline(ss, component, ',');
+            ox = atof(component.c_str());
+            getline(ss, component, ',');
+            oy = atof(component.c_str());
+            getline(ss, component, ',');
+            oz = atof(component.c_str());
+            markupsNode->SetNthMarkupOrientation(thisMarkupNumber, ow, ox, oy, oz);
+
             // visibility
             getline(ss, component, ',');
             vtkDebugMacro("component = " << component.c_str());
@@ -497,14 +510,15 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
     }
   // label the columns, there can be any number of points associated with a
   // markup, so start by saying how many there are, for a fiducial:
-  // 1,x,y,z,vis,sel,lock,label,id,desc,associatedNodeID
+  // 1,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,id,desc,associatedNodeID
   // for a ruler:
-  // 2,x,y,z,x,y,z,vis,sel,lock,label,id,desc,associatedNodeID
+  // 2,x,y,z,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,id,desc,associatedNodeID
+  // orientation is a quaternion, angle and axis
   // associatedNodeID and description can be empty strings
-  // 1,x,y,z,vis,sel,lock,label,id,,
+  // 1,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,id,,
   // label can have spaces, everything up to next comma is used, no quotes
   // necessary, same with the description
-  of << "# columns = numPoints,([x,y,z]*numPoints),vis,sel,lock,label,id,desc,associatedNodeID" << endl;
+  of << "# columns = numPoints,([x,y,z]*numPoints),ow,ox,oy,oz,vis,sel,lock,label,id,desc,associatedNodeID" << endl;
   for (int i = 0; i < numberOfMarkups; i++)
     {
     int numberOfPoints = markupsNode->GetNumberOfPointsInNthMarkup(i);
@@ -515,6 +529,8 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
       markupsNode->GetMarkupPoint(i,p,xyz);
       of << "," << xyz[0] << "," << xyz[1] << "," << xyz[2];
       }
+    double orientation[4];
+    markupsNode->GetNthMarkupOrientation(i, orientation);
     bool vis = markupsNode->GetNthMarkupVisibility(i);
     bool sel = markupsNode->GetNthMarkupSelected(i);
     bool lock = markupsNode->GetNthMarkupLocked(i);
@@ -532,7 +548,7 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
       {
       associatedNodeID = std::string("");
       }
-    
+    of << "," << orientation[0] << "," << orientation[1] << "," << orientation[2] << "," << orientation[3];
     of << "," << vis << "," << sel << "," << lock;
     of << "," << label;
     of << "," << id;
@@ -545,7 +561,7 @@ int vtkMRMLMarkupsStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
   of.close();
 
   return 1;
-  
+
 }
 
 //----------------------------------------------------------------------------

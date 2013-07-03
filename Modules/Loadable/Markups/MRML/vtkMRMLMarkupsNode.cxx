@@ -149,6 +149,11 @@ void vtkMRMLMarkupsNode::PrintMarkup(ostream& os, vtkIndent indent, Markup *mark
     vtkVector3d point = markup->points[p];
     os << indent.GetNextIndent() << "p" << p << ": " << point.X() << ", " << point.Y() << ", " << point.Z() << "\n";
     }
+  os << indent.GetNextIndent() << "Orientation = "
+     << markup->OrientationWXYZ[0] << ","
+     << markup->OrientationWXYZ[1] << ","
+     << markup->OrientationWXYZ[2] << ","
+     << markup->OrientationWXYZ[3] << "\n";
 }
 
 
@@ -437,6 +442,12 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
   markup->Description = std::string("");
   // use an empty associated node id
   markup->AssociatedNodeID = std::string("");
+
+  // orientatation is 0 around the z axis
+  markup->OrientationWXYZ[0] = 0.0;
+  markup->OrientationWXYZ[1] = 0.0;
+  markup->OrientationWXYZ[2] = 0.0;
+  markup->OrientationWXYZ[3] = 1.0;
 
   // set the flags
   markup->Selected = true;
@@ -770,6 +781,59 @@ void vtkMRMLMarkupsNode::SetMarkupPointWorld(const int markupIndex, const int po
 }
 
 //-----------------------------------------------------------
+void vtkMRMLMarkupsNode::SetNthMarkupOrientationFromPointer(int n, const double *orientation)
+{
+  if (!orientation)
+    {
+    vtkErrorMacro("Invalid orientation pointer!");
+    return;
+    }
+  this->SetNthMarkupOrientation(n, orientation[0], orientation[1], orientation[2], orientation[3]);
+}
+
+//-----------------------------------------------------------
+void vtkMRMLMarkupsNode::SetNthMarkupOrientationFromArray(int n, const double orientation[4])
+{
+  this->SetNthMarkupOrientation(n, orientation[0], orientation[1], orientation[2], orientation[3]);
+}
+
+//-----------------------------------------------------------
+void vtkMRMLMarkupsNode::SetNthMarkupOrientation(int n, double w, double x, double y, double z)
+{
+  if (!this->MarkupExists(n))
+    {
+    return;
+    }
+  Markup *markup = this->GetNthMarkup(n);
+  if (!markup)
+    {
+    return;
+    }
+  markup->OrientationWXYZ[0] = w;
+  markup->OrientationWXYZ[1] = x;
+  markup->OrientationWXYZ[2] = y;
+  markup->OrientationWXYZ[3] = z;
+}
+
+//-----------------------------------------------------------
+void vtkMRMLMarkupsNode::GetNthMarkupOrientation(int n, double orientation[4])
+{
+  if (!this->MarkupExists(n))
+    {
+    return;
+    }
+  Markup *markup = this->GetNthMarkup(n);
+  if (!markup)
+    {
+    return;
+    }
+  orientation[0] = markup->OrientationWXYZ[0];
+  orientation[1] = markup->OrientationWXYZ[1];
+  orientation[2] = markup->OrientationWXYZ[2];
+  orientation[3] = markup->OrientationWXYZ[3];
+}
+
+//-----------------------------------------------------------
 std::string vtkMRMLMarkupsNode::GetNthMarkupAssociatedNodeID(int n)
 {
   std::string id = std::string("");
@@ -783,7 +847,7 @@ std::string vtkMRMLMarkupsNode::GetNthMarkupAssociatedNodeID(int n)
     }
   else
     {
-    std::cerr << "GetNthMarkupAssociatedNodeID: markup " << n << " doesn't exist" << std::endl;
+    vtkErrorMacro("GetNthMarkupAssociatedNodeID: markup " << n << " doesn't exist");
     }
   return id;
 }
@@ -803,7 +867,7 @@ void vtkMRMLMarkupsNode::SetNthMarkupAssociatedNodeID(int n, std::string id)
     }
   else
     {
-    std::cerr << "SetNthMarkupAssociatedNodeID: markup " << n << " doesn't exist, can't set id to " << id.c_str() << std::endl;
+    vtkErrorMacro("SetNthMarkupAssociatedNodeID: markup " << n << " doesn't exist, can't set id to " << id);
     }
 }
 
@@ -821,7 +885,7 @@ std::string vtkMRMLMarkupsNode::GetNthMarkupID(int n)
     }
   else
     {
-    std::cerr << "GetNthMarkupID: markup " << n << " doesn't exist" << std::endl;
+    vtkErrorMacro("GetNthMarkupID: markup " << n << " doesn't exist");
     }
   return id;
 }
@@ -842,13 +906,13 @@ void vtkMRMLMarkupsNode::SetNthMarkupID(int n, std::string id)
         }
       else
         {
-        vtkWarningMacro("SetNthMarkupID: not changing, was the same: " << markup->ID);
+        vtkDebugMacro("SetNthMarkupID: not changing, was the same: " << markup->ID);
         }
       }
     }
   else
     {
-    std::cerr << "SetNthMarkupID: markup " << n << " doesn't exist, can't set id to " << id.c_str() << std::endl;
+    vtkWarningMacro("SetNthMarkupID: markup " << n << " doesn't exist, can't set id to " << id);
     }
 }
 
