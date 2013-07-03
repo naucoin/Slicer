@@ -22,14 +22,15 @@ class vtkStringArray;
 class vtkMatrix4x4;
 
 /// Each markup is defined by a certain number of RAS points,
-/// 1 for fiducials, 2 for rulers, 3 for angles, etc. 
-/// Each markup also has an associated node id, set when the markup 
+/// 1 for fiducials, 2 for rulers, 3 for angles, etc.
+/// Each markup also has an associated node id, set when the markup
 /// is placed on a data set to link the markup to the volume or model.
 /// Each markup can also be individually un/selected, un/locked, in/visibile,
 /// and have a label (short, shown in the viewers) and description (longer,
 /// shown in the GUI).
 typedef struct
 {
+  std::string ID;
   std::string Label;
   std::string Description;
   std::string AssociatedNodeID;
@@ -39,16 +40,22 @@ typedef struct
   bool Visibility;
 } Markup;
 
+
+
 /// \ingroup Slicer_QtModules_Markups
 class  VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsNode : public vtkMRMLDisplayableNode
 {
+  /// Make the storage node a friend so that ReadDataInternal can set the markup
+  /// ids
+  friend class vtkMRMLMarkupsStorageNode;
+
 public:
   static vtkMRMLMarkupsNode *New();
   vtkTypeMacro(vtkMRMLMarkupsNode,vtkMRMLDisplayableNode);
 
   void PrintMarkup(ostream&  os, vtkIndent indent, Markup *markup);
   void PrintSelf(ostream& os, vtkIndent indent);
-  
+
   virtual const char* GetIcon() {return "";};
 
   //--------------------------------------------------------------------------
@@ -61,14 +68,14 @@ public:
 
   /// Read node attributes from XML file
   virtual void ReadXMLAttributes( const char** atts);
-  
+
   /// Write this node's information to a MRML file in XML format.
   virtual void WriteXML(ostream& of, int indent);
 
   /// Write this node's information to a string for passing to a CLI, write
   /// out the prefix before each markup
   virtual void WriteCLI(std::ostringstream& ss, std::string prefix);
-  
+
   /// Copy the node's attributes to this object
   virtual void Copy(vtkMRMLNode *node);
 
@@ -76,22 +83,22 @@ public:
   void UpdateScene(vtkMRMLScene *scene);
 
   /// alternative method to propagate events generated in Display nodes
-  virtual void ProcessMRMLEvents ( vtkObject * /*caller*/, 
-                                   unsigned long /*event*/, 
+  virtual void ProcessMRMLEvents ( vtkObject * /*caller*/,
+                                   unsigned long /*event*/,
                                    void * /*callData*/ );
 
 
   /// Description:
   /// Create default storage node or NULL if does not have one
-  virtual vtkMRMLStorageNode* CreateDefaultStorageNode();  
+  virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
 
-  int AddText(const char *newText); 
+  int AddText(const char *newText);
   void SetText(int id, const char *newText);
-  vtkStdString GetText(int id); 
-  int DeleteText(int id); 
+  vtkStdString GetText(int id);
+  int DeleteText(int id);
 
-  int GetNumberOfTexts(); 
+  int GetNumberOfTexts();
 
   /// Invoke events when markups change, passing the markup index if applicable
   /// invoke the lock modified event when a markup's lock status is changed.
@@ -100,7 +107,7 @@ public:
   /// invoke the markup added event when adding a new markup to a markups node
   /// invoke the markup removed event when removing one or all markups from a node
   /// (caught by the displayable manager to make sure the widgets match the node)
-  enum 
+  enum
   {
     LockModifiedEvent = 19000,
     PointModifiedEvent,
@@ -108,14 +115,14 @@ public:
     MarkupAddedEvent,
     MarkupRemovedEvent,
   };
-  
+
   /// Description:
   /// Clear out the node of all markups
   virtual void RemoveAllMarkups();
 
   /// Description:
   /// Get/Set the Locked property on the markup.
-  /// If set to 1 then parameters should not be changed 
+  /// If set to 1 then parameters should not be changed
   vtkGetMacro(Locked, int);
   void SetLocked(int locked);
   vtkBooleanMacro(Locked, int);
@@ -161,7 +168,7 @@ public:
 
   /// Copy settings from source markup to target markup
   void CopyMarkup(Markup *source, Markup *target);
-  
+
   /// Swap the position of two markups
   void SwapMarkups(int m1, int m2);
 
@@ -175,6 +182,9 @@ public:
   /// Get/Set the associated node id for the nth markup
   std::string GetNthMarkupAssociatedNodeID(int n = 0);
   void SetNthMarkupAssociatedNodeID(int n, std::string id);
+
+  /// Get the id for the nth markup
+  std::string GetNthMarkupID(int n = 0);
 
   /// Get/Set the Selected, Locked and Visibility flags on the nth markup.
   /// Get returns false if markup doesn't exist
@@ -194,7 +204,7 @@ public:
   /// transform utility functions
   virtual bool CanApplyNonLinearTransforms()const;
   virtual void ApplyTransformMatrix(vtkMatrix4x4* transformMatrix);
-  virtual void ApplyTransform(vtkAbstractTransform* transform);  
+  virtual void ApplyTransform(vtkAbstractTransform* transform);
 
   /// toggle using the name of the markups list node to name the new points added to it.
   /// if true, sets the label automatically as a numbered version of the list name.
@@ -211,7 +221,12 @@ public:
   /// markups, GetModifiedSinceRead() won't return true.
   /// \sa vtkMRMLStorableNode::GetModifiedSinceRead()
   virtual bool GetModifiedSinceRead();
-  
+
+  /// Reset the id of the nth markup according to the local policy
+  /// Called after an already initialised markup has been added to the
+  /// scene. Returns false if n out of bounds, true on success.
+  bool ResetNthMarkupID(int n);
+
 protected:
   vtkMRMLMarkupsNode();
   ~vtkMRMLMarkupsNode();
@@ -220,14 +235,29 @@ protected:
 
   vtkStringArray *TextList;
 
+  /// Set the id of the nth markup.
+  /// The goal is to keep this ID unique, so it's
+  /// managed by the markups node.
+  void SetNthMarkupID(int n, std::string id);
+
+  /// Generate a scene unique ID for a markup. If the scene is not set,
+  /// returns a number based on the max number of markups that
+  /// have been in this list
+  std::string GenerateUniqueMarkupID();;
+
+private:
   /// vector of point sets, each markup can have N markups of the same type
-  /// saved in the vector. 
+  /// saved in the vector.
   std::vector < Markup > Markups;
-  
+
   int Locked;
 
   int UseListNameForMarkups;
-  
+
+  // Keep track of the number of markups that were added to the list, always
+  // incrementing, not decreasing when they're removed. Used to help create
+  // unique names and ids. Reset to 0 when \sa RemoveAllMarkups called
+  int MaximumNumberOfMarkups;
 };
 
 #endif

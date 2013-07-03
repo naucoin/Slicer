@@ -374,7 +374,7 @@
               </stringlist>
              </property>
              <property name="baseName">
-              <string>Fiducial List</string>
+              <string>F</string>
              </property>
              <property name="addEnabled">
               <bool>true</bool>

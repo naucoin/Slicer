@@ -28,6 +28,7 @@ vtkMRMLMarkupsNode::vtkMRMLMarkupsNode()
   this->TextList = vtkStringArray::New();
   this->Locked = 0;
   this->UseListNameForMarkups = 1;
+  this->MaximumNumberOfMarkups = 0;
 }
 
 //----------------------------------------------------------------------------
@@ -107,6 +108,9 @@ void vtkMRMLMarkupsNode::Copy(vtkMRMLNode *anode)
     Markup *markup = node->GetNthMarkup(n);
     this->AddMarkup(*markup);
     }
+
+  // set max number of markups after adding the new ones
+  this->MaximumNumberOfMarkups = node->MaximumNumberOfMarkups;
 }
 
 
@@ -118,7 +122,7 @@ void vtkMRMLMarkupsNode::UpdateScene(vtkMRMLScene *scene)
 
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsNode::ProcessMRMLEvents ( vtkObject *caller,
-                                           unsigned long event, 
+                                           unsigned long event,
                                            void *callData )
 {
   Superclass::ProcessMRMLEvents(caller, event, callData);
@@ -132,6 +136,7 @@ void vtkMRMLMarkupsNode::PrintMarkup(ostream& os, vtkIndent indent, Markup *mark
     return;
     }
 
+  os << indent.GetNextIndent() << "ID = " << markup->ID.c_str() << "\n";
   os << indent.GetNextIndent() << "Label = " << markup->Label.c_str() << "\n";
   os << indent.GetNextIndent() << "Description = " << markup->Description.c_str() << "\n";
   os << indent.GetNextIndent() << "Associated node id = " << markup->AssociatedNodeID.c_str() << "\n";
@@ -161,16 +166,16 @@ void vtkMRMLMarkupsNode::PrintSelf(ostream& os, vtkIndent indent)
     Markup *markup = this->GetNthMarkup(i);
     this->PrintMarkup(os, indent, markup);
     }
-  
-  os << indent << "textList: "; 
-  if  (!this->TextList || !this->GetNumberOfTexts()) 
+
+  os << indent << "textList: ";
+  if  (!this->TextList || !this->GetNumberOfTexts())
     {
     os << indent << "None"  << endl;
     }
-  else 
+  else
     {
     os << endl;
-    for (int i = 0 ; i < this->GetNumberOfTexts() ; i++) 
+    for (int i = 0 ; i < this->GetNumberOfTexts() ; i++)
       {
       os << indent << "  " << i <<": " <<  (TextList->GetValue(i) ? TextList->GetValue(i) : "(none)") << endl;
       }
@@ -182,12 +187,13 @@ void vtkMRMLMarkupsNode::RemoveAllMarkups()
 {
   // remove all markups and points
   this->Markups.clear();
-  
-  // remove all text 
-  this->TextList->Initialize(); 
+
+  // remove all text
+  this->TextList->Initialize();
 
   this->Locked = 0;
   this->UseListNameForMarkups = 1;
+  this->MaximumNumberOfMarkups = 0;
 
   if (!this->GetDisableModifiedEvent())
     {
@@ -201,12 +207,12 @@ void vtkMRMLMarkupsNode::RemoveAllMarkups()
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsNode::SetText(int id, const char *newText)
 {
-  if (id < 0) 
+  if (id < 0)
     {
     vtkErrorMacro("SetText: Invalid ID");
     return;
     }
-  if (!this->TextList) 
+  if (!this->TextList)
     {
     vtkErrorMacro("SetText: TextList is NULL");
     return;
@@ -220,7 +226,7 @@ void vtkMRMLMarkupsNode::SetText(int id, const char *newText)
 
   // check if the same as before
   if (((this->TextList->GetNumberOfValues() == 0) && (newText == NULL || newString == "")) ||
-      ((this->TextList->GetNumberOfValues() > id) && 
+      ((this->TextList->GetNumberOfValues() > id) &&
        (this->TextList->GetValue(id) == newString)
         ) )
     {
@@ -408,35 +414,30 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
     return;
     }
 
-  // set a default label
-  int numberOfMarkups = this->GetNumberOfMarkups();
-  // the markup hasn't been added to the list yet, so increment by one so as not to start with 0
-  numberOfMarkups++;
-  std::stringstream ss;
-  ss << numberOfMarkups;
+  // generate a unique id based on list policy
+  std::string id = this->GenerateUniqueMarkupID();
+  markup->ID = id;
+
+  // set a default label with a number higher than others in the list
   std::string numberString;
+  std::stringstream ss;
+  ss << this->MaximumNumberOfMarkups + 1;
   ss >> numberString;
-  if (this->GetUseListNameForMarkups())
+  if (this->GetUseListNameForMarkups() &&
+      this->GetName() != NULL)
     {
-    if (this->GetName() != NULL)
-      {
-      markup->Label = std::string(this->GetName()) + numberString;
-      }
-    else
-      {
-      markup->Label = numberString;
-      }
+    markup->Label = std::string(this->GetName()) + std::string("-") + numberString;
     }
   else
     {
-    markup->Label = std::string("M") + numberString;
+    markup->Label = numberString;
     }
 
   // use an empty description
   markup->Description = std::string("");
   // use an empty associated node id
   markup->AssociatedNodeID = std::string("");
-  
+
   // set the flags
   markup->Selected = true;
   markup->Locked = false;
@@ -447,6 +448,8 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
 void vtkMRMLMarkupsNode::AddMarkup(Markup markup)
 {
   this->Markups.push_back(markup);
+  this->MaximumNumberOfMarkups++;
+
   if (!this->GetDisableModifiedEvent())
     {
     this->Modified();
@@ -474,13 +477,15 @@ int vtkMRMLMarkupsNode::AddMarkupWithNPoints(int n)
     markup.points.push_back(p);
     }
   this->Markups.push_back(markup);
+  this->MaximumNumberOfMarkups++;
+
   markupIndex = this->GetNumberOfMarkups() - 1;
   if (!this->GetDisableModifiedEvent())
     {
     this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent, (void*)&markupIndex);
     }
-  
+
   return markupIndex;
 }
 
@@ -493,17 +498,16 @@ int vtkMRMLMarkupsNode::AddPointToNewMarkup(vtkVector3d point)
   this->InitMarkup(&newmarkup);
   newmarkup.points.push_back(point);
   this->Markups.push_back(newmarkup);
+  this->MaximumNumberOfMarkups++;
 
   markupIndex = this->Markups.size() - 1;
-  
+
   if (!this->GetDisableModifiedEvent())
     {
     this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent, (void*)&markupIndex);
     }
 
- 
-  
   return markupIndex;
 }
 
@@ -638,6 +642,7 @@ void vtkMRMLMarkupsNode::CopyMarkup(Markup *source, Markup *target)
     return;
     }
 
+  target->ID = source->ID;
   target->Label = source->Label;
   target->Description = source->Description;
   target->AssociatedNodeID = source->AssociatedNodeID;
@@ -763,6 +768,7 @@ void vtkMRMLMarkupsNode::SetMarkupPointWorld(const int markupIndex, const int po
 
   this->SetMarkupPoint(markupIndex, pointIndex, worldxyz[0], worldxyz[1], worldxyz[2]);
 }
+
 //-----------------------------------------------------------
 std::string vtkMRMLMarkupsNode::GetNthMarkupAssociatedNodeID(int n)
 {
@@ -798,6 +804,51 @@ void vtkMRMLMarkupsNode::SetNthMarkupAssociatedNodeID(int n, std::string id)
   else
     {
     std::cerr << "SetNthMarkupAssociatedNodeID: markup " << n << " doesn't exist, can't set id to " << id.c_str() << std::endl;
+    }
+}
+
+//-----------------------------------------------------------
+std::string vtkMRMLMarkupsNode::GetNthMarkupID(int n)
+{
+  std::string id = std::string("");
+  if (this->MarkupExists(n))
+    {
+    Markup *markup = this->GetNthMarkup(n);
+    if (markup)
+      {
+      id = markup->ID;
+      }
+    }
+  else
+    {
+    std::cerr << "GetNthMarkupID: markup " << n << " doesn't exist" << std::endl;
+    }
+  return id;
+}
+
+//-----------------------------------------------------------
+void vtkMRMLMarkupsNode::SetNthMarkupID(int n, std::string id)
+{
+  vtkDebugMacro("SetNthMarkupID: n = " << n << ", id = '" << id.c_str() << "'");
+  if (this->MarkupExists(n))
+    {
+    Markup *markup = this->GetNthMarkup(n);
+    if (markup)
+      {
+      if (markup->ID.compare(id) != 0)
+        {
+        vtkDebugMacro("Changing markup " << n << " associated node id from " << markup->ID.c_str() << " to " << id.c_str());
+        markup->ID = std::string(id.c_str());
+        }
+      else
+        {
+        vtkWarningMacro("SetNthMarkupID: not changing, was the same: " << markup->ID);
+        }
+      }
+    }
+  else
+    {
+    std::cerr << "SetNthMarkupID: markup " << n << " doesn't exist, can't set id to " << id.c_str() << std::endl;
     }
 }
 
@@ -1046,7 +1097,7 @@ void vtkMRMLMarkupsNode::WriteCLI(std::ostringstream& ss, std::string prefix)
         //ss.precision(5);
         //ss << std::fixed << point[0] << "," <<  point[1] << "," <<  point[2] ;
         ss << point[0] << "," <<  point[1] << "," <<  point[2];
-        if (n < numPoints-1) 
+        if (n < numPoints-1)
           {
           // put a space after each point if there's another point to print
           ss << " ";
@@ -1068,3 +1119,52 @@ bool vtkMRMLMarkupsNode::GetModifiedSinceRead()
     (this->GetMTime() > this->GetStoredTime());
 }
 
+//---------------------------------------------------------------------------
+bool vtkMRMLMarkupsNode::ResetNthMarkupID(int n)
+{
+  // is n in the list?
+  if (!this->MarkupExists(n))
+    {
+    return false;
+    }
+  // first generate a new id
+  std::string newID = this->GenerateUniqueMarkupID();
+
+  // then set it
+  this->SetNthMarkupID(n, newID);
+
+  return true;
+}
+
+//---------------------------------------------------------------------------
+std::string vtkMRMLMarkupsNode::GenerateUniqueMarkupID()
+{
+  std::string id;
+
+  if (this->Scene)
+    {
+    // base it on the class of this node so that they're unique across lists
+    id = this->Scene->GenerateUniqueName(this->GetClassName());
+    // the first time this is called, the return will be the bare class name
+    // with no number, the next one will have _1 appended. To unify it, check
+    // for the first case and append _0
+    if (id.compare(this->GetClassName()) == 0)
+      {
+      id = id + std::string("_0");
+      }
+    }
+  else
+    {
+    vtkDebugMacro("InitMarkup: markups node isn't in a scene yet, can't guarantee a unique id.");
+    // use the maximum number of markups to get a number unique to this list
+    int numberOfMarkups = this->MaximumNumberOfMarkups;
+    // increment by one so as not to start with 0
+    numberOfMarkups++;
+    // put the number in a string
+    std::stringstream ss;
+    ss << numberOfMarkups;
+    ss >> id;
+    }
+
+  return id;
+}
