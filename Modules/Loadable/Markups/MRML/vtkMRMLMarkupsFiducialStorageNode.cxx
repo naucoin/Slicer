@@ -146,7 +146,6 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
 
     // save the valid lines in a vector, parse them once know the max id
     std::vector<std::string>lines;
-    int numberOfMarkups = 0;
     int thisMarkupNumber = 0;
 
 //    this->DebugOn();
