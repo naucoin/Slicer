@@ -12,6 +12,8 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkMRMLMarkupsFiducialNodeTest1.cxx
   vtkMRMLMarkupsNodeTest1.cxx
   vtkMRMLMarkupsNodeTest2.cxx
+  vtkMRMLMarkupsFiducialStorageNodeTest1.cxx
+  vtkMRMLMarkupsFiducialStorageNodeTest2.cxx
   vtkMRMLMarkupsStorageNodeTest1.cxx
   vtkSlicerMarkupsLogicTest1.cxx
   vtkSlicerMarkupsLogicTest2.cxx
@@ -24,8 +26,6 @@ list(APPEND Tests ${KIT_TEST_SRCS})
 add_executable(${KIT}CxxTests ${Tests})
 
 target_link_libraries(${KIT}CxxTests ${KIT})
-
-MESSAGE(STATUS "kit names =  ${KIT_TEST_NAMES}, Tests= ${Tests}, kit cxx tests = ${${KIT}CxxTests} ")
 
 foreach(testname ${KIT_TEST_NAMES})
   SIMPLE_TEST( ${testname} )
@@ -42,9 +42,18 @@ SIMPLE_TEST( vtkSlicerMarkupsLogicTest2 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest2 )
 
+SET (TEST_FCSV ${TEST_DIR}/markupsFiducialStorageNode.fcsv)
+FILE(TO_NATIVE_PATH ${TEST_FCSV} TEST_FCSV_NATIVE)
+SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest1 ${TEST_FCSV_NATIVE} )
+
 SET (TEST_MCSV ${TEST_DIR}/markupsStorageNode.mcsv)
 FILE(TO_NATIVE_PATH ${TEST_MCSV} TEST_MCSV_NATIVE)
 MESSAGE(STATUS "cmake bin dir = ${CMAKE_BINARY_DIR}, share dir = ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}, passing in path ${TEST_MCSV}, native path = ${TEST_MCSV_NATIVE}")
 
-
 SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 ${TEST_MCSV_NATIVE} )
+
+# test legacy Slicer3 fcsv file
+SET (TEST_S3_FCSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer3.fcsv)
+FILE(TO_NATIVE_PATH ${TEST_S3_FCSV} TEST_S3_FCSV_NATIVE)
+MESSAGE(STATUS "Slicer 3 fiducials test: \nCMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}\n file for markups = ${TEST_S3_FCSV_NATIVE}")
+SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest2 ${TEST_S3_FCSV_NATIVE} )

@@ -1,5 +1,6 @@
 // MRML includes
 #include "vtkMRMLMarkupsNode.h"
+#include "vtkMRMLMarkupsFiducialStorageNode.h"
 #include "vtkMRMLMarkupsStorageNode.h"
 #include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkMRMLScene.h"
@@ -558,6 +559,15 @@ void vtkMRMLMarkupsNode::GetMarkupPoint(int markupIndex, int pointIndex, double 
 }
 
 //-----------------------------------------------------------
+void vtkMRMLMarkupsNode::GetMarkupPointLPS(int markupIndex, int pointIndex, double point[3])
+{
+  vtkVector3d vectorPoint = this->GetMarkupPointVector(markupIndex, pointIndex);
+  point[0] = -1.0 * vectorPoint.GetX();
+  point[1] = -1.0 * vectorPoint.GetY();
+  point[2] = vectorPoint.GetZ();
+}
+
+//-----------------------------------------------------------
 int vtkMRMLMarkupsNode::GetMarkupPointWorld(int markupIndex, int pointIndex, double worldxyz[4])
 {
   vtkVector3d vectorPoint = this->GetMarkupPointVector(markupIndex, pointIndex);
@@ -743,6 +753,17 @@ void vtkMRMLMarkupsNode::SetMarkupPoint(const int markupIndex, const int pointIn
     this->Modified();
     this->InvokeEvent(vtkMRMLMarkupsNode::PointModifiedEvent, (void*)&markupIndex);
     }
+}
+
+//-----------------------------------------------------------
+void vtkMRMLMarkupsNode::SetMarkupPointLPS(const int markupIndex, const int pointIndex,
+                                        const double x, const double y, const double z)
+{
+  double r, a, s;
+  r = -x;
+  a = -y;
+  s = z;
+  this->SetMarkupPoint(markupIndex, pointIndex, r, a, s);
 }
 
 //-----------------------------------------------------------
@@ -1134,11 +1155,28 @@ void vtkMRMLMarkupsNode::ApplyTransform(vtkAbstractTransform* transform)
 }
 
 //---------------------------------------------------------------------------
-void vtkMRMLMarkupsNode::WriteCLI(std::ostringstream& ss, std::string prefix)
+void vtkMRMLMarkupsNode::WriteCLI(std::ostringstream& ss, std::string prefix, int coordinateSystem)
 {
-  Superclass::WriteCLI(ss, prefix);
+  Superclass::WriteCLI(ss, prefix, coordinateSystem);
 
   int numMarkups = this->GetNumberOfMarkups();
+
+  // check if the coordinate system flag is set to LPS, otherwise assume RAS
+  bool useLPS = false;
+  if (coordinateSystem == 1)
+    {
+    useLPS = true;
+    }
+
+/*  if (this->GetStorageNode())
+    {
+    vtkMRMLMarkupsFiducialStorageNode *fsn = vtkMRMLMarkupsFiducialStorageNode::SafeDownCast(this->GetStorageNode());
+    if (fsn && fsn->GetUseLPS())
+      {
+      useLPS = true;
+      }
+    }
+*/
 
   // loop over the markups
   for (int m=0; m<numMarkups; m++)
@@ -1151,7 +1189,14 @@ void vtkMRMLMarkupsNode::WriteCLI(std::ostringstream& ss, std::string prefix)
       for (int n=0; n<numPoints; n++)
         {
         double point[3];
-        this->GetMarkupPoint(m, n, point);
+        if (useLPS)
+          {
+          this->GetMarkupPointLPS(m, n, point);
+          }
+        else
+          {
+          this->GetMarkupPoint(m, n, point);
+          }
         // write
         if (prefix.compare("") != 0)
           {

@@ -3,10 +3,14 @@
 #include "vtkMRMLMarkupsNode.h"
 
 // VTK includes
+#include <vtkIndent.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 //#include <vtkPolyData.h>
+
+// STL includes
+#include <sstream>
 
 int vtkMRMLMarkupsNodeTest1(int , char * [] )
 {
@@ -167,9 +171,9 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     return EXIT_FAILURE;
     }
   else
-  {
-	  std::cout << "Added four markups, have " << numMarkups << " markups" << std::endl;
-  }
+    {
+    std::cout << "Added four markups, have " << numMarkups << " markups" << std::endl;
+    }
 
   numPoints = node1->GetNumberOfPointsInNthMarkup(2);
   if (numPoints != 3)
@@ -415,5 +419,18 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
     {
     std::cout << "\tdiff = " << diff << std::endl;
     }
+
+  // test WriteCLI
+  vtkIndent indent;
+  std::cout << "Testing WriteCLI call on markups node:" << std::endl;
+  node1->PrintSelf(std::cout, indent);
+  std::ostringstream ss;
+  std::string prefix = "point";
+  node1->WriteCLI(ss, prefix, 0);
+  std::cout << "Wrote RAS points to CLI as:\n" << ss.str().c_str() << std::endl;
+  std::ostringstream ssLPS;
+  node1->WriteCLI(ssLPS, prefix, 1);
+  std::cout << "Wrote LPS points to CLI as:\n" << ssLPS.str().c_str() << std::endl;
+
   return EXIT_SUCCESS;
 }

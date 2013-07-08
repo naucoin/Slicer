@@ -27,7 +27,7 @@ public:
   static vtkMRMLMarkupsFiducialNode *New();
   vtkTypeMacro(vtkMRMLMarkupsFiducialNode,vtkMRMLMarkupsNode);
   void PrintSelf(ostream& os, vtkIndent indent);
- 
+
   virtual const char* GetIcon() {return ":/Icons/MarkupsMouseModePlace.png";};
 
   //--------------------------------------------------------------------------
@@ -57,14 +57,14 @@ public:
 
   // Description:
   // alternative method to propagate events generated in Display nodes
-  virtual void ProcessMRMLEvents ( vtkObject * /*caller*/, 
-                                   unsigned long /*event*/, 
+  virtual void ProcessMRMLEvents ( vtkObject * /*caller*/,
+                                   unsigned long /*event*/,
                                    void * /*callData*/ );
 
 
   // Description:
   // Create default storage node or NULL if does not have one
-  virtual vtkMRMLStorageNode* CreateDefaultStorageNode();  
+  virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
   /// Return a cast display node, returns null if none
   vtkMRMLMarkupsDisplayNode *GetMarkupsDisplayNode();

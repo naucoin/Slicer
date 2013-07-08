@@ -53,6 +53,7 @@ class  VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsNode : public vtkMRML
   /// Make the storage node a friend so that ReadDataInternal can set the markup
   /// ids
   friend class vtkMRMLMarkupsStorageNode;
+  friend class vtkMRMLMarkupsFiducialStorageNode;
 
 public:
   static vtkMRMLMarkupsNode *New();
@@ -79,7 +80,7 @@ public:
 
   /// Write this node's information to a string for passing to a CLI, write
   /// out the prefix before each markup
-  virtual void WriteCLI(std::ostringstream& ss, std::string prefix);
+  virtual void WriteCLI(std::ostringstream& ss, std::string prefix, int coordinateSystem = 0);
 
   /// Copy the node's attributes to this object
   virtual void Copy(vtkMRMLNode *node);
@@ -157,6 +158,8 @@ public:
   /// Get points
   vtkVector3d GetMarkupPointVector(int markupIndex, int pointIndex);
   void GetMarkupPoint(int markupIndex, int pointIndex, double point[3]);
+  /// Get points in LPS coordinate system
+  void GetMarkupPointLPS(int markupIndex, int pointIndex, double point[3]);
   /// Return a three element double giving the world position (any parent
   /// transform on the markup applied to the return of GetMarkupPoint
   /// returns 0 on failure, 1 on success.
@@ -181,6 +184,8 @@ public:
   void SetMarkupPointFromPointer(const int markupIndex, const int pointIndex, const double * pos);
   void SetMarkupPointFromArray(const int markupIndex, const int pointIndex, const double pos[3]);
   void SetMarkupPoint(const int markupIndex, const int pointIndex, const double x, const double y, const double z);
+  /// Set a point in a markup using LPS coordinate system, converting to RAS
+  void SetMarkupPointLPS(const int markupIndex, const int pointIndex, const double x, const double y, const double z);
   /// Set the mth markup's point p to xyz transformed by the inverse of the transform to world for the node. Calls SetMarkupPoint after transforming the passed in coordinate
   void SetMarkupPointWorld(const int markupIndex, const int pointIndex, const double x, const double y, const double z);
 
