@@ -1213,6 +1213,19 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
           }
         if ((*pit).GetTag() == "point")
           {
+          // check for a coordinate system flag
+          std::string coordinateSystemStr = (*pit).GetCoordinateSystem();
+          // markups storage has RAS as 0, LPS as 1, IJK as 2
+          int coordinateSystemFlag = 0;
+          if (coordinateSystemStr.compare("lps") == 0)
+            {
+            coordinateSystemFlag = 1;
+            }
+          else if (coordinateSystemStr.compare("ijk") == 0)
+            {
+            coordinateSystemFlag = 2;
+            }
+
           // get the fiducial list node
           vtkMRMLNode *node
             = this->GetMRMLScene()->GetNodeByID((*pit).GetDefault().c_str());
@@ -1262,9 +1275,9 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
           else if (markups && markups->IsA("vtkMRMLMarkupsNode"))
             {
             std::ostringstream ss;
-            markups->WriteCLI(ss, prefix+flag);
+            markups->WriteCLI(ss, prefix+flag, coordinateSystemFlag);
             vtkDebugMacro("WriteCL markups output = " << ss.str());
-            commandLineAsString.push_back(ss.str());             
+            commandLineAsString.push_back(ss.str());
             }
           else if (points)
             {
@@ -1282,7 +1295,7 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
               {
               // the hierarchy nodes have a sorting index that's respected by
               // GetNthChildNode
-              vtkMRMLHierarchyNode *nthHierarchyNode = points->GetNthChildNode(c);              
+              vtkMRMLHierarchyNode *nthHierarchyNode = points->GetNthChildNode(c);
               // then get the displayable node from that hierarchy node
               if (nthHierarchyNode)
                 {
@@ -1296,7 +1309,7 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
                   {
                   vtkDebugMacro("Found displayable node with id " << displayableNode->GetID());
                   std::ostringstream ss;
-                  displayableNode->WriteCLI(ss, prefix+flag);
+                  displayableNode->WriteCLI(ss, prefix+flag, coordinateSystemFlag);
                   vtkDebugMacro("WriteCL annots output = " << ss.str());
                   commandLineAsString.push_back(ss.str());
                   }
