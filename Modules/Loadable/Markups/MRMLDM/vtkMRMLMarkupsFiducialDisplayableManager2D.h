@@ -1,11 +1,11 @@
-#ifndef __vtkMRMLMarkupsFiducialDisplayableManager3D_h
-#define __vtkMRMLMarkupsFiducialDisplayableManager3D_h
+#ifndef __vtkMRMLMarkupsFiducialDisplayableManager2D_h
+#define __vtkMRMLMarkupsFiducialDisplayableManager2D_h
 
 // MarkupsModule includes
 #include "vtkSlicerMarkupsModuleMRMLDisplayableManagerExport.h"
 
 // MarkupsModule/MRMLDisplayableManager includes
-#include "vtkMRMLMarkupsDisplayableManager3D.h"
+#include "vtkMRMLMarkupsDisplayableManager2D.h"
 
 class vtkMRMLMarkupsFiducialNode;
 class vtkSlicerViewerWidget;
@@ -13,19 +13,25 @@ class vtkMRMLMarkupsDisplayNode;
 class vtkTextWidget;
 
 /// \ingroup Slicer_QtModules_Markups
-class VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsFiducialDisplayableManager3D :
-    public vtkMRMLMarkupsDisplayableManager3D
+class VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsFiducialDisplayableManager2D :
+    public vtkMRMLMarkupsDisplayableManager2D
 {
 public:
 
-  static vtkMRMLMarkupsFiducialDisplayableManager3D *New();
-  vtkTypeRevisionMacro(vtkMRMLMarkupsFiducialDisplayableManager3D, vtkMRMLMarkupsDisplayableManager3D);
+  static vtkMRMLMarkupsFiducialDisplayableManager2D *New();
+  vtkTypeRevisionMacro(vtkMRMLMarkupsFiducialDisplayableManager2D, vtkMRMLMarkupsDisplayableManager2D);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  /// update a single seed position from the node, return true if the position changed
+  virtual bool UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
+
+  /// Update a single markup position from the seed widget, return true if the position changed
+  virtual bool UpdateNthMarkupPositionFromWidget(int n, vtkMRMLMarkupsNode* pointsNode, vtkAbstractWidget * widget);
 
 protected:
 
-  vtkMRMLMarkupsFiducialDisplayableManager3D(){this->Focus="vtkMRMLMarkupsFiducialNode";}
-  virtual ~vtkMRMLMarkupsFiducialDisplayableManager3D(){}
+  vtkMRMLMarkupsFiducialDisplayableManager2D(){this->Focus="vtkMRMLMarkupsFiducialNode";}
+  virtual ~vtkMRMLMarkupsFiducialDisplayableManager2D(){}
 
   /// Callback for click in RenderWindow
   virtual void OnClickInRenderWindow(double x, double y, const char *associatedNodeID);
@@ -54,8 +60,6 @@ protected:
   /// respond to the interactor style event
   virtual void OnInteractorStyleEvent(int eventid);
 
-  /// update a single seed position from the node, return true if the position changed
-  virtual bool UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
   /// respond to control point modified events
   virtual void UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node);
 
@@ -64,9 +68,9 @@ protected:
 
 private:
 
-  vtkMRMLMarkupsFiducialDisplayableManager3D(const vtkMRMLMarkupsFiducialDisplayableManager3D&); /// Not implemented
-  void operator=(const vtkMRMLMarkupsFiducialDisplayableManager3D&); /// Not Implemented
+  vtkMRMLMarkupsFiducialDisplayableManager2D(const vtkMRMLMarkupsFiducialDisplayableManager2D&); /// Not implemented
+  void operator=(const vtkMRMLMarkupsFiducialDisplayableManager2D&); /// Not Implemented
+
 };
 
 #endif
-

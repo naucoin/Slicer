@@ -47,4 +47,3 @@ bool vtkMRMLMarkupsClickCounter::HasEnoughClicks(int clicks)
 
   return false;
 }
-

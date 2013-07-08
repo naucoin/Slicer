@@ -42,7 +42,7 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PrintSelf(ostream& os, vtkIndent in
     {
     os << indent.GetNextIndent() << this->MarkupsNodeList[nodesIt]->GetID() << std::endl;
     }
-  
+
   os << indent << "Widgets map:" << std::endl;
   WidgetsIt widgetIterator = this->Widgets.begin();
   for (widgetIterator =  this->Widgets.begin();
@@ -63,10 +63,12 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PrintSelf(ostream& os, vtkIndent in
         {
         vtkWarningMacro("PrintSelf: no seed representation for widget assoc with markups node " << widgetIterator->first->GetID());
         }
-      os << indent.GetNextIndent().GetNextIndent() << "enabled = " << widgetIterator->second->GetEnabled() << ", number of seeds = " << numberOfSeeds << std::endl;
+      os << indent.GetNextIndent().GetNextIndent() << "enabled = "
+	 << widgetIterator->second->GetEnabled()
+	 << ", number of seeds = " << numberOfSeeds << std::endl;
       }
     }
-  
+
   os << indent << "Widget Intersections:" << std::endl;
   for (WidgetIntersectionsIt intersectionsIt = this->WidgetIntersections.begin();
        intersectionsIt != this->WidgetIntersections.end();
@@ -255,7 +257,7 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveAllWidgetsAndNodes()
     widgetIterator->second->Delete();
     }
   this->Widgets.clear();
-  
+
   WidgetIntersectionsIt intIt;
   for (intIt = this->WidgetIntersections.begin();
        intIt != this->WidgetIntersections.end();
@@ -365,7 +367,7 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PlaceSeed(double x, double y, vtkRe
     seedWidget->ManagesCursorOff();
     seedWidget->ProcessEventsOff();
 
-    
+
     this->SeedWidget = seedWidget;
 
     }
@@ -509,9 +511,6 @@ void vtkMRMLMarkupsDisplayableManagerHelper::SetNodeGlyphType(vtkMRMLNode *displ
     }
   // set it
   this->NodeGlyphTypes[displayNode].at(index) = glyphType;
-
-  //std::cout << "SetNodeGlyphType after setting for display node " << displayNode->GetID() << ", index " << index << " to glyph type " << glyphType << ", map = " << std::endl;
-  //this->PrintNodeGlyphTypes();
 }
 
 //---------------------------------------------------------------------------
