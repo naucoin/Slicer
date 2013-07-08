@@ -33,7 +33,7 @@ public:
   /// Hide/Show a widget so that the node's display node visibility setting
   /// matches that of the widget
   void UpdateWidgetVisibility(vtkMRMLMarkupsNode* node);
-  
+
   // the following functions must be public to be accessible by the callback
   /// Propagate properties of MRML node to widget.
   virtual void PropagateMRMLToWidget(vtkMRMLMarkupsNode* node, vtkAbstractWidget * widget);
@@ -50,7 +50,7 @@ public:
   void GetDisplayToWorldCoordinates(double * displayCoordinates, double * worldCoordinates);
 
   /// Convert world coordinates to local using mrml parent transform
-  virtual void GetWorldToLocalCoordinates(vtkMRMLMarkupsNode *node, 
+  virtual void GetWorldToLocalCoordinates(vtkMRMLMarkupsNode *node,
                                   double *worldCoordinates, double *localCoordinates);
 
   /// Set mrml parent transform to widgets
@@ -74,7 +74,7 @@ protected:
 
   /// wrap the superclass render request in a check for batch processing
   virtual void RequestRender();
-  
+
   /// Remove MRML observers
   virtual void RemoveMRMLObservers();
 
@@ -189,7 +189,7 @@ protected:
   /// Can be reimplemented to add more conditions.
   /// \sa IsManageable(vtkMRMLNode*), IsCorrectDisplayableManager()
   virtual bool IsManageable(const char* nodeClassName);
-  
+
   /// Focus of this displayableManager is set to a specific markups type when inherited
   const char* Focus;
 
@@ -201,7 +201,7 @@ protected:
 
   /// Accessor for internal flag that disables interactor style event processing
   vtkGetMacro(DisableInteractorStyleEventsProcessing, int);
-  
+
   vtkMRMLMarkupsDisplayableManagerHelper * Helper;
 
   double LastClickWorldCoordinates[4];
@@ -217,4 +217,3 @@ private:
 };
 
 #endif
-
