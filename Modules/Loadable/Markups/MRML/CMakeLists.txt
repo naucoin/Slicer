@@ -11,6 +11,7 @@ set(${KIT}_SRCS
   vtkMRMLMarkupsDisplayNode.cxx
   vtkMRMLMarkupsFiducialNode.cxx
   vtkMRMLMarkupsNode.cxx
+  vtkMRMLMarkupsFiducialStorageNode.cxx
   vtkMRMLMarkupsStorageNode.cxx
   )
 

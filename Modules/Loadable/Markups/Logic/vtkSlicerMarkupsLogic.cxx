@@ -22,6 +22,7 @@
 #include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkMRMLMarkupsFiducialNode.h"
+#include "vtkMRMLMarkupsFiducialStorageNode.h"
 #include "vtkMRMLMarkupsStorageNode.h"
 
 // MRML includes
@@ -162,11 +163,11 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
   vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsNode);
   markupsNode->Delete();
-  
+
   vtkMRMLMarkupsFiducialNode* fidNode = vtkMRMLMarkupsFiducialNode::New();
   this->GetMRMLScene()->RegisterNodeClass(fidNode);
   fidNode->Delete();
-  
+
   // Display nodes
   vtkMRMLMarkupsDisplayNode* markupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode);
@@ -176,6 +177,10 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
   vtkMRMLMarkupsStorageNode* markupsStorageNode = vtkMRMLMarkupsStorageNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsStorageNode);
   markupsStorageNode->Delete();
+
+  vtkMRMLMarkupsFiducialStorageNode* markupsFiducialStorageNode = vtkMRMLMarkupsFiducialStorageNode::New();
+  this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode);
+  markupsFiducialStorageNode->Delete();
 }
 
 //---------------------------------------------------------------------------
@@ -388,7 +393,7 @@ char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const c
   this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
 
   // make a storage node and fiducial node and set the file name
-  vtkSmartPointer<vtkMRMLMarkupsStorageNode> storageNode = vtkSmartPointer<vtkMRMLMarkupsStorageNode>::New();
+  vtkSmartPointer<vtkMRMLMarkupsFiducialStorageNode> storageNode = vtkSmartPointer<vtkMRMLMarkupsFiducialStorageNode>::New();
   storageNode->SetFileName(fileName);
   vtkSmartPointer<vtkMRMLMarkupsFiducialNode> fidNode = vtkSmartPointer<vtkMRMLMarkupsFiducialNode>::New();
   fidNode->SetName(fidsName);

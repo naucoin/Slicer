@@ -1,6 +1,6 @@
 // MRML includes
 #include "vtkMRMLMarkupsFiducialNode.h"
-#include "vtkMRMLMarkupsStorageNode.h"
+#include "vtkMRMLMarkupsFiducialStorageNode.h"
 #include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkMRMLScene.h"
 
@@ -104,7 +104,7 @@ void vtkMRMLMarkupsFiducialNode::PrintSelf(ostream& os, vtkIndent indent)
 //-------------------------------------------------------------------------
 vtkMRMLStorageNode* vtkMRMLMarkupsFiducialNode::CreateDefaultStorageNode()
 {
-  return vtkMRMLStorageNode::SafeDownCast(vtkMRMLMarkupsStorageNode::New());
+  return vtkMRMLStorageNode::SafeDownCast(vtkMRMLMarkupsFiducialStorageNode::New());
 }
 
 //-------------------------------------------------------------------------
