@@ -30,6 +30,7 @@
 
 int vtkMRMLMarkupsFiducialStorageNodeTest2(int argc, char * argv[] )
 {
+  // Test reading in a Slicer3 .fcsv file
   vtkNew<vtkMRMLMarkupsFiducialStorageNode> node1;
   vtkNew<vtkMRMLMarkupsFiducialNode> markupsFiducialNode;
   vtkNew<vtkMRMLMarkupsDisplayNode> displayNode;
