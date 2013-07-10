@@ -1744,7 +1744,8 @@ void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destin
   // qDebug() << "onMoveToOtherListActionTriggered: " << destinationPosition;
 
   // sanity check: is there another list to move to?
-  int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
+  vtkCollection *col = this->mrmlScene()->GetNodesByClass("vtkMRMLMarkupsNode");
+  unsigned int numNodes = col->GetNumberOfItems();
   if (numNodes < 2)
     {
     qWarning() << "No other list to move it to! Define another list first.";
@@ -1766,12 +1767,14 @@ void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destin
   QStringList otherLists;
   for (int n = 0; n < numNodes; n++)
     {
-    vtkMRMLNode *listNodeN = this->mrmlScene()->GetNthNodeByClass(n, "vtkMRMLMarkupsNode");
+    vtkMRMLNode *listNodeN = vtkMRMLNode::SafeDownCast(col->GetItemAsObject(n));
     if (strcmp(listNodeN->GetID(), markupsNode->GetID()) != 0)
       {
       otherLists.append(QString(listNodeN->GetName()));
       }
     }
+  col->RemoveAllItems();
+  col->Delete();
 
   // make a dialog with the other lists to select
   QInputDialog listDialog;
@@ -1868,11 +1871,12 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
   if (this->mrmlScene())
     {
     // remove all connections
-    int numNodes = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode");
+    vtkCollection *col = this->mrmlScene()->GetNodesByClass("vtkMRMLMarkupsNode");
+    unsigned int numNodes = col->GetNumberOfItems();
     // qDebug() << "observeMarkupsNode: have " << numNodes << " markups nodes";
-    for (int i = 0; i < numNodes; i++)
+    for (unsigned int n = 0; n < numNodes; n++)
       {
-      vtkMRMLNode *node = this->mrmlScene()->GetNthNodeByClass(i, "vtkMRMLMarkupsNode");
+      vtkMRMLNode *node = vtkMRMLNode::SafeDownCast(col->GetItemAsObject(n));
       if (node)
         {
         if (markupsNode)
@@ -1896,6 +1900,8 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
                              this, SLOT(onActiveMarkupsNodeMarkupAddedEvent()));
         }
       }
+    col->RemoveAllItems();
+    col->Delete();
     }
   else
     {
