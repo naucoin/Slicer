@@ -299,7 +299,6 @@ void qSlicerMarkupsSettingsPanel::setDefaultOpacity(const double opacity)
   d->defaultOpacitySliderWidget->setValue(opacity);
 }
 
-
 // --------------------------------------------------------------------------
 void qSlicerMarkupsSettingsPanel::onDefaultGlyphTypeChanged(int index)
 {
@@ -307,7 +306,7 @@ void qSlicerMarkupsSettingsPanel::onDefaultGlyphTypeChanged(int index)
   Q_UNUSED(index);
 
   qDebug() << "onDefaultGlyphTypeChanged: " << index;
-  
+
   this->updateMarkupsLogicDefaultGlyphType();
   emit defaultGlyphTypeChanged(this->defaultGlyphType());
 }
