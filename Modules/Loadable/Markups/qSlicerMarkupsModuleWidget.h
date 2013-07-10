@@ -56,10 +56,10 @@ public:
 
   /// refresh the gui from the currently active markup node as determined by
   /// the selection node
-  void UpdateWidgetFromMRML();
+  void updateWidgetFromMRML();
   /// refresh a row of the gui from the mth markup in the currently active
   /// markup node as defined by the selection node combo box
-  void UpdateRow(int m);
+  void updateRow(int m);
 
   /// add observations to the markups node, and remove them from other markups
   /// nodes (from all nodes if markupsNode is null)
