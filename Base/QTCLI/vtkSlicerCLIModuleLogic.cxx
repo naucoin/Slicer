@@ -1265,8 +1265,6 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
           vtkMRMLFiducialListNode *fiducials
             = vtkMRMLFiducialListNode::SafeDownCast(node);
           vtkMRMLDisplayableHierarchyNode *points = vtkMRMLDisplayableHierarchyNode::SafeDownCast(node);
-          //vtkMRMLMarkupsFiducialNode *markups =
-          //vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
           vtkMRMLDisplayableNode *markups = vtkMRMLDisplayableNode::SafeDownCast(node);
           if (fiducials)
             {
@@ -1279,7 +1277,7 @@ void vtkSlicerCLIModuleLogic::ApplyTask(void *clientdata)
                 numberOfSelectedFiducials++;
                 }
               }
-            
+
             if (numberOfSelectedFiducials == 1
                 || (*pit).GetMultiple() == "true")
               {

@@ -139,16 +139,11 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
       markupsNode->RemoveAllMarkups();
       }
 
-    // turn off modified events
-//    int modFlag = markupsNode->GetDisableModifiedEvent();
-//    markupsNode->DisableModifiedEventOn();
     char line[1024];
 
     // save the valid lines in a vector, parse them once know the max id
     std::vector<std::string>lines;
     int thisMarkupNumber = 0;
-
-//    this->DebugOn();
 
     // check for the version
     std::string version;

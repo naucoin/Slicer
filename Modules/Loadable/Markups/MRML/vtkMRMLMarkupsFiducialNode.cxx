@@ -30,9 +30,9 @@ vtkMRMLMarkupsFiducialNode::~vtkMRMLMarkupsFiducialNode()
 void vtkMRMLMarkupsFiducialNode::WriteXML(ostream& of, int nIndent)
 {
   Superclass::WriteXML(of,nIndent);
- 
+
   vtkIndent indent(nIndent);
- 
+
   //of << indent << " locked=\"" << this->Locked << "\"";
 }
 
@@ -46,21 +46,11 @@ void vtkMRMLMarkupsFiducialNode::ReadXMLAttributes(const char** atts)
   const char* attName;
   const char* attValue;
 
-  while (*atts != NULL) 
+  while (*atts != NULL)
     {
     attName = *(atts++);
     attValue = *(atts++);
 
-    /*
-  if (!strncmp(attName, "textList", 9))
-      {
-      this->AddText(attValue);
-      }  
-    else if (!strcmp(attName, "locked"))
-      {
-      this->SetLocked(atof(attValue));
-      }
-    */
     }
   this->EndModify(disabledModify);
 }
@@ -69,13 +59,6 @@ void vtkMRMLMarkupsFiducialNode::ReadXMLAttributes(const char** atts)
 void vtkMRMLMarkupsFiducialNode::Copy(vtkMRMLNode *anode)
 {
   Superclass::Copy(anode);
-/*
-  vtkMRMLMarkupsFiducialNode *node = (vtkMRMLMarkupsFiducialNode *) anode;
-  if (!node)
-    {
-    return;
-    }
-*/
 }
 
 
@@ -87,7 +70,7 @@ void vtkMRMLMarkupsFiducialNode::UpdateScene(vtkMRMLScene *scene)
 
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsFiducialNode::ProcessMRMLEvents ( vtkObject *caller,
-                                           unsigned long event, 
+                                           unsigned long event,
                                            void *callData )
 {
   Superclass::ProcessMRMLEvents(caller, event, callData);
@@ -97,8 +80,6 @@ void vtkMRMLMarkupsFiducialNode::ProcessMRMLEvents ( vtkObject *caller,
 void vtkMRMLMarkupsFiducialNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   Superclass::PrintSelf(os,indent);
-
-
 }
 
 //-------------------------------------------------------------------------

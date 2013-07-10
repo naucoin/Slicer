@@ -1168,16 +1168,6 @@ void vtkMRMLMarkupsNode::WriteCLI(std::ostringstream& ss, std::string prefix, in
     useLPS = true;
     }
 
-/*  if (this->GetStorageNode())
-    {
-    vtkMRMLMarkupsFiducialStorageNode *fsn = vtkMRMLMarkupsFiducialStorageNode::SafeDownCast(this->GetStorageNode());
-    if (fsn && fsn->GetUseLPS())
-      {
-      useLPS = true;
-      }
-    }
-*/
-
   // loop over the markups
   for (int m=0; m<numMarkups; m++)
     {

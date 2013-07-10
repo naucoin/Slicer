@@ -101,20 +101,7 @@ qMRMLSliceWidget::qMRMLSliceWidget(QWidget* _parent) : Superclass(_parent)
 qMRMLSliceWidget::~qMRMLSliceWidget()
 {
 }
-/*
-//------------------------------------------------------------------------------
-vtkCollection * qMRMLSliceWidget::getDisplayableManagers()
-{
-  Q_D(qMRMLSliceWidget);
-  vtkCollection *col = vtkCollection::New();
-  int num = d->DisplayableManagerGroup->GetDisplayableManagerCount();
-  for (int n = 0; n < num; n++)
-    {
-    col->AddItem(d->DisplayableManagerGroup->GetNthDisplayableManager(n));
-    }
-  return col;
-}
-*/
+
 //---------------------------------------------------------------------------
 void qMRMLSliceWidget::setMRMLScene(vtkMRMLScene* newScene)
 {
