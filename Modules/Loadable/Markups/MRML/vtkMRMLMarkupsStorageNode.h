@@ -31,6 +31,9 @@
 // Markups includes
 #include "vtkSlicerMarkupsModuleMRMLExport.h"
 
+/// Define a default buffer size for parsing files during read, number of characters
+#define MARKUPS_BUFFER_SIZE 1024
+
 /// \ingroup Slicer_QtModules_Markups
 class VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsStorageNode : public vtkMRMLStorageNode
 {
