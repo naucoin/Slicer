@@ -52,7 +52,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="glyphTypeLabel">
         <property name="text">
-         <string>Glyph Type:</string>
+         <string>Glyph Type</string>
         </property>
        </widget>
       </item>
@@ -62,7 +62,7 @@
       <item row="4" column="0">
        <widget class="QLabel" name="selectedColorLabel">
         <property name="text">
-         <string>Selected Color:</string>
+         <string>Selected Color</string>
         </property>
        </widget>
       </item>
@@ -76,7 +76,7 @@
       <item row="5" column="0">
        <widget class="QLabel" name="unselectedColorLabel">
         <property name="text">
-         <string>Unselected Color:</string>
+         <string>Unselected Color</string>
         </property>
        </widget>
       </item>
@@ -90,7 +90,7 @@
       <item row="6" column="0">
        <widget class="QLabel" name="glyphScaleLabel">
         <property name="text">
-         <string>Glyph Scale:</string>
+         <string>Glyph Scale</string>
         </property>
        </widget>
       </item>
@@ -107,7 +107,7 @@
       <item row="7" column="0">
        <widget class="QLabel" name="textScaleLabel">
         <property name="text">
-         <string>Text Scale:</string>
+         <string>Text Scale</string>
         </property>
        </widget>
       </item>
@@ -328,7 +328,7 @@
         <item>
          <widget class="QLabel" name="activeMarkupLabel">
           <property name="text">
-           <string>Markup List:</string>
+           <string>Markup List</string>
           </property>
          </widget>
         </item>
