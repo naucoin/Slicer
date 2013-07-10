@@ -68,10 +68,6 @@ public:
   /// reset the GUI elements: clear out the table
   void clearGUI();
 
-  /// utility methods to convert between Qt colors and c++ colors
-  static void toQColor(const double* color, QColor &qcolor);
-  static void toColor(const QColor &qcolor, double* color);
-
   /// Set up the logic default display settings from the appplication settings
   void updateLogicFromSettings();
 
