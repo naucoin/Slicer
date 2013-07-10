@@ -32,7 +32,6 @@ vtkMRMLNodeNewMacro(vtkMRMLMarkupsFiducialStorageNode);
 //----------------------------------------------------------------------------
 vtkMRMLMarkupsFiducialStorageNode::vtkMRMLMarkupsFiducialStorageNode()
 {
-  this->CoordinateSystem = vtkMRMLMarkupsFiducialStorageNode::RAS;
 }
 
 //----------------------------------------------------------------------------
@@ -44,51 +43,24 @@ vtkMRMLMarkupsFiducialStorageNode::~vtkMRMLMarkupsFiducialStorageNode()
 void vtkMRMLMarkupsFiducialStorageNode::WriteXML(ostream& of, int nIndent)
 {
   Superclass::WriteXML(of,nIndent);
-
-  vtkIndent indent(nIndent);
-
-  of << indent << " coordinateSystem=\"" << this->CoordinateSystem << "\"";
 }
 
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsFiducialStorageNode::ReadXMLAttributes(const char** atts)
 {
   Superclass::ReadXMLAttributes(atts);
-  const char* attName;
-  const char* attValue;
-
-  while (*atts != NULL)
-    {
-    attName = *(atts++);
-    attValue = *(atts++);
-
-    if (!strcmp(attName, "coordinateSystem"))
-      {
-      this->SetCoordinateSystem(atoi(attValue));
-      }
-    }
 }
 
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsFiducialStorageNode::PrintSelf(ostream& os, vtkIndent indent)
 {
-  vtkMRMLStorageNode::PrintSelf(os,indent);
-
-  os << indent << "CoordinateSystem = " << this->GetCoordinateSystemAsString().c_str() << "\n";
+  Superclass::PrintSelf(os,indent);
 }
 
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsFiducialStorageNode::Copy(vtkMRMLNode *anode)
 {
   Superclass::Copy(anode);
-
-  vtkMRMLMarkupsFiducialStorageNode *node = (vtkMRMLMarkupsFiducialStorageNode *) anode;
-  if (!node)
-    {
-    return;
-    }
-
-  this->SetCoordinateSystem(node->GetCoordinateSystem());
 }
 
 //----------------------------------------------------------------------------
@@ -529,99 +501,4 @@ void vtkMRMLMarkupsFiducialStorageNode::InitializeSupportedWriteFileTypes()
 const char* vtkMRMLMarkupsFiducialStorageNode::GetDefaultWriteFileExtension()
 {
   return "fcsv";
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLMarkupsFiducialStorageNode::SetCoordinateSystem(int system)
-{
-  if (system != vtkMRMLMarkupsFiducialStorageNode::RAS &&
-      system != vtkMRMLMarkupsFiducialStorageNode::LPS &&
-      system != vtkMRMLMarkupsFiducialStorageNode::IJK)
-    {
-    vtkErrorMacro("SetCoordinateSystem: passed value " << system << " is out of bounds!");
-    return;
-    }
-  this->CoordinateSystem = system;
-}
-
-//----------------------------------------------------------------------------
-int vtkMRMLMarkupsFiducialStorageNode::GetCoordinateSystem()
-{
-  return this->CoordinateSystem;
-}
-
-//----------------------------------------------------------------------------
-std::string vtkMRMLMarkupsFiducialStorageNode::GetCoordinateSystemAsString()
-{
-  std::string coordString;
-  if (this->CoordinateSystem == vtkMRMLMarkupsFiducialStorageNode::RAS)
-    {
-    coordString = std::string("RAS");
-    }
-  else if (this->CoordinateSystem == vtkMRMLMarkupsFiducialStorageNode::LPS)
-    {
-    coordString = std::string("LPS");
-    }
-  else if (this->CoordinateSystem == vtkMRMLMarkupsFiducialStorageNode::IJK)
-    {
-    coordString = std::string("IJK");
-    }
-  return coordString;
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLMarkupsFiducialStorageNode::UseRASOn()
-{
-  this->SetCoordinateSystem(vtkMRMLMarkupsFiducialStorageNode::RAS);
-}
-
-//----------------------------------------------------------------------------
-bool vtkMRMLMarkupsFiducialStorageNode::GetUseRAS()
-{
-  if (this->GetCoordinateSystem() == vtkMRMLMarkupsFiducialStorageNode::RAS)
-    {
-    return true;
-    }
-  else
-    {
-    return false;
-    }
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLMarkupsFiducialStorageNode::UseLPSOn()
-{
-  this->SetCoordinateSystem(vtkMRMLMarkupsFiducialStorageNode::LPS);
-}
-
-//----------------------------------------------------------------------------
-bool vtkMRMLMarkupsFiducialStorageNode::GetUseLPS()
-{
-  if (this->GetCoordinateSystem() == vtkMRMLMarkupsFiducialStorageNode::LPS)
-    {
-    return true;
-    }
-  else
-    {
-    return false;
-    }
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLMarkupsFiducialStorageNode::UseIJKOn()
-{
-  this->SetCoordinateSystem(vtkMRMLMarkupsFiducialStorageNode::IJK);
-}
-
-//----------------------------------------------------------------------------
-bool vtkMRMLMarkupsFiducialStorageNode::GetUseIJK()
-{
-  if (this->GetCoordinateSystem() == vtkMRMLMarkupsFiducialStorageNode::IJK)
-    {
-    return true;
-    }
-  else
-    {
-    return false;
-    }
 }

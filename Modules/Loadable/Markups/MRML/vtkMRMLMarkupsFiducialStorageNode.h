@@ -17,26 +17,26 @@
 
 /// Markups Module MRML storage nodes
 ///
-/// vtkMRMLMarkupsFiducialStorageNode - MRML node for handling markups storage
+/// vtkMRMLMarkupsFiducialStorageNode - MRML node for markups fiducial storage
 ///
 /// vtkMRMLMarkupsFiducialStorageNode nodes describe the markups storage
-/// node that allows to read/write fiducuial point data from/to file.
+/// node that allows to read/write fiducial point data from/to file.
 
 #ifndef __vtkMRMLMarkupsFiducialStorageNode_h
 #define __vtkMRMLMarkupsFiducialStorageNode_h
 
 // MRML includes
-#include "vtkMRMLStorageNode.h"
+#include "vtkMRMLMarkupsStorageNode.h"
 
 // Markups includes
 #include "vtkSlicerMarkupsModuleMRMLExport.h"
 
 /// \ingroup Slicer_QtModules_Markups
-class VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsFiducialStorageNode : public vtkMRMLStorageNode
+class VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsFiducialStorageNode : public vtkMRMLMarkupsStorageNode
 {
 public:
   static vtkMRMLMarkupsFiducialStorageNode *New();
-  vtkTypeMacro(vtkMRMLMarkupsFiducialStorageNode,vtkMRMLStorageNode);
+  vtkTypeMacro(vtkMRMLMarkupsFiducialStorageNode,vtkMRMLMarkupsStorageNode);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   virtual vtkMRMLNode* CreateNodeInstance();
@@ -59,27 +59,6 @@ public:
   virtual const char* GetDefaultWriteFileExtension();
 
   virtual bool CanReadInReferenceNode(vtkMRMLNode *refNode);
-
-  /// Coordinate system options
-  enum
-  {
-    RAS = 0,
-    LPS,
-    IJK
-  };
-
-  /// Get/Set flag that controls if points are to be written in various coordinate systems
-  void SetCoordinateSystem(int system);
-  int GetCoordinateSystem();
-  std::string GetCoordinateSystemAsString();
-  /// Convenience methods to get/set various coordinate system values
-  /// \sa SetCoordinateSystem, GetCoordinateSystem
-  void UseRASOn();
-  bool GetUseRAS();
-  void UseLPSOn();
-  bool GetUseLPS();
-  void UseIJKOn();
-  bool GetUseIJK();
 
 protected:
   vtkMRMLMarkupsFiducialStorageNode();
@@ -105,14 +84,6 @@ protected:
   /// label can have spaces, everything up to next comma is used, no quotes
   /// necessary, same with the description
   virtual int WriteDataInternal(vtkMRMLNode *refNode);
-
-private:
-
-  /// flag set to enum RAS if the points are to be written out/read in using
-  /// the RAS coordinate system, enum LPS if the points are to be written
-  /// out/read in using LPS coordinate system, enum IJK if the points are
-  /// to be written out in the IJK coordinates for the associated volume node.
-  int CoordinateSystem;
 };
 
 #endif

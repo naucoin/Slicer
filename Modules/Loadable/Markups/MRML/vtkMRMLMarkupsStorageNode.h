@@ -41,15 +41,45 @@ public:
 
   virtual vtkMRMLNode* CreateNodeInstance();
 
-  /// 
+  ///
   /// Get node XML tag name (like Storage, Model)
   virtual const char* GetNodeTagName()  {return "MarkupsStorage";};
 
-  /// 
+  /// Read node attributes from XML file
+  virtual void ReadXMLAttributes( const char** atts);
+
+  /// Write this node's information to a MRML file in XML format.
+  virtual void WriteXML(ostream& of, int indent);
+
+  /// Copy the node's attributes to this object
+  virtual void Copy(vtkMRMLNode *node);
+
+  ///
   /// Return a default file extension for writing
   virtual const char* GetDefaultWriteFileExtension();
 
   virtual bool CanReadInReferenceNode(vtkMRMLNode *refNode);
+
+  /// Coordinate system options
+  enum
+  {
+    RAS = 0,
+    LPS,
+    IJK
+  };
+
+  /// Get/Set flag that controls if points are to be written in various coordinate systems
+  vtkSetClampMacro(CoordinateSystem, int, vtkMRMLMarkupsStorageNode::RAS, vtkMRMLMarkupsStorageNode::IJK);
+  vtkGetMacro(CoordinateSystem, int);
+  std::string GetCoordinateSystemAsString();
+  /// Convenience methods to get/set various coordinate system values
+  /// \sa SetCoordinateSystem, GetCoordinateSystem
+  void UseRASOn();
+  bool GetUseRAS();
+  void UseLPSOn();
+  bool GetUseLPS();
+  void UseIJKOn();
+  bool GetUseIJK();
 
 protected:
   vtkMRMLMarkupsStorageNode();
@@ -64,19 +94,21 @@ protected:
   virtual void InitializeSupportedWriteFileTypes();
 
   /// Read data and set it in the referenced node
+  /// Needs to be implemented by subclasses
   virtual int ReadDataInternal(vtkMRMLNode *refNode);
 
   /// Write data from a  referenced node
   /// There can be any number of points associated with a
-  /// markup, so start by saying how many there are, for a fiducial:
-  /// 1,x,y,z,vis,sel,lock,label,desc,associatedNodeID
-  /// for a ruler:
-  /// 2,x,y,z,x,y,z,vis,sel,lock,label,desc,associatedNodeID
-  /// associatedNodeID can be "none"
-  /// 1,x,y,z,vis,sel,lock,label,desc,none
-  /// label can have spaces, everything up to next comma is used, no quotes
-  /// necessary, same with the description
+  /// markup, so subclasses need to implement this for their markup type
   virtual int WriteDataInternal(vtkMRMLNode *refNode);
+
+private:
+
+  /// flag set to enum RAS if the points are to be written out/read in using
+  /// the RAS coordinate system, enum LPS if the points are to be written
+  /// out/read in using LPS coordinate system, enum IJK if the points are
+  /// to be written out in the IJK coordinates for the associated volume node.
+  int CoordinateSystem;
 };
 
 #endif

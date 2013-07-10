@@ -46,11 +46,7 @@ SET (TEST_FCSV ${TEST_DIR}/markupsFiducialStorageNode.fcsv)
 FILE(TO_NATIVE_PATH ${TEST_FCSV} TEST_FCSV_NATIVE)
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest1 ${TEST_FCSV_NATIVE} )
 
-SET (TEST_MCSV ${TEST_DIR}/markupsStorageNode.mcsv)
-FILE(TO_NATIVE_PATH ${TEST_MCSV} TEST_MCSV_NATIVE)
-MESSAGE(STATUS "cmake bin dir = ${CMAKE_BINARY_DIR}, share dir = ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}, passing in path ${TEST_MCSV}, native path = ${TEST_MCSV_NATIVE}")
-
-SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 ${TEST_MCSV_NATIVE} )
+SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 )
 
 # test legacy Slicer3 fcsv file
 SET (TEST_S3_FCSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer3.fcsv)
