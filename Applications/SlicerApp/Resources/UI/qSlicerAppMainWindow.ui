@@ -85,6 +85,7 @@
      <addaction name="actionViewLayoutCompareWidescreen"/>
      <addaction name="actionViewLayoutCompareGrid"/>
      <addaction name="actionViewLayoutThreeOverThree"/>
+     <addaction name="actionViewLayoutThreeOverThreeQuantitative"/>
      <addaction name="actionViewLayoutFourOverFour"/>
      <addaction name="actionViewLayoutTwoOverTwo"/>
      <addaction name="actionViewLayoutSideBySide"/>
@@ -262,6 +263,7 @@
    <addaction name="actionViewLayoutCompareWidescreen"/>
    <addaction name="actionViewLayoutCompareGrid"/>
    <addaction name="actionViewLayoutThreeOverThree"/>
+   <addaction name="actionViewLayoutThreeOverThreeQuantitative"/>
    <addaction name="actionViewLayoutFourOverFour"/>
    <addaction name="actionViewLayoutSideBySide"/>
   </widget>
@@ -1209,12 +1211,6 @@
    <class>qSlicerMouseModeToolBar</class>
    <extends>QToolBar</extends>
    <header>qSlicerMouseModeToolBar.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkCollapsibleButton</class>
-   <extends>QWidget</extends>
-   <header>ctkCollapsibleButton.h</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>qSlicerViewersToolBar</class>
