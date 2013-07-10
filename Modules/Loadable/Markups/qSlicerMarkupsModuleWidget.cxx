@@ -353,7 +353,7 @@ void qSlicerMarkupsModuleWidget::enter()
   // install some shortcuts for use while in this module
   this->installShortcuts();
 
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -406,11 +406,11 @@ vtkSlicerMarkupsLogic *qSlicerMarkupsModuleWidget::markupsLogic()
 
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
+void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
-  // std::cout << "UpdateWidgetFromMRML" << std::endl;
+  // std::cout << "updateWidgetFromMRML" << std::endl;
 
   // get the active markup
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
@@ -438,7 +438,7 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
 
   if (!markupsNode)
     {
-    // qDebug() << "UpdateWidgetFromMRML: Unable to get active markups node,
+    // qDebug() << "updateWidgetFromMRML: Unable to get active markups node,
     // clearing out the table";
     this->clearGUI();
 
@@ -448,7 +448,6 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
   // update the combo box
 //  this->onSelectionNodeActivePlaceNodeIDChanged();
   QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
-  //std::cout << "UpdateWidgetFromMRML: selection node's active place node id: " << qPrintable(activePlaceNodeID) << ", combo box current node id = " << qPrintable(currentNodeID) << std::endl;
   if (currentNodeID == "" ||
       (currentNodeID != activePlaceNodeID &&
        activePlaceNodeID.contains("vtkMRMLMarkups")))
@@ -556,19 +555,19 @@ void qSlicerMarkupsModuleWidget::UpdateWidgetFromMRML()
   // update the table per markup
   for (int m = 0; m < numberOfMarkups; m++)
     {
-    this->UpdateRow(m);
+    this->updateRow(m);
     }
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::UpdateRow(int m)
+void qSlicerMarkupsModuleWidget::updateRow(int m)
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
   // this is updating the qt widget from MRML, and should not trigger any updates on the node, so turn off events
   d->activeMarkupTableWidget->blockSignals(true);
 
-  // qDebug() << QString("UpdateRow: row = ") + QString::number(m) + QString(", number of rows = ") + QString::number(d->activeMarkupTableWidget->rowCount());
+  // qDebug() << QString("updateRow: row = ") + QString::number(m) + QString(", number of rows = ") + QString::number(d->activeMarkupTableWidget->rowCount());
   // get active markups node
   QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
   vtkMRMLNode *mrmlNode = this->mrmlScene()->GetNodeByID(activeMarkupsNodeID.toLatin1());
@@ -579,7 +578,7 @@ void qSlicerMarkupsModuleWidget::UpdateRow(int m)
     }
   if (!markupsNode)
     {
-    //qDebug() << QString("Update Row: unable to get markups node with id ") + activeMarkupsNodeID;
+    //qDebug() << QString("update Row: unable to get markups node with id ") + activeMarkupsNodeID;
     return;
     }
 
@@ -720,7 +719,7 @@ void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject* scene, vtkObject*
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onMRMLSceneEndImportEvent()
 {
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -757,7 +756,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
         }
       }
     }
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -967,7 +966,7 @@ void qSlicerMarkupsModuleWidget::onResetToDefaultDisplayPropertiesPushButtonClic
   this->markupsLogic()->SetDisplayNodeToDefaults(displayNode);
 
   // push an update on the GUI
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -1326,7 +1325,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     }
 
   // update the GUI
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -1971,7 +1970,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeNthMarkupModifiedEvent(vtkOb
     {
     n = *nPtr;
     }
-  this->UpdateRow(n);
+  this->updateRow(n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1993,7 +1992,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodePointModifiedEvent(vtkObject
     n = *nPtr;
     }
   // qDebug() << "\tn = " << QString::number(n);
-  this->UpdateRow(n);
+  this->updateRow(n);
 }
 
 //-----------------------------------------------------------------------------
@@ -2012,7 +2011,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupAddedEvent()//vtkMRMLN
   d->activeMarkupTableWidget->insertRow(newRow);
   //qDebug() << QString("\t after insreting a row, row count = ") + QString::number(d->activeMarkupTableWidget->rowCount());
 
-  this->UpdateRow(newRow);
+  this->updateRow(newRow);
 
   // scroll to the new row
   d->activeMarkupTableWidget->setCurrentCell(newRow, 0);
@@ -2022,7 +2021,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupAddedEvent()//vtkMRMLN
 void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupRemovedEvent()//vtkMRMLNode *markupsNode)
 {
   // do a general update
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -2098,7 +2097,7 @@ void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggere
 
   // update the display properties manually since the display node wasn't
   // observed when it was added
-  this->UpdateWidgetFromMRML();
+  this->updateWidgetFromMRML();
 
   // clean up
   newDisplayNode->Delete();
