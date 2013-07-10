@@ -32,7 +32,9 @@
 #include "qSlicerMarkupsModuleWidget.h"
 #include "ui_qSlicerMarkupsModule.h"
 #include "qMRMLSceneModel.h"
+#include "qMRMLUtils.h"
 #include "qSlicerApplication.h"
+
 
 // MRML includes
 #include "vtkMRMLScene.h"
@@ -464,12 +466,12 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
     {
     // selected color
     color = displayNode->GetSelectedColor();
-    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    qMRMLUtils::colorToQColor(color, qColor);
     d->selectedColorPickerButton->setColor(qColor);
 
     // unselected color
     color = displayNode->GetColor();
-    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    qMRMLUtils::colorToQColor(color, qColor);
     d->unselectedColorPickerButton->setColor(qColor);
 
     // opacity
@@ -514,10 +516,10 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
     {
     // reset to defaults from logic
     color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeSelectedColor();
-    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    qMRMLUtils::colorToQColor(color, qColor);
     d->selectedColorPickerButton->setColor(qColor);
     color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeColor();
-    qSlicerMarkupsModuleWidget::toQColor(color, qColor);
+    qMRMLUtils::colorToQColor(color, qColor);
     d->unselectedColorPickerButton->setColor(qColor);
     d->opacitySliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeOpacity());
     QString glyphTypeString = QString(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphTypeAsString().c_str());
@@ -794,7 +796,7 @@ void qSlicerMarkupsModuleWidget::onSelectedColorPickerButtonChanged(QColor qcolo
   Q_D(qSlicerMarkupsModuleWidget);
 
   double color[3];
-  qSlicerMarkupsModuleWidget::toColor(qcolor, color);
+  qMRMLUtils::qColorToColor(qcolor, color);
 
    // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
@@ -821,7 +823,7 @@ void qSlicerMarkupsModuleWidget::onUnselectedColorPickerButtonChanged(QColor qco
   Q_D(qSlicerMarkupsModuleWidget);
 
   double color[3];
-  qSlicerMarkupsModuleWidget::toColor(qcolor, color);
+  qMRMLUtils::qColorToColor(qcolor, color);
 
    // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
@@ -2025,23 +2027,6 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeMarkupRemovedEvent()//vtkMRM
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::toQColor(const double* color, QColor &qcolor)
-{
-  if (color)
-    {
-    qcolor = QColor::fromRgbF(color[0], color[1], color[2]);
-    }
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::toColor(const QColor &qcolor, double* color)
-{
-  color[0] = qcolor.redF();
-  color[1] = qcolor.greenF();
-  color[2] = qcolor.blueF();
-}
-
-//-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onNewMarkupWithCurrentDisplayPropertiesTriggered()
 {
   Q_D(qSlicerMarkupsModuleWidget);
@@ -2145,11 +2130,11 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
   QVariant variant = settings->value("Markups/SelectedColor");
   qcolor = variant.value<QColor>();
   double selectedColor[3];
-  qSlicerMarkupsModuleWidget::toColor(qcolor, selectedColor);
+  qMRMLUtils::qColorToColor(qcolor, selectedColor);
   variant = settings->value("Markups/UnselectedColor");
   QColor qcolorUnsel = variant.value<QColor>();
   double unselectedColor[3];
-  qSlicerMarkupsModuleWidget::toColor(qcolorUnsel, unselectedColor);
+  qMRMLUtils::qColorToColor(qcolorUnsel, unselectedColor);
   double glyphScale = settings->value("Markups/GlyphScale").toDouble();
   double textScale = settings->value("Markups/TextScale").toDouble();
   double opacity = settings->value("Markups/Opacity").toDouble();
