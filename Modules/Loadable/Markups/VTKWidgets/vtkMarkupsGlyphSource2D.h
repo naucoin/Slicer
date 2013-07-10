@@ -1,8 +1,25 @@
+/*==============================================================================
+
+  Program: 3D Slicer
+
+  Portions (c) Copyright Brigham and Women's Hospital (BWH) All Rights Reserved.
+
+  See COPYRIGHT.txt
+  or http://www.slicer.org/copyright/copyright.txt for details.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+==============================================================================*/
+
 ///  vtkMarkupsGlyphSource2D - copies and extends vtkGlyphSource2D to
 /// provide Slicer glyphs represented by poly data
-/// 
+///
 /// vtkMarkupsGlyphSource2D can generate a family of 2D glyphs each of which lies
-/// in the x-y plane (i.e., the z-coordinate is zero). The class is a helper 
+/// in the x-y plane (i.e., the z-coordinate is zero). The class is a helper
 /// class to be used with vtkGlyph2D and vtkXYPlotActor.
 //
 /// To use this class, specify the glyph type to use and its
