@@ -127,7 +127,7 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
       markupsNode->RemoveAllMarkups();
       }
 
-    char line[1024];
+    char line[MARKUPS_BUFFER_SIZE];
 
     // save the valid lines in a vector, parse them once know the max id
     std::vector<std::string>lines;
@@ -143,7 +143,7 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
 
     while (fstr.good())
       {
-      fstr.getline(line, 1024);
+      fstr.getline(line, MARKUPS_BUFFER_SIZE);
 
       // does it start with a #?
       if (line[0] == '#')
