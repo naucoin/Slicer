@@ -196,13 +196,13 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
                    q, SLOT(onActiveMarkupMRMLNodeAdded(vtkMRMLNode*)));
 
   vtkMRMLNode *selectionNode = NULL;
-  if (q->mrmlScene())
+  if (q->mrmlScene() && q->markupsLogic())
     {
-    selectionNode = q->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+    selectionNode = q->mrmlScene()->GetNodeByID(q->markupsLogic()->GetSelectionNodeID());
     }
   else
     {
-    //qDebug() << "No mrml scene set! q = " << q;
+    //qDebug() << "Either no mrml scene or logic set! (scene = " << q->mrmlScene() << ", logic = " << q->markupsLogic() << ", q = " << q;
     }
   if (selectionNode)
     {
@@ -415,19 +415,9 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
   // std::cout << "updateWidgetFromMRML" << std::endl;
 
   // get the active markup
-  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
-  vtkMRMLSelectionNode *selectionNode = NULL;
-  if (node)
-    {
-    selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
-    }
   vtkMRMLNode *markupsNodeMRML = NULL;
-  QString activePlaceNodeID;
-  if (selectionNode)
-    {
-    activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
-    markupsNodeMRML = this->mrmlScene()->GetNodeByID(activePlaceNodeID.toLatin1());
-    }
+  std::string listID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  markupsNodeMRML = this->mrmlScene()->GetNodeByID(listID.c_str());
   vtkMRMLMarkupsNode *markupsNode = NULL;
   if (markupsNodeMRML)
     {
@@ -449,6 +439,7 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
 
   // update the combo box
 //  this->onSelectionNodeActivePlaceNodeIDChanged();
+  QString activePlaceNodeID = QString(listID.c_str());
   QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
   if (currentNodeID == "" ||
       (currentNodeID != activePlaceNodeID &&
@@ -515,23 +506,26 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
   else
     {
     // reset to defaults from logic
-    color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeSelectedColor();
-    qMRMLUtils::colorToQColor(color, qColor);
-    d->selectedColorPickerButton->setColor(qColor);
-    color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeColor();
-    qMRMLUtils::colorToQColor(color, qColor);
-    d->unselectedColorPickerButton->setColor(qColor);
-    d->opacitySliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeOpacity());
-    QString glyphTypeString = QString(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphTypeAsString().c_str());
-    int glyphTypeInt = this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphType();
-    // glyph types start at 1, combo box is 0 indexed
-    int glyphTypeIndex = glyphTypeInt - 1;
-    if (glyphTypeIndex != -1)
+    if (this->markupsLogic())
       {
-      d->glyphTypeComboBox->setCurrentIndex(glyphTypeIndex);
+      color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeSelectedColor();
+      qMRMLUtils::colorToQColor(color, qColor);
+      d->selectedColorPickerButton->setColor(qColor);
+      color = this->markupsLogic()->GetDefaultMarkupsDisplayNodeColor();
+      qMRMLUtils::colorToQColor(color, qColor);
+      d->unselectedColorPickerButton->setColor(qColor);
+      d->opacitySliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeOpacity());
+      QString glyphTypeString = QString(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphTypeAsString().c_str());
+      int glyphTypeInt = this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphType();
+      // glyph types start at 1, combo box is 0 indexed
+      int glyphTypeIndex = glyphTypeInt - 1;
+      if (glyphTypeIndex != -1)
+        {
+        d->glyphTypeComboBox->setCurrentIndex(glyphTypeIndex);
+        }
+      d->glyphScaleSliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphScale());
+      d->textScaleSliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeTextScale());
       }
-    d->glyphScaleSliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeGlyphScale());
-    d->textScaleSliderWidget->setValue(this->markupsLogic()->GetDefaultMarkupsDisplayNodeTextScale());
     }
   // update the visibility and locked buttons
   this->updateListVisibileInvisiblePushButton(markupsNode->GetDisplayVisibility());
@@ -732,7 +726,8 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
     return;
     }
   // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent";
-  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
   vtkMRMLSelectionNode *selectionNode = NULL;
   if (node)
     {
@@ -965,7 +960,10 @@ void qSlicerMarkupsModuleWidget::onResetToDefaultDisplayPropertiesPushButtonClic
     }
 
   // set the display node from the logic defaults
-  this->markupsLogic()->SetDisplayNodeToDefaults(displayNode);
+  if (this->markupsLogic())
+    {
+    this->markupsLogic()->SetDisplayNodeToDefaults(displayNode);
+    }
 
   // push an update on the GUI
   this->updateWidgetFromMRML();
@@ -1292,7 +1290,8 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
 
   //qDebug() << "setActiveMarkupsNode: combo box says: " << qPrintable(activeMarkupsNodeID) << ", input node says " << (activeID ? activeID : "null");
   // update the selection node
-  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
   vtkMRMLSelectionNode *selectionNode = NULL;
   if (node)
     {
@@ -1353,7 +1352,8 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markup
 
   // make sure it's set up for the mouse mode tool bar to easily add points to
   // it by making it active in the selection node
-  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
   vtkMRMLSelectionNode *selectionNode = NULL;
   if (node)
     {
@@ -1386,39 +1386,23 @@ void qSlicerMarkupsModuleWidget::onSelectionNodeActivePlaceNodeIDChanged()
   Q_D(qSlicerMarkupsModuleWidget);
 
   //qDebug() << "onSelectionNodeActivePlaceNodeIDChanged";
-
-  // get the selection node
-  vtkMRMLNode *node = this->mrmlScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
-  vtkMRMLSelectionNode *selectionNode = NULL;
-  if (node)
+  std::string listID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  QString activePlaceNodeID = QString(listID.c_str());
+  if (activePlaceNodeID.size() == 0)
     {
-    selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
-    }
-
-  if (selectionNode)
-    {
-    if (selectionNode->GetActivePlaceNodeID() != NULL)
-      {
-      QString activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
-      //std::cout << "\ttesting selection node's active place node id: " << qPrintable(activePlaceNodeID) << std::endl;
-      QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
-      //std::cout << "\t\tcombo box current node id = " << qPrintable(currentNodeID) << std::endl;
-      if (currentNodeID == "" ||
-          (currentNodeID != activePlaceNodeID &&
-           activePlaceNodeID.contains("vtkMRMLMarkups")))
-        {
-        d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(activePlaceNodeID);
-        }
-      }
-    else
-      {
-      qDebug() << "onSelectionNodeActivePlaceNodeIDChanged: No current active place node id";
-      d->activeMarkupMRMLNodeComboBox->setCurrentNodeID("");
-      }
+    qDebug() << "onSelectionNodeActivePlaceNodeIDChanged: No current active place node id";
+    d->activeMarkupMRMLNodeComboBox->setCurrentNodeID("");
     }
   else
     {
-    qDebug() << "Unable to update combo box from selection node, node is " << (selectionNode ? selectionNode->GetID() : "null");
+    QString currentNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
+    //std::cout << "\t\tcombo box current node id = " << qPrintable(currentNodeID) << std::endl;
+    if (currentNodeID == "" ||
+        (currentNodeID != activePlaceNodeID &&
+         activePlaceNodeID.contains("vtkMRMLMarkups")))
+      {
+      d->activeMarkupMRMLNodeComboBox->setCurrentNodeID(activePlaceNodeID);
+      }
     }
 }
 
@@ -1858,7 +1842,11 @@ void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destin
     }
 
   // and move
-  bool retval = this->markupsLogic()->MoveNthMarkupToNewListAtIndex(rowNumber, markupsNode, newMarkupsNode, newIndex);
+  bool retval = false;
+  if (this->markupsLogic())
+    {
+    retval = this->markupsLogic()->MoveNthMarkupToNewListAtIndex(rowNumber, markupsNode, newMarkupsNode, newIndex);
+    }
   if (!retval)
     {
     qWarning() << "Failed to move " << rowNumber << " markup to list named " << listName;

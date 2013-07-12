@@ -51,6 +51,16 @@ public:
                                       unsigned long event,
                                       void *callData );
 
+  /// Utility method to return the id of the selection node. Checks
+  /// the mrml application logic if set, otherwise checks the scene
+  /// for a singleton selection node.
+  /// Returns an empty string on failure.
+  std::string GetSelectionNodeID();
+
+  /// Utility method to return the id of the active place node.
+  /// Returns an empty string on failure.
+  std::string GetActiveListID();
+
   /// Create a new display node and observe it on the markups node
   /// On success, return the id, on failure return an empty string.
   std::string AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *mrmlNode);
@@ -58,7 +68,13 @@ public:
   /// Create a new markups fiducial node and associated display node, adding both to
   /// the scene. Also make it the active on on the selection node.
   /// On success, return the id, on failure return an empty string.
-  std::string AddNewFiducialNode(const char *name = NULL);
+  std::string AddNewFiducialNode(const char *name = "F");
+
+  /// Add a new fiducial to the currently active list at the given RAS
+  /// coordinates (default 0,0,0). Will create a list is one is not active.
+  /// Returns -1 on failure, index of the added fiducial
+  /// on success.
+  int AddFiducial(double r=0.0, double a=0.0, double s=0.0);
 
   /// jump the slice windows to the given coordinate
   void JumpSlicesToLocation(double x, double y, double z, bool centered);

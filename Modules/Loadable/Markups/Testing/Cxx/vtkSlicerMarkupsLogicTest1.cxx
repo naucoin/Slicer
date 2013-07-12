@@ -18,6 +18,7 @@
 // MRML includes
 #include "vtkMRMLCoreTestingMacros.h"
 #include "vtkMRMLMarkupsNode.h"
+#include "vtkMRMLSelectionNode.h"
 #include "vtkMRMLScene.h"
 #include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkSlicerMarkupsLogic.h"
@@ -41,7 +42,18 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     {
     std::cout << "Passed adding a node to no scene." << std::endl;
     }
-  
+
+  int fidIndex = logic1->AddFiducial();
+  if (fidIndex != -1)
+    {
+    std::cerr << "Failure to add a new fiducial point to empty scene, got fidIndex of '" << fidIndex << "'" << std::endl;
+    return EXIT_FAILURE;
+    }
+  else
+    {
+    std::cout << "Passed adding a fiducial point to no scene." << std::endl;
+    }
+
   // test with a scene
   logic1->SetMRMLScene(scene);
 
@@ -140,7 +152,46 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     std::cerr << "Error resetting display node text scale to defaults, was expecting  " << originalTextScale << ", but got " << displayNode->GetTextScale() << std::endl;
     return EXIT_FAILURE;
     }
+
+  // test without a selection node
+  fidIndex = logic1->AddFiducial(5.0, 6.0, -7.0);
+  if (fidIndex != -1)
+    {
+    std::cerr << "Failed on adding a fiducial to the scene with no selection node, expected index of -1, but got: "
+              << fidIndex << std::endl;
+      return EXIT_FAILURE;
+    }
+  // add a selection node
+  vtkMRMLApplicationLogic* applicationLogic = vtkMRMLApplicationLogic::New();
+  applicationLogic->SetMRMLScene(scene);
+
+  // test adding a fiducial to an active list - no app logic
+  fidIndex = logic1->AddFiducial(-1.1, 100.0, 500.0);
+  if (fidIndex == -1)
+    {
+    std::cerr << "Failed to add a fiducial to the active fiducial list in the scene, got index of " << fidIndex << std::endl;
+      return EXIT_FAILURE;
+    }
+  else
+    {
+    std::cout << "Added a fid to the active fid list, index = " << fidIndex << std::endl;
+    }
+
+  // adding with app logic
+  logic1->SetMRMLApplicationLogic(applicationLogic);
+  fidIndex = logic1->AddFiducial(-11, 10.0, 50.0);
+  if (fidIndex == -1)
+    {
+    std::cerr << "Failed to add a fiducial to the active fiducial list from the app logic, got index of " << fidIndex << std::endl;
+      return EXIT_FAILURE;
+    }
+  else
+    {
+    std::cout << "Added a fid to the active fid list, index = " << fidIndex << std::endl;
+    }
+
   // cleanup
-  
+  applicationLogic->Delete();
+
   return EXIT_SUCCESS;
 }
