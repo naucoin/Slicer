@@ -135,22 +135,24 @@ void vtkSlicerMarkupsLogic::ObserveMRMLScene()
     return;
     }
   // add known markup types to the selection node
-  vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+  vtkMRMLSelectionNode *selectionNode = NULL;
+  vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID(this->GetSelectionNodeID().c_str());
   if (mrmlNode)
     {
-    vtkMRMLSelectionNode *selectionNode = vtkMRMLSelectionNode::SafeDownCast(mrmlNode);
-    if (selectionNode)
-      {
-      // got into batch process mode so that an update on the mouse mode tool
-      // bar is triggered when leave it
-      this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
-
-      selectionNode->AddNewPlaceNodeClassNameToList("vtkMRMLMarkupsFiducialNode", ":/Icons/MarkupsMouseModePlace.png", "MFiducial");
-
-      // trigger an upate on the mouse mode toolbar
-      this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
-      }
+    selectionNode = vtkMRMLSelectionNode::SafeDownCast(mrmlNode);
     }
+  if (selectionNode)
+    {
+    // got into batch process mode so that an update on the mouse mode tool
+    // bar is triggered when leave it
+    this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
+
+    selectionNode->AddNewPlaceNodeClassNameToList("vtkMRMLMarkupsFiducialNode", ":/Icons/MarkupsMouseModePlace.png", "MFiducial");
+
+    // trigger an upate on the mouse mode toolbar
+    this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
+    }
+
  this->Superclass::ObserveMRMLScene();
 }
 
@@ -222,6 +224,86 @@ void vtkSlicerMarkupsLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
 }
 
 //---------------------------------------------------------------------------
+std::string vtkSlicerMarkupsLogic::GetSelectionNodeID()
+{
+  std::string selectionNodeID = std::string("");
+
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("GetSelectionNodeID: no scene defined!");
+    return selectionNodeID;
+    }
+
+  // try the application logic first
+  vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
+  if (mrmlAppLogic)
+    {
+    vtkMRMLSelectionNode *selectionNode = mrmlAppLogic->GetSelectionNode();
+    if (selectionNode)
+      {
+      char *id = selectionNode->GetID();
+      if (id)
+        {
+        selectionNodeID = std::string(id);
+        }
+      }
+    }
+  else
+    {
+    // try a default string
+    selectionNodeID = std::string("vtkMRMLSelectionNodeSingleton");
+    // check if it's in the scene
+    if (this->GetMRMLScene()->GetNodeByID(selectionNodeID.c_str()) == NULL)
+      {
+      vtkErrorMacro("GetSelectionNodeID: no selection node in scene with id " << selectionNodeID);
+      // reset it
+      selectionNodeID = std::string("");
+      }
+    }
+  return selectionNodeID;
+}
+
+//---------------------------------------------------------------------------
+std::string vtkSlicerMarkupsLogic::GetActiveListID()
+{
+  std::string listID = std::string("");
+
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("GetActiveListID: no scene defined!");
+    return listID;
+    }
+
+  // get the selection node
+  vtkMRMLSelectionNode *selectionNode = NULL;;
+  std::string selectionNodeID = this->GetSelectionNodeID();
+  vtkMRMLNode *node = this->GetMRMLScene()->GetNodeByID(selectionNodeID.c_str());
+  if (!node)
+    {
+    vtkErrorMacro("GetActiveListID: no selection node to govern active lists.");
+    return listID;
+    }
+  selectionNode = vtkMRMLSelectionNode::SafeDownCast(node);
+
+  if (!selectionNode)
+    {
+    vtkErrorMacro("GetActiveListID: unable to get the selection node that governs active lists.");
+    return listID;
+    }
+
+  char *activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
+  // is there no active fiducial list?
+  if (activePlaceNodeID == NULL)
+    {
+    vtkDebugMacro("GetListID: no active place node");
+    return listID;
+    }
+
+  listID = std::string(activePlaceNodeID);
+  return listID;
+}
+
+//---------------------------------------------------------------------------
 std::string vtkSlicerMarkupsLogic::AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *mrmlNode)
 {
   std::string id;
@@ -258,7 +340,7 @@ std::string vtkSlicerMarkupsLogic::AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *
       markupsNode->AddAndObserveDisplayNodeID(id.c_str());
       markupsNode->DisableModifiedEventOff();
       }
-    
+
     // clean up
     displayNode->Delete();
     }
@@ -291,8 +373,8 @@ std::string vtkSlicerMarkupsLogic::AddNewFiducialNode(const char *name)
         mnode->SetName(name);
         }
       // make it active so mouse mode tool bar clicks will add new fids to
-      // this list  
-      vtkMRMLNode *node = this->GetMRMLScene()->GetNodeByID("vtkMRMLSelectionNodeSingleton");
+      // this list
+      vtkMRMLNode *node = this->GetMRMLScene()->GetNodeByID(this->GetSelectionNodeID());
       vtkMRMLSelectionNode *selectionNode = NULL;
       if (node)
         {
@@ -309,6 +391,55 @@ std::string vtkSlicerMarkupsLogic::AddNewFiducialNode(const char *name)
     mnode->Delete();
     }
   return id;
+}
+
+//---------------------------------------------------------------------------
+int vtkSlicerMarkupsLogic::AddFiducial(double r, double a, double s)
+{
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("AddFiducial: no scene defined!");
+    return -1;
+    }
+
+  // get the active list id
+  std::string listID = this->GetActiveListID();
+
+  // is there no active fiducial list?
+  if (listID.size() == 0)
+    {
+    vtkDebugMacro("AddFiducial: no list is active, adding one first!");
+    std::string newListID = this->AddNewFiducialNode();
+    if (newListID.size() == 0)
+      {
+      vtkErrorMacro("AddFiducial: failed to add a new fiducial list to the scene.");
+      return -1;
+      }
+    // try to get the id again
+    listID = this->GetActiveListID();
+    if (listID.size() == 0)
+      {
+      vtkErrorMacro("AddFiducial: failed to create a new list to add to!");
+      return -1;
+      }
+    }
+
+  // get the active list
+  vtkMRMLNode *listNode = this->GetMRMLScene()->GetNodeByID(listID.c_str());
+  if (!listNode)
+    {
+    vtkErrorMacro("AddFiducial: failed to get the active list with id " << listID);
+    return -1;
+    }
+  vtkMRMLMarkupsFiducialNode *fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(listNode);
+  if (!fiducialNode)
+    {
+    vtkErrorMacro("AddFiducial: active list is not a fiducial list: " << listNode->GetClassName());
+    return -1;
+    }
+  vtkDebugMacro("AddFiducial: adding a fiducial to the list " << listID);
+  // add the point to the active fiducial list
+  return fiducialNode->AddFiducial(r,a,s);
 }
 
 //---------------------------------------------------------------------------
