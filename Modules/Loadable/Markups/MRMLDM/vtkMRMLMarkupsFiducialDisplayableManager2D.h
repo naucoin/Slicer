@@ -39,7 +39,7 @@ public:
   vtkTypeRevisionMacro(vtkMRMLMarkupsFiducialDisplayableManager2D, vtkMRMLMarkupsDisplayableManager2D);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  /// update a single seed position from the node, return true if the position changed
+  /// Update a single seed position from the node, return true if the position changed
   virtual bool UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
 
   /// Update a single markup position from the seed widget, return true if the position changed
@@ -54,11 +54,11 @@ protected:
   virtual void OnClickInRenderWindow(double x, double y, const char *associatedNodeID);
   /// Create a widget.
   virtual vtkAbstractWidget * CreateWidget(vtkMRMLMarkupsNode* node);
-  /// create new handle on widget when a new markup is added to a markups node
+  /// Create new handle on widget when a new markup is added to a markups node
   virtual void OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * markupsNode);
-  /// respond to the nth markup modified event
+  /// Respond to the nth markup modified event
   virtual void OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode * markupsNode, int n);
-  /// respond to a markup being removed from the markups node
+  /// Respond to a markup being removed from the markups node
   virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode);
 
   /// Gets called when widget was created
@@ -72,15 +72,15 @@ protected:
   /// Propagate properties of widget to MRML node.
   virtual void PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node);
 
-  /// set up an observer on the interactor style to watch for key press events
+  /// Set up an observer on the interactor style to watch for key press events
   virtual void AdditionnalInitializeStep();
-  /// respond to the interactor style event
+  /// Respond to the interactor style event
   virtual void OnInteractorStyleEvent(int eventid);
 
-  /// respond to control point modified events
+  /// Respond to control point modified events
   virtual void UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node);
 
-  // clean up when scene closes
+  // Clean up when scene closes
   virtual void OnMRMLSceneEndClose();
 
 private:

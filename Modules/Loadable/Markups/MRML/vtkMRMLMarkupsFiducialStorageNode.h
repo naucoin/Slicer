@@ -25,11 +25,9 @@
 #ifndef __vtkMRMLMarkupsFiducialStorageNode_h
 #define __vtkMRMLMarkupsFiducialStorageNode_h
 
-// MRML includes
-#include "vtkMRMLMarkupsStorageNode.h"
-
 // Markups includes
 #include "vtkSlicerMarkupsModuleMRMLExport.h"
+#include "vtkMRMLMarkupsStorageNode.h"
 
 /// \ingroup Slicer_QtModules_Markups
 class VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsFiducialStorageNode : public vtkMRMLMarkupsStorageNode

@@ -23,28 +23,28 @@
 #include <QModelIndex>
 #include <QMouseEvent>
 #include <QSettings>
-#include <QSignalMapper>
 #include <QShortcut>
+#include <QSignalMapper>
 #include <QStringList>
 #include <QTableWidgetItem>
 
 // SlicerQt includes
-#include "qSlicerMarkupsModuleWidget.h"
-#include "ui_qSlicerMarkupsModule.h"
 #include "qMRMLSceneModel.h"
 #include "qMRMLUtils.h"
 #include "qSlicerApplication.h"
-
 
 // MRML includes
 #include "vtkMRMLScene.h"
 #include "vtkMRMLSelectionNode.h"
 
-// module includes
-#include "vtkMRMLMarkupsNode.h"
-#include "vtkMRMLMarkupsFiducialNode.h"
-#include "vtkSlicerMarkupsLogic.h"
+// Markups includes
 #include "qSlicerMarkupsModule.h"
+#include "qSlicerMarkupsModuleWidget.h"
+#include "ui_qSlicerMarkupsModule.h"
+#include "vtkMRMLMarkupsFiducialNode.h"
+#include "vtkMRMLMarkupsNode.h"
+#include "vtkSlicerMarkupsLogic.h"
+
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_Markups

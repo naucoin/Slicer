@@ -16,17 +16,19 @@
 ==============================================================================*/
 
 // MRML includes
-#include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsFiducialStorageNode.h"
-#include "vtkMRMLMarkupsStorageNode.h"
 #include "vtkMRMLMarkupsDisplayNode.h"
+#include "vtkMRMLMarkupsNode.h"
+#include "vtkMRMLMarkupsStorageNode.h"
+
+// Slicer MRML includes
 #include "vtkMRMLScene.h"
 #include "vtkMRMLLinearTransformNode.h"
 
 // VTK includes
 #include <vtkAbstractTransform.h>
-#include <vtkCommand.h>
 #include <vtkBitArray.h>
+#include <vtkCommand.h>
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>

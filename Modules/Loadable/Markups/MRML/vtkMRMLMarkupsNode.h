@@ -31,7 +31,6 @@
 #include "vtkSlicerMarkupsModuleMRMLExport.h"
 
 // VTK includes
-
 #include <vtkSmartPointer.h>
 #include <vtkVector.h>
 
@@ -102,16 +101,15 @@ public:
   /// Copy the node's attributes to this object
   virtual void Copy(vtkMRMLNode *node);
 
-  /// currently only calls superclass UpdateScene
+  /// Currently only calls superclass UpdateScene
   void UpdateScene(vtkMRMLScene *scene);
 
-  /// alternative method to propagate events generated in Display nodes
+  /// Alternative method to propagate events generated in Display nodes
   virtual void ProcessMRMLEvents ( vtkObject * /*caller*/,
                                    unsigned long /*event*/,
                                    void * /*callData*/ );
 
 
-  /// Description:
   /// Create default storage node or NULL if does not have one
   virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
@@ -124,11 +122,11 @@ public:
   int GetNumberOfTexts();
 
   /// Invoke events when markups change, passing the markup index if applicable
-  /// invoke the lock modified event when a markup's lock status is changed.
-  /// invoke the point modified event when a markup's location changes
-  /// invoke the NthMarkupModifiedEvent event when a markup's non location value
-  /// invoke the markup added event when adding a new markup to a markups node
-  /// invoke the markup removed event when removing one or all markups from a node
+  /// Invoke the lock modified event when a markup's lock status is changed.
+  /// Invoke the point modified event when a markup's location changes
+  /// Invoke the NthMarkupModifiedEvent event when a markup's non location value
+  /// Invoke the markup added event when adding a new markup to a markups node
+  /// Invoke the markup removed event when removing one or all markups from a node
   /// (caught by the displayable manager to make sure the widgets match the node)
   enum
   {
@@ -139,11 +137,9 @@ public:
     MarkupRemovedEvent,
   };
 
-  /// Description:
   /// Clear out the node of all markups
   virtual void RemoveAllMarkups();
 
-  /// Description:
   /// Get/Set the Locked property on the markup.
   /// If set to 1 then parameters should not be changed
   vtkGetMacro(Locked, int);
@@ -178,8 +174,8 @@ public:
   /// Get points in LPS coordinate system
   void GetMarkupPointLPS(int markupIndex, int pointIndex, double point[3]);
   /// Return a three element double giving the world position (any parent
-  /// transform on the markup applied to the return of GetMarkupPoint
-  /// returns 0 on failure, 1 on success.
+  /// transform on the markup applied to the return of GetMarkupPoint.
+  /// Returns 0 on failure, 1 on success.
   int GetMarkupPointWorld(int markupIndex, int pointIndex, double worldxyz[4]);
 
   /// Remove a markup
@@ -235,14 +231,14 @@ public:
   std::string GetNthMarkupDescription(int n = 0);
   void SetNthMarkupDescription(int n, std::string description);
 
-  /// transform utility functions
+  /// Transform utility functions
   virtual bool CanApplyNonLinearTransforms()const;
   virtual void ApplyTransformMatrix(vtkMatrix4x4* transformMatrix);
   virtual void ApplyTransform(vtkAbstractTransform* transform);
 
-  /// toggle using the name of the markups list node to name the new points added to it.
-  /// if true, sets the label automatically as a numbered version of the list name.
-  /// if false, defauls to using M as the default prefix
+  /// Toggle using the name of the markups list node to name the new points added to it.
+  /// If true, sets the label automatically as a numbered version of the list name.
+  /// If false, defauls to using M as the default prefix.
   vtkSetMacro(UseListNameForMarkups, int);
   vtkGetMacro(UseListNameForMarkups, int);
   vtkBooleanMacro (UseListNameForMarkups, int);
@@ -280,7 +276,7 @@ protected:
   std::string GenerateUniqueMarkupID();;
 
 private:
-  /// vector of point sets, each markup can have N markups of the same type
+  /// Vector of point sets, each markup can have N markups of the same type
   /// saved in the vector.
   std::vector < Markup > Markups;
 

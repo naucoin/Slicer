@@ -16,9 +16,9 @@
 ==============================================================================*/
 
 // MRML includes
+#include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkMRMLMarkupsFiducialNode.h"
 #include "vtkMRMLMarkupsFiducialStorageNode.h"
-#include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkMRMLScene.h"
 
 // VTK includes

@@ -29,13 +29,11 @@
 
 // Markups includes
 #include "vtkSlicerMarkupsModuleMRMLExport.h"
-#include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsDisplayNode.h"
+#include "vtkMRMLMarkupsNode.h"
 
 // VTK includes
-
 #include <vtkSmartPointer.h>
-//#include <vtkVector.h>
 
 /// \ingroup Slicer_QtModules_Markups
 class  VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsFiducialNode : public vtkMRMLMarkupsNode
@@ -52,42 +50,35 @@ public:
   //--------------------------------------------------------------------------
 
   virtual vtkMRMLNode* CreateNodeInstance();
-  // Description:
   // Get node XML tag name (like Volume, Model)
   virtual const char* GetNodeTagName() {return "MarkupsFiducial";};
 
-  // Description:
   // Read node attributes from XML file
   virtual void ReadXMLAttributes( const char** atts);
-  
-  // Description:
+
   // Write this node's information to a MRML file in XML format.
   virtual void WriteXML(ostream& of, int indent);
 
-
-  // Description:
   // Copy the node's attributes to this object
   virtual void Copy(vtkMRMLNode *node);
 
 
   void UpdateScene(vtkMRMLScene *scene);
 
-  // Description:
-  // alternative method to propagate events generated in Display nodes
+  // Alternative method to propagate events generated in Display nodes
   virtual void ProcessMRMLEvents ( vtkObject * /*caller*/,
                                    unsigned long /*event*/,
                                    void * /*callData*/ );
 
 
-  // Description:
   // Create default storage node or NULL if does not have one
   virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
   /// Return a cast display node, returns null if none
   vtkMRMLMarkupsDisplayNode *GetMarkupsDisplayNode();
 
-  // wrap some of the generic markup methods
-  /// add a new fiducial and return the fiducial index
+  /// Wrap some of the generic markup methods
+  /// Add a new fiducial and return the fiducial index
   int AddFiducial(double x, double y, double z);
   int AddFiducialFromArray(double pos[3]);
   /// Get the position of the nth fiducial

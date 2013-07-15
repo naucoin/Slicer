@@ -26,7 +26,6 @@
 #include "vtkSlicerMarkupsLogic.h"
 
 // MRML includes
-//#include <vtkMRMLNode.h>
 
 // VTK includes
 #include <vtkNew.h>
