@@ -370,7 +370,16 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
   // update locked
   int listLocked = fiducialNode->GetLocked();
   int seedLocked = fiducialNode->GetNthMarkupLocked(n);
-  if (listLocked || seedLocked)
+  // if the user is placing lots of fiducials at once, add this one as locked
+  // so that it can't be moved when placing the next fiducials. They will be
+  // unlocked when the interaction node goes back into ViewTransform
+  int persistentPlaceMode = 0;
+  vtkMRMLInteractionNode *interactionNode = this->GetInteractionNode();
+  if (interactionNode)
+    {
+    persistentPlaceMode = interactionNode->GetPlaceModePersistence();
+    }
+  if (listLocked || seedLocked || persistentPlaceMode)
     {
     seedWidget->GetSeed(n)->ProcessEventsOff();
     }
