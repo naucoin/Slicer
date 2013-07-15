@@ -268,7 +268,7 @@
          <string>Change properties of all points in a list</string>
         </property>
         <property name="text">
-         <string>Modify Points</string>
+         <string>Modify Markups in List</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="5">
