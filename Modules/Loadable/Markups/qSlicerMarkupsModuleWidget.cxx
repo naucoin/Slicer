@@ -726,7 +726,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
     return;
     }
   // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent";
-  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetSelectionNodeID() : std::string(""));
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
   vtkMRMLSelectionNode *selectionNode = NULL;
   if (node)
@@ -1290,7 +1290,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
 
   //qDebug() << "setActiveMarkupsNode: combo box says: " << qPrintable(activeMarkupsNodeID) << ", input node says " << (activeID ? activeID : "null");
   // update the selection node
-  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetSelectionNodeID() : std::string(""));
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
   vtkMRMLSelectionNode *selectionNode = NULL;
   if (node)
@@ -1322,7 +1322,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     }
   else
     {
-    qDebug() << "Failed to change active markups node id on selection node";
+    qDebug() << "On Active MRML node changed: Failed to change active markups node id on selection node '" << selectionNodeID.c_str() << "'";
     }
 
   // update the GUI
@@ -1352,7 +1352,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markup
 
   // make sure it's set up for the mouse mode tool bar to easily add points to
   // it by making it active in the selection node
-  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetActiveListID() : std::string(""));
+  std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetSelectionNodeID() : std::string(""));
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
   vtkMRMLSelectionNode *selectionNode = NULL;
   if (node)
