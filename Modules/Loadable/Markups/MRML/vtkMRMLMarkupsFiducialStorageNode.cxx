@@ -15,9 +15,10 @@
 
 ==============================================================================*/
 
+#include "vtkMRMLMarkupsDisplayNode.h"
 #include "vtkMRMLMarkupsFiducialStorageNode.h"
 #include "vtkMRMLMarkupsNode.h"
-#include "vtkMRMLMarkupsDisplayNode.h"
+
 #include "vtkMRMLScene.h"
 #include "vtkSlicerVersionConfigure.h"
 

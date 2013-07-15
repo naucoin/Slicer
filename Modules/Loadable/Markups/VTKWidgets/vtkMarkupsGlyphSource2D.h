@@ -34,8 +34,9 @@
 #include "vtkSlicerMarkupsModuleVTKWidgetsExport.h"
 
 #include "vtkSlicerBaseLogic.h"
-#include "vtkGlyphSource2D.h"
 
+// VTK includes
+#include "vtkGlyphSource2D.h"
 #include "vtkPolyDataAlgorithm.h"
 
 /// when add new glyph types, make sure to increase the clamp

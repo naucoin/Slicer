@@ -48,8 +48,8 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSeedWidget.h>
-#include <vtkSmartPointer.h>
 #include <vtkSeedRepresentation.h>
+#include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 
 // STD includes

@@ -122,7 +122,7 @@ protected:
 
 //  virtual void Create();
 
-  /// wrap the superclass render request in a check for batch processing
+  /// Wrap the superclass render request in a check for batch processing
   virtual void RequestRender();
 
   /// Remove MRML observers
@@ -166,10 +166,11 @@ protected:
   void OnMRMLMarkupsNodeLockModifiedEvent(vtkMRMLNode* node);
   void OnMRMLMarkupsDisplayNodeModifiedEvent(vtkMRMLNode *node);
   void OnMRMLMarkupsPointModifiedEvent(vtkMRMLNode *node, int n);
-  /// subclasses need to react to new markups being added to a markups node or modified
+  /// Subclasses need to react to new markups being added to a markups node or modified
   virtual void OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode)) {};
   virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode)) {};
   virtual void OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode* vtkNotUsed(node), int vtkNotUsed(n)) {};
+
   //
   // Handling of interaction within the RenderWindow
   //
@@ -183,6 +184,7 @@ protected:
 
   /// Update just the position for the widget, implemented by subclasses.
   virtual void UpdatePosition(vtkAbstractWidget *vtkNotUsed(widget), vtkMRMLNode *vtkNotUsed(node)) {};
+
   //
   // Seeds for widget placement
   //
@@ -195,10 +197,6 @@ protected:
   //
   // Coordinate Conversions
   //
-
-  /// Convert display to world coordinates
-//  void GetDisplayToWorldCoordinates(double x, double y, double * worldCoordinates);
-//  void GetDisplayToWorldCoordinates(double * displayCoordinates, double * worldCoordinates);
 
   /// Convert display to world coordinates
   void GetWorldToDisplayCoordinates(double r, double a, double s, double * displayCoordinates);

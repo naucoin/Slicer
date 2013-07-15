@@ -107,7 +107,7 @@ protected:
 
 private:
 
-  /// flag set to enum RAS if the points are to be written out/read in using
+  /// Flag set to enum RAS if the points are to be written out/read in using
   /// the RAS coordinate system, enum LPS if the points are to be written
   /// out/read in using LPS coordinate system, enum IJK if the points are
   /// to be written out in the IJK coordinates for the associated volume node.

@@ -64,8 +64,6 @@ void qSlicerMarkupsSettingsPanelPrivate::init()
 {
   Q_Q(qSlicerMarkupsSettingsPanel);
 
-  std::cout << "qSlicerMarkupsSettingsPanelPrivate::init()" << std::endl;
-  
   this->setupUi(q);
 }
 
@@ -80,7 +78,6 @@ qSlicerMarkupsSettingsPanel::qSlicerMarkupsSettingsPanel(QWidget* _parent)
   , d_ptr(new qSlicerMarkupsSettingsPanelPrivate(*this))
 {
   Q_D(qSlicerMarkupsSettingsPanel);
-  std::cout << ":qSlicerMarkupsSettingsPanel construc" << std::endl;
   d->init();
 }
 
@@ -129,11 +126,9 @@ void qSlicerMarkupsSettingsPanel
 {
   Q_D(qSlicerMarkupsSettingsPanel);
 
-  std::cout << "onMarkupsLogicModified" << std::endl;
-
   // update the gui to match the logic
   QString glyphType = QString(d->MarkupsLogic->GetDefaultMarkupsDisplayNodeGlyphTypeAsString().c_str());
-  
+
   QObject::connect(d->defaultGlyphTypeComboBox, SIGNAL(currentIndexChanged(int)),
                    this, SLOT(onDefaultGlyphTypeChanged(int)),Qt::UniqueConnection);
 
@@ -142,7 +137,6 @@ void qSlicerMarkupsSettingsPanel
   int glyphTypeIndex = d->defaultGlyphTypeComboBox->findData(glyphType);
   if (glyphTypeIndex != -1)
     {
-    qDebug() << "onMarkupsLogicModified: got glyph type from logic: " << glyphType << ", setting combo box";
     d->defaultGlyphTypeComboBox->setCurrentIndex(glyphTypeIndex);
     }
 
@@ -184,10 +178,9 @@ QString qSlicerMarkupsSettingsPanel::defaultGlyphType()const
   QString glyphType;
   if (currentIndex != -1)
     {
-    glyphType = 
+    glyphType =
       d->defaultGlyphTypeComboBox->itemText(currentIndex);
     }
-  qDebug() << "defaultGlyphType: returning type " << glyphType;
   return glyphType;
 }
 
@@ -246,8 +239,6 @@ void qSlicerMarkupsSettingsPanel::setDefaultGlyphType(const QString& glyphType)
 {
   Q_D(qSlicerMarkupsSettingsPanel);
 
-  qDebug() << "setDefaultGlyphType: " << glyphType;
-  
   int glyphTypeIndex = d->defaultGlyphTypeComboBox->findData(glyphType);
 
   if (glyphTypeIndex != -1)
@@ -302,8 +293,6 @@ void qSlicerMarkupsSettingsPanel::onDefaultGlyphTypeChanged(int index)
 //   Q_D(qSlicerMarkupsSettingsPanel);
   Q_UNUSED(index);
 
-  qDebug() << "onDefaultGlyphTypeChanged: " << index;
-
   this->updateMarkupsLogicDefaultGlyphType();
   emit defaultGlyphTypeChanged(this->defaultGlyphType());
 }
@@ -317,7 +306,6 @@ void qSlicerMarkupsSettingsPanel::updateMarkupsLogicDefaultGlyphType()
     {
     return;
     }
-  qDebug() << "updateMarkupsLogicDefaultGlyphType, setting logic";
   d->MarkupsLogic->SetDefaultMarkupsDisplayNodeGlyphTypeFromString(this->defaultGlyphType().toLatin1());
 }
 

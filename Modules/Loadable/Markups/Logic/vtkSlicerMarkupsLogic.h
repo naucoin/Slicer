@@ -148,7 +148,7 @@ private:
 
   /// keep a markups display node with default values that can be updated from
   /// the application settings
-  vtkMRMLMarkupsDisplayNode *defaultMarkupsDisplayNode;
+  vtkMRMLMarkupsDisplayNode *DefaultMarkupsDisplayNode;
 };
 
 #endif

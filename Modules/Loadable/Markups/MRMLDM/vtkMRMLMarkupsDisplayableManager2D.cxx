@@ -23,8 +23,8 @@
 #include "vtkMRMLMarkupsDisplayableManager2D.h"
 
 // MRMLDisplayableManager includes
-#include <vtkMRMLModelDisplayableManager.h>
 #include <vtkMRMLDisplayableManagerGroup.h>
+#include <vtkMRMLModelDisplayableManager.h>
 
 // MRML includes
 #include <vtkMRMLApplicationLogic.h>

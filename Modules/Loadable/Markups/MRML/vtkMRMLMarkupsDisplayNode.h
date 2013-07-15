@@ -24,9 +24,9 @@
 #ifndef __vtkMRMLMarkupsDisplayNode_h
 #define __vtkMRMLMarkupsDisplayNode_h
 
-//#include "vtkMRML.h"
-#include "vtkMRMLDisplayNode.h"
 #include "vtkSlicerMarkupsModuleMRMLExport.h"
+
+#include "vtkMRMLDisplayNode.h"
 
 /// \ingroup Slicer_QtModules_Markups
 class  VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsDisplayNode : public vtkMRMLDisplayNode
@@ -35,38 +35,32 @@ public:
   static vtkMRMLMarkupsDisplayNode *New();
   vtkTypeMacro ( vtkMRMLMarkupsDisplayNode,vtkMRMLDisplayNode );
   void PrintSelf ( ostream& os, vtkIndent indent );
-  
+
   //--------------------------------------------------------------------------
   // MRMLNode methods
   //--------------------------------------------------------------------------
 
   virtual vtkMRMLNode* CreateNodeInstance (  );
 
-  // Description:
   // Read node attributes from XML (MRML) file
   virtual void ReadXMLAttributes ( const char** atts );
 
-  // Description:
   // Write this node's information to a MRML file in XML format.
   virtual void WriteXML ( ostream& of, int indent );
 
 
-  // Description:
   // Copy the node's attributes to this object
   virtual void Copy ( vtkMRMLNode *node );
-  
-  // Description:
+
   // Get node XML tag name (like Volume, Markups)
   virtual const char* GetNodeTagName() {return "MarkupsDisplay";};
 
-  // Description:
   // Finds the storage node and read the data
   virtual void UpdateScene(vtkMRMLScene *scene);
 
-  // Description:
-  // alternative method to propagate events generated in Display nodes
-  virtual void ProcessMRMLEvents ( vtkObject * /*caller*/, 
-                                   unsigned long /*event*/, 
+  // Alternative method to propagate events generated in Display nodes
+  virtual void ProcessMRMLEvents ( vtkObject * /*caller*/,
+                                   unsigned long /*event*/,
                                    void * /*callData*/ );
 
   /// Set the text scale of the associated text.
@@ -97,7 +91,7 @@ public:
   /// Return the min/max glyph types, for iterating over them in tcl
   int GetMinimumGlyphType() { return vtkMRMLMarkupsDisplayNode::GlyphMin; };
   int GetMaximumGlyphType() { return vtkMRMLMarkupsDisplayNode::GlyphMax; };
-  
+
   /// The glyph type used to display this fiducial
   void SetGlyphType(int type);
   vtkGetMacro(GlyphType, int);
@@ -111,7 +105,6 @@ public:
   void SetGlyphTypeFromString(const char *glyphString);
 
   /// Get/Set for Symbol scale
-  ///  vtkSetMacro(GlyphScale,double);
   void SetGlyphScale(double scale);
   vtkGetMacro(GlyphScale,double);
 
