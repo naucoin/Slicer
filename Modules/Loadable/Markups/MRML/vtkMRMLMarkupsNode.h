@@ -231,6 +231,13 @@ public:
   std::string GetNthMarkupDescription(int n = 0);
   void SetNthMarkupDescription(int n, std::string description);
 
+  /// Get/Set the label and description on the nth markup, converting between
+  /// user input and storage node file safe strings
+  std::string GetNthMarkupLabelForStorage(int n = 0);
+  void SetNthMarkupLabelFromStorage(int n, std::string label);
+  std::string GetNthMarkupDescriptionForStorage(int n = 0);
+  void SetNthMarkupDescriptionFromStorage(int n, std::string description);
+
   /// Transform utility functions
   virtual bool CanApplyNonLinearTransforms()const;
   virtual void ApplyTransformMatrix(vtkMatrix4x4* transformMatrix);

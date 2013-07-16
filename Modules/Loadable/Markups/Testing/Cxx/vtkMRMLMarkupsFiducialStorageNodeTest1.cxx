@@ -27,6 +27,8 @@
 // VTK includes
 #include <vtkNew.h>
 
+// STD includes
+#include <algorithm>
 
 int vtkMRMLMarkupsFiducialStorageNodeTest1(int argc, char * argv[] )
 {
@@ -76,6 +78,15 @@ int vtkMRMLMarkupsFiducialStorageNodeTest1(int argc, char * argv[] )
   // and another one unsetting the label
   index = markupsNode->AddMarkupWithNPoints(1);
   markupsNode->SetNthMarkupLabel(index,"");
+
+  // add another one with a label and description that have commas in them
+  int commaIndex = markupsNode->AddMarkupWithNPoints(1);
+  markupsNode->SetNthMarkupLabel(commaIndex, "Label, commas, two");
+  markupsNode->SetNthMarkupDescription(commaIndex, "Description one comma \"and two quotes\", for more testing");
+  // add another one with a label and description with complex combos of commas and quotes
+  int quotesIndex = markupsNode->AddMarkupWithNPoints(1);
+  markupsNode->SetNthMarkupLabel(quotesIndex, "Label with end quotes \"around the last phrase\"");
+  markupsNode->SetNthMarkupDescription(quotesIndex, "\"Description fully quoted\"");
 
   //
   // test write
@@ -282,5 +293,55 @@ int vtkMRMLMarkupsFiducialStorageNodeTest1(int argc, char * argv[] )
               << outputPointAfterLPS[2] << std::endl;
     }
 
+  // check for commas in the markup label and description
+  std::string labelWithCommas = markupsNode2->GetNthMarkupLabel(commaIndex);
+  int numCommas = std::count(labelWithCommas.begin(), labelWithCommas.end(), ',');
+  if (numCommas != 2)
+    {
+    std::cerr << "Expected a label with two commas, got " << numCommas
+              << " in label " << labelWithCommas.c_str() << std::endl;
+    return EXIT_FAILURE;
+    }
+  std::string descriptionWithCommasAndQuotes = markupsNode2->GetNthMarkupDescription(commaIndex);
+  numCommas = std::count(descriptionWithCommasAndQuotes.begin(),
+                         descriptionWithCommasAndQuotes.end(),
+                         ',');
+  if (numCommas != 1)
+    {
+    std::cerr << "Expected a description with one comma, got " << numCommas
+              << " in description '" << descriptionWithCommasAndQuotes.c_str()
+              << "'" << std::endl;
+    return EXIT_FAILURE;
+    }
+  int numQuotes = std::count(descriptionWithCommasAndQuotes.begin(),
+                            descriptionWithCommasAndQuotes.end(),
+                            '"');
+  if (numQuotes != 2)
+    {
+    std::cerr << "Expected a description with two quotes, got " << numQuotes
+              << " in description '" << descriptionWithCommasAndQuotes
+              << "'" << std::endl;
+    return EXIT_FAILURE;
+    }
+
+  // check ending quoted label
+  std::string labelWithQuotes = markupsNode2->GetNthMarkupLabel(quotesIndex);
+  numQuotes = std::count(labelWithQuotes.begin(),
+			 labelWithQuotes.end(),
+			 '"');
+  if (numQuotes != 2)
+    {
+    std::cerr << "Expected 2 quotes in '" << labelWithQuotes << "' but got " << numQuotes << std::endl;
+    return EXIT_FAILURE;
+    }
+  // check fully quoted description
+  std::string descWithQuotes = markupsNode2->GetNthMarkupDescription(quotesIndex);
+  numQuotes = std::count(descWithQuotes.begin(),
+			 descWithQuotes.end(),
+			 '"');
+  if (numQuotes != 2)
+    {
+    std::cerr << "Expected 2 quotes in '" << descWithQuotes << "' but got " << numQuotes << std::endl;
+    }
   return EXIT_SUCCESS;
 }

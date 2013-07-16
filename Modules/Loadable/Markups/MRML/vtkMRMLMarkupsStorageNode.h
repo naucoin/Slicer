@@ -84,6 +84,14 @@ public:
   void UseIJKOn();
   bool GetUseIJK();
 
+  /// Convert between user input strings and strings safe to be
+  /// written to the storage file. Since the current storage node
+  /// file format is CSV, puts double quotes around strings if there
+  /// there are commas or double quotes in them, and replace occurences
+  /// of double quotes with two double quotes
+  std::string ConvertStringToStorageFormat(std::string input);
+  std::string ConvertStringFromStorageFormat(std::string input);
+
 protected:
   vtkMRMLMarkupsStorageNode();
   ~vtkMRMLMarkupsStorageNode();
@@ -104,6 +112,13 @@ protected:
   /// There can be any number of points associated with a
   /// markup, so subclasses need to implement this for their markup type
   virtual int WriteDataInternal(vtkMRMLNode *refNode);
+
+  /// Extract the first quoted string from an input string and return it.
+  /// Used in parsing the input strings in \sa ReadDataInternal.
+  /// Returns output string with the quotes around it, but no ending comma.
+  /// Returns the location of the ending comma in the input string for further parsing
+  /// With no starting or ending quote, returns an empty string.
+  std::string GetFirstQuotedString(std::string inputString, size_t *endCommaPos);
 
 private:
 
