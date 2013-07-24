@@ -1749,7 +1749,7 @@ void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destin
     }
   // get the target list
   QStringList otherLists;
-  for (int n = 0; n < numNodes; n++)
+  for (unsigned int n = 0; n < numNodes; n++)
     {
     vtkMRMLNode *listNodeN = vtkMRMLNode::SafeDownCast(col->GetItemAsObject(n));
     if (strcmp(listNodeN->GetID(), markupsNode->GetID()) != 0)

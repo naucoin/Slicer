@@ -99,7 +99,7 @@ bool vtkMRMLMarkupsStorageNode::CanReadInReferenceNode(vtkMRMLNode *refNode)
 }
 
 //----------------------------------------------------------------------------
-int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
+int vtkMRMLMarkupsStorageNode::ReadDataInternal(vtkMRMLNode *vtkNotUsed(refNode))
 {
   vtkWarningMacro("Subclasses must implement ReadDataInternal!");
   return 0;
