@@ -319,7 +319,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
 
   // update the postion
   bool positionChanged = this->UpdateNthSeedPositionFromMRML(n, seedWidget, fiducialNode);
-  vtkDebugMacro("Position changed? " << (positionChanged ? "yes" : "no"));
+  if (!positionChanged)
+    {
+    vtkDebugMacro("Position did not change");
+    }
 
   vtkOrientedPolygonalHandleRepresentation3D *handleRep =
     vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation(n));
@@ -377,7 +380,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
   vtkMRMLInteractionNode *interactionNode = this->GetInteractionNode();
   if (interactionNode)
     {
-    persistentPlaceMode = interactionNode->GetPlaceModePersistence();
+    persistentPlaceMode =
+      (interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place)
+      && (interactionNode->GetPlaceModePersistence() == 1);
     }
   if (listLocked || seedLocked || persistentPlaceMode)
     {
@@ -554,7 +559,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::PropagateMRMLToWidget(vtkMRMLMa
   //this->UpdatePosition(widget, node);
 
   // update lock status
-  this->Helper->UpdateLocked(node);
+  this->Helper->UpdateLocked(node, this->GetInteractionNode());
 
   // update visibility of widget as a whole
   // std::cout << "PropagateMRMLToWidget: calling UpdateWidgetVisibility" << std::endl;

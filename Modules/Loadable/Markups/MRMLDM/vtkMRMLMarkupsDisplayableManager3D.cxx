@@ -635,7 +635,7 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsNodeLockModifiedEvent(vtkM
     return;
     }
   // Update the standard settings of all widgets.
-  this->Helper->UpdateLocked(markupsNode);
+  this->Helper->UpdateLocked(markupsNode, this->GetInteractionNode());
 }
 
 //---------------------------------------------------------------------------
@@ -748,6 +748,19 @@ void vtkMRMLMarkupsDisplayableManager3D::OnInteractorStyleEvent(int eventid)
   else if (eventid == vtkCommand::LeftButtonPressEvent)
     {
 //    vtkWarningMacro("OnInteractorStyleEvent: unhandled left button press event " << eventid);
+    }
+  else if (eventid == vtkCommand::RightButtonReleaseEvent)
+    {
+    // if we're in persistent place mode, go back to view transform mode, but
+    // leave the persistent flag on
+    // Note: this is currently only implemented in 3D as the right click is used
+    // in ctkQImageView
+    // for zooming.
+    if (this->GetInteractionNode()->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place &&
+        this->GetInteractionNode()->GetPlaceModePersistence() == 1)
+      {
+      this->GetInteractionNode()->SwitchToViewTransformMode();
+      }
     }
   else
     {

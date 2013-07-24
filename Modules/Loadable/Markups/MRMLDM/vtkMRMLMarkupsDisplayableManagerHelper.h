@@ -60,8 +60,10 @@ public:
   void UpdateLockedAllWidgetsFromInteractionNode(vtkMRMLInteractionNode* interactionNode);
   /// Lock/Unlock all widgets
   void UpdateLockedAllWidgets(bool locked);
-  /// Lock/Unlock a widget
-  void UpdateLocked(vtkMRMLMarkupsNode* node);
+  /// Lock/Unlock a widget. If no interaction node is passed in, don't take the
+  /// mouse mode into account, if it is passed in, widgets get locked while in
+  /// Place mode
+  void UpdateLocked(vtkMRMLMarkupsNode* node, vtkMRMLInteractionNode *interactionNode = NULL);
 
   /// Keep track of the mapping between widgets and nodes
   void RecordWidgetForNode(vtkAbstractWidget* widget, vtkMRMLMarkupsNode *node);

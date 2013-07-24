@@ -82,7 +82,8 @@ vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
 
   this->Focus = "vtkMRMLMarkupsNode";
 
-  // by default, this displayableManager handles a ThreeDView
+  // by default, this displayableManager handles a 2d view, so the SliceNode
+  // must be set when it's assigned to a viewer
   this->SliceNode = 0;
 
   // by default, multiply the display node scale by this when setting scale on elements in 2d windows
@@ -652,7 +653,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLMarkupsNodeLockModifiedEvent(vtkM
     return;
     }
   // Update the standard settings of all widgets.
-  this->Helper->UpdateLocked(markupsNode);
+  this->Helper->UpdateLocked(markupsNode, this->GetInteractionNode());
 }
 
 //---------------------------------------------------------------------------
