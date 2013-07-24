@@ -88,7 +88,9 @@ qSlicerIO::IOFileType qSlicerMarkupsIO::fileType()const
 //-----------------------------------------------------------------------------
 QStringList qSlicerMarkupsIO::extensions()const
 {
-  return QStringList() << "Markups Fiducials (*.fcsv)";
+  return QStringList()
+    << "Markups Fiducials (*.fcsv)"
+    << " Annotation Fiducial (*.acsv)";
 }
 
 //-----------------------------------------------------------------------------
