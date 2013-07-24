@@ -28,7 +28,7 @@
 #include <vtkNew.h>
 
 
-int vtkMRMLMarkupsStorageNodeTest1(int argc, char * argv[] )
+int vtkMRMLMarkupsStorageNodeTest1(int vtkNotUsed(argc), char * vtkNotUsed(argv)[] )
 {
   vtkNew<vtkMRMLMarkupsStorageNode> node1;
 
