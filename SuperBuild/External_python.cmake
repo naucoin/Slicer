@@ -103,8 +103,6 @@ if(NOT DEFINED python_DIR)
     )
   set(python_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
 
-  set(CMAKE_CFG_INTDIR ${SAVED_CMAKE_CFG_INTDIR}) # Restore CMAKE_CFG_INTDIR
-
   if(UNIX)
     set(python_IMPORT_SUFFIX so)
     if(APPLE)
