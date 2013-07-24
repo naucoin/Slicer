@@ -1519,6 +1519,16 @@ void vtkMRMLAnnotationDisplayableManager::OnInteractorStyleEvent(int eventid)
     {
 //    vtkWarningMacro("OnInteractorStyleEvent: unhandled left button press event " << eventid);
     }
+  else if (eventid == vtkCommand::RightButtonReleaseEvent)
+    {
+    // if we're in persistent place mode, go back to view transform mode, but
+    // leave the persistent flag on
+    if (this->GetInteractionNode()->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place &&
+        this->GetInteractionNode()->GetPlaceModePersistence() == 1)
+      {
+      this->GetInteractionNode()->SwitchToViewTransformMode();
+      }
+    }
   else
     {
     //vtkWarningMacro("OnInteractorStyleEvent: unhandled event " << eventid);

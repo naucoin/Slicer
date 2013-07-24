@@ -167,7 +167,8 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLockedAllWidgets(bool locked)
 }
 
 //---------------------------------------------------------------------------
-void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode* node)
+void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode *node,
+                                                          vtkMRMLInteractionNode *interactionNode)
 {
   // Sanity checks
   if (node == 0)
@@ -184,13 +185,25 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode* no
 
   bool isLockedOnNode = (node->GetLocked() != 0 ? true : false);
   bool isLockedOnWidget = (widget->GetProcessEvents() != 0 ? false : true);
+  bool isLockedOnInteraction = false;
+  if (interactionNode &&
+      interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place)
+    {
+    // place mode will over ride node locking
+    isLockedOnInteraction = true;
+    }
 
-  // only update the processEvents state of the widget if it is different than on the node
-  if (isLockedOnNode && !isLockedOnWidget)
+  vtkDebugMacro("UpdateLocked: isLockedOnNode = " << isLockedOnNode
+		<< ", isLockedOnWidget = " << isLockedOnWidget
+		<< ", isLockedOnInteraction = " << isLockedOnInteraction);
+  // only update the processEvents state of the widget if it is different than
+  // what the markups node or the interaction node says it needs to be
+  if ( (isLockedOnNode && !isLockedOnWidget) ||
+       (isLockedOnInteraction && !isLockedOnWidget) )
     {
     widget->ProcessEventsOff();
     }
-  else if (!isLockedOnNode && isLockedOnWidget)
+  else if (!isLockedOnInteraction && !isLockedOnNode && isLockedOnWidget)
     {
     widget->ProcessEventsOn();
     // is it a seed widget that can support individually locked seeds?
