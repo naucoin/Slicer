@@ -161,8 +161,6 @@ void qSlicerMouseModeToolBarPrivate::updateWidgetFromSelectionNode()
   // create and place menu
   const int numClassNames = selectionNode->GetNumberOfPlaceNodeClassNamesInList();
 
-//  qDebug() << "updateWidgetFromSelectionNode: have " << numClassNames << " place node class names";
-  
   // if some were removed, clear out those actions first
   QList<QAction*> actionList = this->CreateAndPlaceMenu->actions();
   int numActions = actionList.size();
@@ -190,7 +188,6 @@ void qSlicerMouseModeToolBarPrivate::updateWidgetFromSelectionNode()
     // update the tool button from the updated action list
     actionList = this->CreateAndPlaceMenu->actions();
     }
-//  qDebug() << "\tnumClassNames = " << numClassNames;
 
   // select the active one
   QString activePlace(selectionNode->GetActivePlaceNodeClassName());
@@ -204,8 +201,6 @@ void qSlicerMouseModeToolBarPrivate::updateWidgetFromSelectionNode()
     QString placeNodeClassName = QString(selectionNode->GetPlaceNodeClassNameByIndex(i).c_str());
     QString placeNodeResource = QString(selectionNode->GetPlaceNodeResourceByIndex(i).c_str());
     QString placeNodeIconName = QString(selectionNode->GetPlaceNodeIconNameByIndex(i).c_str());
-
-    //qDebug() << "\t" << i << ", id = " << placeNodeClassName << ", resource = " << placeNodeResource << ", icon name = " << placeNodeIconName;
 
     QAction* action = q->actionFromText(placeNodeIconName, this->CreateAndPlaceMenu);
     if (!action)
@@ -292,12 +287,10 @@ void qSlicerMouseModeToolBarPrivate::updateWidgetToPlace(const char *placeNodeCl
     qWarning() << "Mouse Mode Tool Bar not set up with application logic";
     return;
     }
-    
+
   QAction *checkedAction = 0;
   if (!placeNodeClassName)
     {
-    //qDebug() << "qSlicerMouseModeToolBarPrivate::updateWidgetToPlace: "
-    //            "null active place node class name, resetting to view transform";
     q->changeCursorTo(QCursor());
     q->switchToViewTransformMode();
     }
@@ -313,14 +306,11 @@ void qSlicerMouseModeToolBarPrivate::updateWidgetToPlace(const char *placeNodeCl
         // set this action checked
         actions.at(i)->setChecked(true);
         checkedAction = actions.at(i);
-        //qDebug() << "qSlicerMouseModeToolBarPrivate::updateWidgetToPlace - "
-        //            "Found active place node class name: " << thisClassName;
         // update the cursor from the place node resource
         vtkMRMLSelectionNode *selectionNode = this->MRMLAppLogic->GetSelectionNode();
         if ( selectionNode )
           {
           std::string resource = selectionNode->GetPlaceNodeResourceByClassName(std::string(placeNodeClassName));
-          //qDebug() << "qSlicerMouseModeToolBarPrivate::updateWidgetToPlace - updating cursor from selection node";
           q->changeCursorTo(QCursor(QPixmap(resource.c_str()),-1,0));
           }
         else
@@ -365,15 +355,12 @@ void qSlicerMouseModeToolBarPrivate::onMRMLSceneEndBatchProcess()
 //---------------------------------------------------------------------------
 void qSlicerMouseModeToolBarPrivate::onActivePlaceNodeClassNameChangedEvent()
 {
-  //qDebug() << "qSlicerMouseModeToolBarPrivate::onActivePlaceNodeClassNameChangedEvent";
   this->updateWidgetFromSelectionNode();
 }
 
 //---------------------------------------------------------------------------
 void qSlicerMouseModeToolBarPrivate::onPlaceNodeClassNameListModifiedEvent()
 {
-  //qDebug() << "qSlicerMouseModeToolBarPrivate::onPlaceNodeClassNameListModifiedEvent";
-  
   this->updateWidgetFromSelectionNode();
 }
 
@@ -430,12 +417,10 @@ void qSlicerMouseModeToolBar::switchToViewTransformMode()
   vtkMRMLInteractionNode * interactionNode = d->MRMLAppLogic->GetInteractionNode();
   if (interactionNode)
     {
-    //qDebug() << "qSlicerMouseModeToolBar::switchToViewTransformMode";
-
     // update the interaction node, should trigger a cursor update
     interactionNode->SwitchToViewTransformMode();
 
-    // uncheck all 
+    // uncheck all
     d->CreateAndPlaceToolButton->setChecked(false);
     QList<QAction*> actionList =  d->CreateAndPlaceMenu->actions();
     int numActions = actionList.size();
@@ -511,14 +496,13 @@ void qSlicerMouseModeToolBar::switchPlaceMode()
     qWarning() << "Mouse Mode Tool Bar not set up with application logic";
     return;
     }
-    
+
   // get the currently checked action
   QString placeNodeClassName;
   QAction *thisAction = d->CreateAndPlaceToolButton->menu()->activeAction();
   if (thisAction)
     {
     placeNodeClassName = thisAction->data().toString();
-//    qDebug() << "qSlicerMouseModeToolBar::switchPlaceMode: got active action data " << placeNodeClassName;
     }
   else
     {
@@ -526,7 +510,6 @@ void qSlicerMouseModeToolBar::switchPlaceMode()
     if (thisAction)
       {
       placeNodeClassName = thisAction->data().toString();
-      //qDebug() << "qSlicerMouseModeToolBar::switchPlaceMode: got action group checked action text id = " << placeNodeClassName;
       }
     }
   if (placeNodeClassName.isEmpty())
@@ -539,29 +522,24 @@ void qSlicerMouseModeToolBar::switchPlaceMode()
   if ( selectionNode )
     {
     QString previousPlaceNodeClassName = QString(selectionNode->GetActivePlaceNodeClassName());
-    //qDebug() << "switchPlaceMode: previous place node class name is " << qPrintable(previousPlaceNodeClassName) << ", changing to " <<  qPrintable(placeNodeClassName);
     selectionNode->SetReferenceActivePlaceNodeClassName(placeNodeClassName.toLatin1());
     // update the interaction mode, which will trigger an update of the cursor
     vtkMRMLInteractionNode * interactionNode = d->MRMLAppLogic->GetInteractionNode();
     if (interactionNode)
       {
       // is this a click on top of a single or persistent place mode?
-      ///qDebug() << "switchPlaceMode: interaction node current interaction mode = " << interactionNode->GetCurrentInteractionMode() << ", previous place node class name is " << qPrintable(previousPlaceNodeClassName) << ", new place node class name = " << qPrintable(placeNodeClassName);
       if (interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place &&
           placeNodeClassName.compare(previousPlaceNodeClassName) == 0)
         {
-        //qDebug() << "switchPlaceMode: current interaction mode is place, bail out, switching to view transform mode now";
         this->switchToViewTransformMode();
         return;
         }
       if (d->PersistenceAction->isChecked())
         {
-        //qDebug() << "qSlicerMouseModeToolBar::switchPlaceMode: switching to persistent place mode";
         interactionNode->SwitchToPersistentPlaceMode();
         }
       else
         {
-        //qDebug() << "qSlicerMouseModeToolBar::switchPlaceMode: switching to single place mode";
         interactionNode->SwitchToSinglePlaceMode();
         }
       }
