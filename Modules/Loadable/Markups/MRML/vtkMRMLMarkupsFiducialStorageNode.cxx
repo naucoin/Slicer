@@ -24,6 +24,7 @@
 
 #include "vtkObjectFactory.h"
 #include "vtkStringArray.h"
+#include <vtksys/SystemTools.hxx>
 
 #include <sstream>
 
@@ -115,6 +116,14 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
       }
     }
 
+  // check if it's an annotation csv file
+  bool parseAsAnnotationFiducial = false;
+  std::string ext = vtksys::SystemTools::GetFilenameExtension(this->GetFileName());
+  if (ext.compare(".acsv") == 0)
+    {
+    parseAsAnnotationFiducial = true;
+    }
+
   // open the file for reading input
   fstream fstr;
 
@@ -185,12 +194,6 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
           {
           if (version.size() == 0)
             {
-            if (!printedVersionWarning)
-              {
-              vtkWarningMacro("Have an unversioned file, assuming Slicer 3 format .fcsv");
-              printedVersionWarning = true;
-              }
-            // point line format = label,x,y,z,sel,vis
             std::string label = std::string("");
             double x = 0.0, y = 0.0, z = 0.0;
             int sel = 1, vis = 1;
@@ -200,35 +203,78 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
             std::stringstream ss(line);
             std::string component;
 
-            // label
-            getline(ss, component, ',');
-            if (component.size())
+            if (parseAsAnnotationFiducial)
               {
-              vtkDebugMacro("Got label = " << component.c_str());
-              label = component;
-              markupsNode->SetNthMarkupLabel(thisMarkupNumber,label);
+              // annotation fiducial line format = point|x|y|z|sel|vis
+              // label
+              getline(ss, component, '|');
+              if (component.size())
+                {
+                vtkDebugMacro("Got point string = " << component.c_str());
+                // use the file name for the point label
+                std::string filenameName = vtksys::SystemTools::GetFilenameName(this->GetFileName());
+                label = vtksys::SystemTools::GetFilenameWithoutExtension(filenameName);
+                markupsNode->SetNthMarkupLabel(thisMarkupNumber,label);
+                }
+
+              // x,y,z
+              getline(ss, component, '|');
+              x = atof(component.c_str());
+              getline(ss, component, '|');
+              y = atof(component.c_str());
+              getline(ss, component, '|');
+              z = atof(component.c_str());
+              markupsNode->SetMarkupPoint(thisMarkupNumber,0,x,y,z);
+
+              // selected
+              getline(ss, component, '|');
+              sel = atoi(component.c_str());
+              markupsNode->SetNthMarkupSelected(thisMarkupNumber,sel);
+
+              // visibility
+              getline(ss, component, '|');
+              vtkDebugMacro("component = " << component.c_str());
+              vis = atoi(component.c_str());
+              markupsNode->SetNthMarkupVisibility(thisMarkupNumber,vis);
               }
+            else
+              {
+              if (!printedVersionWarning)
+                {
+                vtkWarningMacro("Have an unversioned file, assuming Slicer 3 format .fcsv");
+                printedVersionWarning = true;
+                }
+              // point line format = label,x,y,z,sel,vis
 
-            // x,y,z
-            getline(ss, component, ',');
-            x = atof(component.c_str());
-            getline(ss, component, ',');
-            y = atof(component.c_str());
-            getline(ss, component, ',');
-            z = atof(component.c_str());
-            markupsNode->SetMarkupPoint(thisMarkupNumber,0,x,y,z);
+              // label
+              getline(ss, component, ',');
+              if (component.size())
+                {
+                vtkDebugMacro("Got label = " << component.c_str());
+                label = component;
+                markupsNode->SetNthMarkupLabel(thisMarkupNumber,label);
+                }
 
-            // selected
-            getline(ss, component, ',');
-            sel = atoi(component.c_str());
-            markupsNode->SetNthMarkupSelected(thisMarkupNumber,sel);
+              // x,y,z
+              getline(ss, component, ',');
+              x = atof(component.c_str());
+              getline(ss, component, ',');
+              y = atof(component.c_str());
+              getline(ss, component, ',');
+              z = atof(component.c_str());
+              markupsNode->SetMarkupPoint(thisMarkupNumber,0,x,y,z);
 
-            // visibility
-            getline(ss, component, ',');
-            vtkDebugMacro("component = " << component.c_str());
-            vis = atoi(component.c_str());
-            markupsNode->SetNthMarkupVisibility(thisMarkupNumber,vis);
+              // selected
+              getline(ss, component, ',');
+              sel = atoi(component.c_str());
+              markupsNode->SetNthMarkupSelected(thisMarkupNumber,sel);
 
+              // visibility
+              getline(ss, component, ',');
+              vtkDebugMacro("component = " << component.c_str());
+              vis = atoi(component.c_str());
+              markupsNode->SetNthMarkupVisibility(thisMarkupNumber,vis);
+              }
             thisMarkupNumber++;
             }
           else
@@ -525,6 +571,7 @@ int vtkMRMLMarkupsFiducialStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
 void vtkMRMLMarkupsFiducialStorageNode::InitializeSupportedReadFileTypes()
 {
   this->SupportedReadFileTypes->InsertNextValue("Markups Fiducial CSV (.fcsv)");
+  this->SupportedReadFileTypes->InsertNextValue("Annotation Fiducial CSV (.acsv)");
 }
 
 //----------------------------------------------------------------------------
