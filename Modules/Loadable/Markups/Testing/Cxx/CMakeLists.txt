@@ -18,6 +18,7 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkMRMLMarkupsStorageNodeTest1.cxx
   vtkSlicerMarkupsLogicTest1.cxx
   vtkSlicerMarkupsLogicTest2.cxx
+  vtkMarkupsAnnotationSceneTest.cxx
   EXTRA_INCLUDE vtkMRMLDebugLeaksMacro.h
   )
 
@@ -59,3 +60,8 @@ SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest2 ${TEST_S3_FCSV_NATIVE} )
 SET (TEST_S4_ACSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer4.acsv)
 FILE(TO_NATIVE_PATH ${TEST_S4_ACSV} TEST_S4_ACSV_NATIVE)
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest3 ${TEST_S4_ACSV_NATIVE} )
+
+# test Slicer4 annotation fiducials in a mrml file
+SET (TEST_S4_ANNOTATION_MRML ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/AnnotationTest/AnnotationFiducialsTest.mrml)
+FILE(TO_NATIVE_PATH ${TEST_S4_ANNOTATION_MRML} TEST_S4_ANNOTATION_MRML_NATIVE)
+SIMPLE_TEST( vtkMarkupsAnnotationSceneTest ${TEST_S4_ANNOTATION_MRML_NATIVE} )

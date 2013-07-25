@@ -168,11 +168,18 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
 
   vtkMRMLMarkupsFiducialNode* fidNode = vtkMRMLMarkupsFiducialNode::New();
   this->GetMRMLScene()->RegisterNodeClass(fidNode);
+  // also register it as an annotation fiducial node so that this class can
+  // read in annotation fiducials from mrml scene files
+  this->GetMRMLScene()->RegisterNodeClass(fidNode, "AnnotationFiducials");
   fidNode->Delete();
 
   // Display nodes
   vtkMRMLMarkupsDisplayNode* markupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode);
+  // supercede annotation point display nodes, todo: figure out what to do about
+  // text scale
+  this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode,
+					  "AnnotationPointDisplay");
   markupsDisplayNode->Delete();
 
   // Storage Nodes
@@ -182,6 +189,8 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
 
   vtkMRMLMarkupsFiducialStorageNode* markupsFiducialStorageNode = vtkMRMLMarkupsFiducialStorageNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode);
+  this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode,
+					  "AnnotationControlPointsStorage");
   markupsFiducialStorageNode->Delete();
 }
 
