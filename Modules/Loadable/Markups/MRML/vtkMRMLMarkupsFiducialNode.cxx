@@ -25,7 +25,7 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-
+#include <sstream>
 
 //----------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLMarkupsFiducialNode);
@@ -63,11 +63,43 @@ void vtkMRMLMarkupsFiducialNode::ReadXMLAttributes(const char** atts)
   const char* attName;
   const char* attValue;
 
+  int fidID = 0;
   while (*atts != NULL)
     {
     attName = *(atts++);
     attValue = *(atts++);
-
+    // backward compatibility reading of annotation fiducials
+    if (!strcmp(attName, "ctrlPtsCoord"))
+      {
+      std::string valStr(attValue);
+      std::stringstream ss;
+      double x, y, z;
+      ss << valStr;
+      ss >> x;
+      ss >> y;
+      ss >> z;
+      fidID = this->AddFiducial(x,y,z);
+      }
+    else if (!strcmp(attName, "ctrlPtsSelected"))
+      {
+      std::stringstream ss;
+      int selected;
+      ss << attValue;
+      ss >> selected;
+      this->SetNthFiducialSelected(fidID, (selected == 1 ? true : false));
+      }
+    else if (!strcmp(attName, "ctrlPtsVisible"))
+      {
+      std::stringstream ss;
+      int visible;
+      ss << attValue;
+      ss >> visible;
+      this->SetNthFiducialVisibility(fidID, (visible == 1 ? true : false));
+      }
+    else if (!strcmp(attName, "ctrlPtsNumberingScheme"))
+      {
+      // ignore
+      }
     }
   this->EndModify(disabledModify);
 }
