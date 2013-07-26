@@ -115,6 +115,68 @@ public:
     ResetToDefaultsEvent = 19001,
   };
 
+  /// Set SliceProjection flag that controls if the projection of markups
+  /// is visible or not in 2D viewers on slices on which it is normally
+  /// not visible.
+  /// Off by default
+  /// \sa SliceIntersectionVisibilty, SliceProjectionColor
+  vtkSetMacro(SliceProjection, int);
+  vtkGetMacro(SliceProjection, int);
+
+  /// Set SliceProjection to On
+  inline void SliceProjectionOn();
+
+  /// Set SliceProjection to Off
+  inline void SliceProjectionOff();
+
+  /// Set color of the projection on the 2D viewers
+  /// White (1.0, 1.0, 1.0) by default.
+  vtkSetVector3Macro(SliceProjectionColor, double);
+  vtkGetVector3Macro(SliceProjectionColor, double);
+
+  /// Set opacity of projection on the 2D viewers
+  /// 1.0 by default
+  vtkSetClampMacro(SliceProjectionOpacity, double, 0.0, 1.0);
+  vtkGetMacro(SliceProjectionOpacity, double);
+
+  /// Set projection color to be the same as the fiducial color
+  ///\sa SetSliceProjectionColor
+  inline void SliceProjectionUseFiducialColorOn();
+
+  /// Manually set projection color
+  ///\sa SetSliceProjectionColor
+  inline void SliceProjectionUseFiducialColorOff();
+
+  /// Return true if the slice projection use fiducial color option
+  /// is on, false otherwise
+  inline bool GetSliceProjectionUseFiducialColor();
+
+  /// Set projection's view different if under/over/in the plane
+  ///\sa SetSliceProjectionColor
+  inline void SliceProjectionOutlinedBehindSlicePlaneOn();
+
+  /// Set projection's view the same if under/over/in the plane
+  ///\sa SetSliceProjectionColor
+  inline void SliceProjectionOutlinedBehindSlicePlaneOff();
+
+  /// Return true if the outline behind slice plane setting is turned
+  /// on, false otherwise
+  inline bool GetSliceProjectionOutlinedBehindSlicePlane();
+
+  /// ProjectionUseFiducialColor : Set projection color the same as the
+  /// markup color
+  /// ProjectionOutlinedBehindSlicePlane : Different shape and opacity when
+  /// markup is on top of the slice plane, or under
+  /// Projection Off, UseFiducialColor, OutlinedBehindSlicePlane by default
+  ///\enum SliceProjectionFlag
+  enum SliceProjectionFlag
+  {
+    ProjectionOff = 0x00,
+    ProjectionOn = 0x01,
+    ProjectionUseFiducialColor = 0x02,
+    ProjectionOutlinedBehindSlicePlane = 0x04
+  };
+
 protected:
   vtkMRMLMarkupsDisplayNode();
   ~vtkMRMLMarkupsDisplayNode();
@@ -125,6 +187,80 @@ protected:
   int GlyphType;
   double GlyphScale;
   static const char* GlyphTypesNames[GlyphMax+2];
+
+  int SliceProjection;
+  double SliceProjectionColor[3];
+  double SliceProjectionOpacity;
 };
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayNode::SliceProjectionOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsDisplayNode::ProjectionOn);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayNode::SliceProjectionOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsDisplayNode::ProjectionOn);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayNode::SliceProjectionUseFiducialColorOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsDisplayNode::ProjectionUseFiducialColor);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayNode::SliceProjectionUseFiducialColorOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsDisplayNode::ProjectionUseFiducialColor);
+}
+
+//----------------------------------------------------------------------------
+bool vtkMRMLMarkupsDisplayNode::GetSliceProjectionUseFiducialColor()
+{
+  if (this->GetSliceProjection() &
+      this->ProjectionUseFiducialColor)
+    {
+    return true;
+    }
+  else
+    {
+    return false;
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayNode::SliceProjectionOutlinedBehindSlicePlaneOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsDisplayNode::ProjectionOutlinedBehindSlicePlane);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayNode::SliceProjectionOutlinedBehindSlicePlaneOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsDisplayNode::ProjectionOutlinedBehindSlicePlane);
+}
+
+//----------------------------------------------------------------------------
+bool vtkMRMLMarkupsDisplayNode::GetSliceProjectionOutlinedBehindSlicePlane()
+{
+  if (this->GetSliceProjection() &
+      this->ProjectionOutlinedBehindSlicePlane)
+    {
+    return true;
+    }
+  else
+    {
+    return false;
+    }
+}
 
 #endif

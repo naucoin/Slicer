@@ -70,8 +70,12 @@ public:
 
   /// Get a vtkAbstractWidget* given a node
   vtkAbstractWidget * GetWidget(vtkMRMLMarkupsNode * node);
-  /// ...an its associated vtkAbstractWidget* for Slice intersection representation
+  /// ...and its associated vtkAbstractWidget* for Slice intersection representation
   vtkAbstractWidget * GetIntersectionWidget(vtkMRMLMarkupsNode * node);
+  /// ...and its associated vtkAbstractWidget* for Slice projection representation. There is one
+  /// projection widget per unique point.
+  vtkAbstractWidget * GetPointProjectionWidget(std::string uniqueFiducialID);
+
   /// Remove all widgets, intersection widgets, nodes
   void RemoveAllWidgetsAndNodes();
   /// Remove a node, its widget and its intersection widget
@@ -98,6 +102,12 @@ public:
 
   /// .. and its associated convenient typedef
   typedef std::map<vtkMRMLMarkupsNode*, vtkAbstractWidget*>::iterator WidgetIntersectionsIt;
+
+  /// Map of vtkWidgets to reflect the Slice projection indexed using associated point IDs
+  std::map<std::string, vtkAbstractWidget*> WidgetPointProjections;
+
+  /// .. and its associated convenient typedef
+  typedef std::map<std::string, vtkAbstractWidget*>::iterator WidgetPointProjectionsIt;
 
   //
   // End of The Lists!!

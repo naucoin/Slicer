@@ -53,11 +53,11 @@ vtkMRMLMarkupsDisplayNode::vtkMRMLMarkupsDisplayNode()
   this->SetVectorVisibility(0);
   this->SetScalarVisibility(0);
   this->SetTensorVisibility(0);
-  
+
   this->Color[0] = 0.7373;
   this->Color[1] = 0.2549;
   this->Color[2] = 0.1098;
-  
+
   this->SelectedColor[0] = 0.2667;
   this->SelectedColor[1] = 0.6745;
   this->SelectedColor[2] = 0.3922;
@@ -73,6 +73,15 @@ vtkMRMLMarkupsDisplayNode::vtkMRMLMarkupsDisplayNode()
   this->TextScale = 4.5;
   this->GlyphType = vtkMRMLMarkupsDisplayNode::Sphere3D;
   this->GlyphScale = 5.0;
+
+  // projection settings
+  this->SliceProjection = (vtkMRMLMarkupsDisplayNode::ProjectionOff |
+                           vtkMRMLMarkupsDisplayNode::ProjectionUseFiducialColor |
+                           vtkMRMLMarkupsDisplayNode::ProjectionOutlinedBehindSlicePlane);
+  this->SliceProjectionColor[0] = 1.0;
+  this->SliceProjectionColor[1] = 1.0;
+  this->SliceProjectionColor[2] = 1.0;
+  this->SliceProjectionOpacity = 1.0;
 }
 
 //----------------------------------------------------------------------------
@@ -88,15 +97,23 @@ void vtkMRMLMarkupsDisplayNode::WriteXML(ostream& of, int nIndent)
   of << " textScale=\"" << this->TextScale << "\"";
   of << " glyphScale=\"" << this->GlyphScale << "\"";
   of << " glyphType=\"" << this->GlyphType << "\"";
+
+  of << " sliceProjection=\"" << this->SliceProjection << "\"";
+
+  if (this->SliceProjectionColor)
+    {
+    of << " sliceProjectionColor=\"" << this->SliceProjectionColor[0] << " "
+       << this->SliceProjectionColor[1] << " "
+       << this->SliceProjectionColor[2] << "\"";
+    }
+  of << " sliceProjectionOpacity=\"" << this->SliceProjectionOpacity << "\"";
 }
-
-
 
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayNode::ReadXMLAttributes(const char** atts)
 {
   int disabledModify = this->StartModify();
-  
+
   Superclass::ReadXMLAttributes(atts);
 
   const char* attName;
@@ -117,12 +134,34 @@ void vtkMRMLMarkupsDisplayNode::ReadXMLAttributes(const char** atts)
       std::stringstream ss;
       ss << attValue;
       ss >> this->GlyphType;
-      }        
+      }
     else if (!strcmp(attName, "glyphScale"))
       {
       std::stringstream ss;
       ss << attValue;
       ss >> this->GlyphScale;
+      }
+    else if (!strcmp(attName, "sliceProjection"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->SliceProjection;
+      }
+    else if (!strcmp(attName, "sliceProjectionColor") ||
+	     !strcmp(attName, "projectedColor"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->SliceProjectionColor[0];
+      ss >> this->SliceProjectionColor[1];
+      ss >> this->SliceProjectionColor[2];
+      }
+    else if (!strcmp(attName, "sliceProjectionOpacity") ||
+	     !strcmp(attName, "projectedOpacity"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->SliceProjectionOpacity;
       }
     }
 
@@ -140,10 +179,13 @@ void vtkMRMLMarkupsDisplayNode::Copy(vtkMRMLNode *anode)
   Superclass::Copy(anode);
 
   vtkMRMLMarkupsDisplayNode *node = (vtkMRMLMarkupsDisplayNode *)anode;
-  
+
   this->SetTextScale(node->TextScale);
   this->SetGlyphType(node->GlyphType);
   this->SetGlyphScale(node->GlyphScale);
+  this->SetSliceProjection(node->SliceProjection);
+  this->SetSliceProjectionColor(node->GetSliceProjectionColor());
+  this->SetSliceProjectionOpacity(node->GetSliceProjectionOpacity());
 
   this->EndModify(disabledModify);
 }
@@ -158,7 +200,7 @@ const char* vtkMRMLMarkupsDisplayNode::GetGlyphTypeAsString()
 //----------------------------------------------------------------------------
 const char* vtkMRMLMarkupsDisplayNode::GetGlyphTypeAsString(int glyphType)
 {
-  if (glyphType < GlyphMin || (glyphType > GlyphMax)) 
+  if (glyphType < GlyphMin || (glyphType > GlyphMax))
     {
       return "UNKNOWN";
     }
@@ -194,11 +236,18 @@ void vtkMRMLMarkupsDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
   os << this->GlyphScale << ")\n";
   os << indent << "Glyph type: ";
   os << this->GetGlyphTypeAsString() << " (" << this->GlyphType << ")\n";
+  os << indent << "Slice projection: ";
+  os << this->SliceProjection << "\n";
+  os << indent << "Slice projection Color: (";
+  os << this->SliceProjectionColor[0] << ","
+     << this->SliceProjectionColor[1] << ","
+     << this->SliceProjectionColor[2] << ")" << "\n";
+  os << indent << "Slice projection Opacity: " << this->SliceProjectionOpacity << "\n";
 }
 
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayNode::ProcessMRMLEvents ( vtkObject *caller,
-                                           unsigned long event, 
+                                           unsigned long event,
                                            void *callData )
 {
   Superclass::ProcessMRMLEvents(caller, event, callData);
@@ -223,7 +272,7 @@ int  vtkMRMLMarkupsDisplayNode::GlyphTypeIs3D(int glyphType)
     return 0;
     }
 }
-                              
+
 //---------------------------------------------------------------------------
 void  vtkMRMLMarkupsDisplayNode::SetGlyphType(int type)
 {

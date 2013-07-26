@@ -275,6 +275,24 @@ vtkAbstractWidget * vtkMRMLMarkupsDisplayableManagerHelper::GetIntersectionWidge
 }
 
 //---------------------------------------------------------------------------
+vtkAbstractWidget * vtkMRMLMarkupsDisplayableManagerHelper::GetPointProjectionWidget(std::string uniqueFiducialID)
+{
+  if (!uniqueFiducialID.compare(""))
+    {
+    return 0;
+    }
+
+  // Make sure the map contains a vtkWidget associated with this uniqueFiducialID
+  WidgetPointProjectionsIt it = this->WidgetPointProjections.find(uniqueFiducialID);
+  if (it == this->WidgetPointProjections.end())
+    {
+    return 0;
+    }
+
+  return it->second;
+}
+
+//---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManagerHelper::RemoveAllWidgetsAndNodes()
 {
   WidgetsIt widgetIterator = this->Widgets.begin();
@@ -296,6 +314,16 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveAllWidgetsAndNodes()
     intIt->second->Delete();
     }
   this->WidgetIntersections.clear();
+
+  WidgetPointProjectionsIt pointProjIt;
+  for (pointProjIt = this->WidgetPointProjections.begin();
+       pointProjIt != this->WidgetPointProjections.end();
+       ++pointProjIt)
+    {
+    pointProjIt->second->Off();
+    pointProjIt->second->Delete();
+    }
+  this->WidgetPointProjections.clear();
 
   this->MarkupsNodeList.clear();
 }
@@ -335,6 +363,21 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
     this->WidgetIntersections.erase(node);
     }
 
+  // go through the list and remove the projection points for it
+  for (int n = 0; n < node->GetNumberOfMarkups(); ++n)
+    {
+    std::string pointID = node->GetNthMarkupID(n);
+    WidgetPointProjectionsIt widgetPointProjectionIterator = this->WidgetPointProjections.find(pointID);
+    if (widgetPointProjectionIterator != this->WidgetPointProjections.end())
+      {
+      if (this->WidgetPointProjections[pointID])
+        {
+        this->WidgetPointProjections[pointID]->Off();
+        this->WidgetPointProjections[pointID]->Delete();
+        }
+      this->WidgetPointProjections.erase(pointID);
+      }
+  }
 
   vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt nodeIterator = std::find(
       this->MarkupsNodeList.begin(),
