@@ -52,7 +52,7 @@ qSlicerMouseModeToolBarPrivate::qSlicerMouseModeToolBarPrivate(qSlicerMouseModeT
   this->PersistenceAction = 0;
 
   this->ActionGroup = 0;
-  this->DefaultPlaceClassName = "vtkMRMLAnnotationFiducialNode";
+  this->DefaultPlaceClassName = "vtkMRMLMarkupsFiducialNode";
 }
 
 //---------------------------------------------------------------------------
