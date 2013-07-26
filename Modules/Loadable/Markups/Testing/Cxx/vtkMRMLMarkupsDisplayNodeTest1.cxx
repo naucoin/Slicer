@@ -29,7 +29,7 @@ int vtkMRMLMarkupsDisplayNodeTest1(int , char * [] )
   EXERCISE_BASIC_DISPLAY_MRML_METHODS( vtkMRMLMarkupsDisplayNode, node1 );
 
   TEST_SET_GET_DOUBLE_RANGE(node1, TextScale, 0.0, 100.0);
-  
+
   TEST_SET_GET_INT_RANGE(node1, GlyphType, -1, 10);
 
   // min glyph type
@@ -97,7 +97,7 @@ int vtkMRMLMarkupsDisplayNodeTest1(int , char * [] )
     std::cerr << "Error: maximum glyph type " << node1->GetMaximumGlyphType() << " != Sphere3D: " << vtkMRMLMarkupsDisplayNode::Sphere3D << std::endl;
     return EXIT_FAILURE;
     }
-  
+
   // spot test int to string mapping
   node1->SetGlyphType(vtkMRMLMarkupsDisplayNode::Sphere3D);
   if (strcmp(node1->GetGlyphTypeAsString(), "Sphere3D") != 0)
@@ -121,6 +121,39 @@ int vtkMRMLMarkupsDisplayNodeTest1(int , char * [] )
     }
 
   TEST_SET_GET_DOUBLE_RANGE(node1, GlyphScale, -1.0, 25.6);
- 
+
+  TEST_SET_GET_BOOLEAN(node1, SliceProjection);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, SliceProjectionColor, 0.0, 1.0);
+
+  node1->SetSliceProjectionOpacity(0.0);
+  node1->SetSliceProjectionOpacity(0.5);
+  if (node1->GetSliceProjectionOpacity() != 0.5)
+    {
+    std::cerr << "Failed to set projected opacity to 0.5" << std::endl;
+    return EXIT_FAILURE;
+    }
+  node1->SetSliceProjectionOpacity(1.0);
+
+
+  node1->SliceProjectionUseFiducialColorOn();
+  if (node1->GetSliceProjectionUseFiducialColor() != true)
+    {
+    std::cerr << "Failed to turn use fiducial color on with slice projections"
+              << ", slice projection = " << node1->GetSliceProjection()
+              << std::endl;
+    return EXIT_FAILURE;
+    }
+  node1->SliceProjectionUseFiducialColorOff();
+
+  node1->SliceProjectionOutlinedBehindSlicePlaneOn();
+  if (node1->GetSliceProjectionOutlinedBehindSlicePlane() != true)
+    {
+    std::cerr << "Failed to turn use outline behind slice plane on"
+              << ", slice projection = " << node1->GetSliceProjection()
+              << std::endl;
+    return EXIT_FAILURE;
+    }
+  node1->SliceProjectionOutlinedBehindSlicePlaneOff();
+
   return EXIT_SUCCESS;
 }

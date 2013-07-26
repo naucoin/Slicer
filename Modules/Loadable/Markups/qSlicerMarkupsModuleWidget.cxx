@@ -541,6 +541,17 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
     d->listLockedUnlockedPushButton->setToolTip(QString("Click to lock this markup list so that the markups cannot be moved by the mouse"));
     }
 
+  // update the point projections
+  if (markupsNode->IsA("vtkMRMLMarkupsFiducialNode"))
+    {
+    d->pointFiducialProjectionWidget->setMRMLFiducialNode(
+        vtkMRMLMarkupsFiducialNode::SafeDownCast(markupsNode));
+    }
+  else
+    {
+    d->pointFiducialProjectionWidget->setMRMLFiducialNode(0);
+    }
+
   // update the table
   int numberOfMarkups = markupsNode->GetNumberOfMarkups();
   if (d->activeMarkupTableWidget->rowCount() != numberOfMarkups)

@@ -590,7 +590,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       handleRep->GetLabelTextActor()->GetProperty()->SetOpacity(displayNode->GetOpacity());
       }
 
-    // set the text visibility
+    // set the text and handle visibility
     if (fidVisible)
       {
       handleRep->VisibilityOn();
@@ -600,6 +600,12 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         handleRep->LabelVisibilityOn();
         }
       seedWidget->GetSeed(n)->EnabledOn();
+      // if the fiducial is visible, turn off projection
+      vtkSeedWidget* fiducialSeed = vtkSeedWidget::SafeDownCast(this->Helper->GetPointProjectionWidget(fiducialNode->GetNthMarkupID(n)));
+      if (fiducialSeed && fiducialSeed->GetSeed(0))
+	{
+        fiducialSeed->GetSeed(0)->Off();
+	}
       }
     else
       {
@@ -607,6 +613,151 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       handleRep->HandleVisibilityOff();
       handleRep->LabelVisibilityOff();
       seedWidget->GetSeed(n)->EnabledOff();
+
+      // if the widget is not shown on the slice, show the intersection
+      if (fiducialNode &&
+          fiducialNode->GetDisplayNode())
+        {
+        double transformedP1[4];
+        fiducialNode->GetNthFiducialWorldCoordinates(n, transformedP1);
+
+        double displayP1[4];
+        this->GetWorldToDisplayCoordinates(transformedP1, displayP1);
+
+        vtkSeedWidget* projectionSeed =
+          vtkSeedWidget::SafeDownCast(this->Helper->GetPointProjectionWidget(fiducialNode->GetNthMarkupID(n)));
+
+        vtkMRMLMarkupsDisplayNode* pointDisplayNode = fiducialNode->GetMarkupsDisplayNode();
+
+        if ((pointDisplayNode->GetSliceProjection() & pointDisplayNode->ProjectionOn) &&
+            pointDisplayNode->GetVisibility())
+          {
+          double glyphScale = pointDisplayNode->GetGlyphScale()*2;
+          int glyphType = pointDisplayNode->GetGlyphType();
+          if (glyphType == vtkMRMLMarkupsDisplayNode::Sphere3D)
+            {
+            // 3D Sphere glyph is represented in 2D by a Circle2D glyph
+            glyphType = vtkMRMLMarkupsDisplayNode::Circle2D;
+            }
+
+          double pointOpacity = pointDisplayNode->GetSliceProjectionOpacity();
+          double pointColor[3];
+
+          if (pointDisplayNode->GetSliceProjectionUseFiducialColor())
+            {
+            if (fiducialNode->GetNthMarkupSelected(n))
+              {
+              pointDisplayNode->GetSelectedColor(pointColor);
+              }
+            else
+              {
+              pointDisplayNode->GetColor(pointColor);
+              }
+            }
+          else
+            {
+            pointDisplayNode->GetSliceProjectionColor(pointColor);
+            }
+
+          if (!projectionSeed)
+            {
+            vtkNew<vtkMarkupsGlyphSource2D> glyph;
+            glyph->SetGlyphType(glyphType);
+            glyph->SetScale(glyphScale);
+            glyph->SetScale2(glyphScale);
+            glyph->SetColor(pointColor);
+
+            vtkNew<vtkPointHandleRepresentation2D> handle;
+            handle->SetCursorShape(glyph->GetOutput());
+
+            vtkNew<vtkSeedRepresentation> rep;
+            rep->SetHandleRepresentation(handle.GetPointer());
+
+            projectionSeed = vtkSeedWidget::New();
+            projectionSeed->CreateDefaultRepresentation();
+            projectionSeed->SetRepresentation(rep.GetPointer());
+            projectionSeed->SetInteractor(this->GetInteractor());
+            projectionSeed->SetCurrentRenderer(this->GetRenderer());
+            projectionSeed->CreateNewHandle();
+            projectionSeed->ProcessEventsOff();
+            projectionSeed->ManagesCursorOff();
+            projectionSeed->On();
+            projectionSeed->CompleteInteraction();
+            this->Helper->WidgetPointProjections[fiducialNode->GetNthMarkupID(n)] = projectionSeed;
+            }
+
+          vtkSeedRepresentation* projectionSeedRep =
+            vtkSeedRepresentation::SafeDownCast(projectionSeed->GetRepresentation());
+
+          if (projectionSeedRep)
+            {
+            projectionSeed->Off();
+
+            if (projectionSeed->GetSeed(0))
+              {
+              vtkPointHandleRepresentation2D* handleRep =
+                vtkPointHandleRepresentation2D::SafeDownCast(projectionSeed->GetSeed(0)->GetRepresentation());
+              if (!handleRep)
+                {
+                vtkWarningMacro("Must create new handle for projecting seed " << n);
+                }
+
+              if (handleRep)
+                {
+                vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+                glyphSource->SetGlyphType(glyphType);
+                glyphSource->SetScale(glyphScale);
+                glyphSource->SetScale2(glyphScale);
+
+                if (pointDisplayNode->GetSliceProjectionOutlinedBehindSlicePlane())
+                  {
+                  static const double threshold = 0.5;
+                  static const double notInPlaneOpacity = 0.6;
+                  static const double inPlaneOpacity = 1.0;
+                  if (displayP1[2] < 0)
+                    {
+                    glyphSource->FilledOff();
+                    pointOpacity = notInPlaneOpacity;
+
+                    if (displayP1[2] > -threshold)
+                      {
+                      pointOpacity = inPlaneOpacity;
+                      }
+                    }
+                  else if (displayP1[2] > 0)
+                    {
+                    glyphSource->FilledOn();
+                    pointOpacity = notInPlaneOpacity;
+
+                    if (displayP1[2] < threshold)
+                      {
+                      pointOpacity = inPlaneOpacity;
+                      }
+                    }
+                  }
+                else
+                  {
+                  glyphSource->FilledOn();
+                  }
+                glyphSource->SetColor(pointColor);
+                handleRep->GetProperty()->SetColor(pointColor);
+                handleRep->GetProperty()->SetOpacity(pointOpacity);
+                handleRep->SetCursorShape(glyphSource->GetOutput());
+                handleRep->SetDisplayPosition(displayP1);
+                projectionSeed->On();
+                projectionSeed->CompleteInteraction();
+                }
+              }
+            }
+          }
+        else
+          {
+          if (projectionSeed)
+            {
+            projectionSeed->Off();
+            }
+          }
+        }
       }
     // update locked
     int listLocked = fiducialNode->GetLocked();

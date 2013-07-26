@@ -470,6 +470,21 @@
            </property>
           </widget>
          </item>
+	 <item>
+	  <widget class="ctkCollapsibleGroupBox" name="pointFiducialProjectionPropertiesGroupBox">
+            <property name="title">
+             <string>Fiducial Projection</string>
+            </property>
+            <property name="collapsed">
+             <bool>true</bool>
+            </property>
+            <layout class="QVBoxLayout" name="pointFiducialProjectionVerticalLayout">
+             <item>
+              <widget class="qMRMLMarkupsFiducialProjectionPropertyWidget" name="pointFiducialProjectionWidget"/>
+             </item>
+            </layout>
+           </widget>
+	 </item>
         </layout>
        </widget>
       </item>
@@ -518,6 +533,11 @@
    <class>ctkSliderWidget</class>
    <extends>QWidget</extends>
    <header>ctkSliderWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLMarkupsFiducialProjectionPropertyWidget</class>
+   <extends>qMRMLWidget</extends>
+   <header>qMRMLMarkupsFiducialProjectionPropertyWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
