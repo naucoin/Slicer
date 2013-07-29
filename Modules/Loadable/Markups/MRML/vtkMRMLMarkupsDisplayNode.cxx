@@ -81,7 +81,7 @@ vtkMRMLMarkupsDisplayNode::vtkMRMLMarkupsDisplayNode()
   this->SliceProjectionColor[0] = 1.0;
   this->SliceProjectionColor[1] = 1.0;
   this->SliceProjectionColor[2] = 1.0;
-  this->SliceProjectionOpacity = 1.0;
+  this->SliceProjectionOpacity = 0.6;
 }
 
 //----------------------------------------------------------------------------

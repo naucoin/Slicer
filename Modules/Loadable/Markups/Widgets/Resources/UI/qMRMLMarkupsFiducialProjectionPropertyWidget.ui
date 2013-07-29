@@ -76,7 +76,7 @@
       </size>
      </property>
      <property name="toolTip">
-      <string>Color of the projected fiducial on 2D viewers</string>
+      <string>Color of the projected fiducial on 2D viewers. Only used if Use Fiducial Color is not checked, otherwise the projection uses the selected or unselected fiducial color.</string>
      </property>
      <property name="color">
       <color>
@@ -96,7 +96,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="pointOutlinedBehindSlicePlaneLabel">
      <property name="toolTip">
-      <string>Fiducial projection is displayed filled when on top of slice plane, outlined when behind, and with full opacity when in the plane</string>
+      <string>Fiducial projection is displayed filled (opacity = Projection Opacity) when on top of slice plane, outlined when behind, and with full opacity when in the plane</string>
      </property>
      <property name="text">
       <string>Outlined Behind Slice Plane</string>
@@ -106,7 +106,7 @@
    <item row="4" column="1">
     <widget class="QCheckBox" name="pointOutlinedBehindSlicePlaneCheckBox">
      <property name="toolTip">
-      <string>Fiducial projection is displayed filled when on top of slice plane, outlined when behind, and with full opacity when in the plane</string>
+      <string>Fiducial projection is displayed filled (opacity = Projection Opacity) when on top of slice plane, outlined when behind, and with full opacity when in the plane</string>
      </property>
      <property name="text">
       <string/>
@@ -148,11 +148,17 @@
    </item>
    <item row="5" column="1">
     <widget class="ctkSliderWidget" name="projectionOpacitySliderWidget">
+     <property name="toolTip">
+      <string>The opacity of the projection.</string>
+     </property>
      <property name="singleStep">
       <double>0.100000000000000</double>
      </property>
      <property name="maximum">
       <double>1.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>0.6</double>
      </property>
     </widget>
    </item>

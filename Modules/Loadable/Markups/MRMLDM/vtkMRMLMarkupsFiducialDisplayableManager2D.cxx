@@ -640,23 +640,23 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
             glyphType = vtkMRMLMarkupsDisplayNode::Circle2D;
             }
 
-          double pointOpacity = pointDisplayNode->GetSliceProjectionOpacity();
-          double pointColor[3];
+          double projectionOpacity = pointDisplayNode->GetSliceProjectionOpacity();
+          double projectionColor[3];
 
           if (pointDisplayNode->GetSliceProjectionUseFiducialColor())
             {
             if (fiducialNode->GetNthMarkupSelected(n))
               {
-              pointDisplayNode->GetSelectedColor(pointColor);
+              pointDisplayNode->GetSelectedColor(projectionColor);
               }
             else
               {
-              pointDisplayNode->GetColor(pointColor);
+              pointDisplayNode->GetColor(projectionColor);
               }
             }
           else
             {
-            pointDisplayNode->GetSliceProjectionColor(pointColor);
+            pointDisplayNode->GetSliceProjectionColor(projectionColor);
             }
 
           if (!projectionSeed)
@@ -665,7 +665,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
             glyph->SetGlyphType(glyphType);
             glyph->SetScale(glyphScale);
             glyph->SetScale2(glyphScale);
-            glyph->SetColor(pointColor);
+            glyph->SetColor(projectionColor);
 
             vtkNew<vtkPointHandleRepresentation2D> handle;
             handle->SetCursorShape(glyph->GetOutput());
@@ -712,26 +712,21 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
                 if (pointDisplayNode->GetSliceProjectionOutlinedBehindSlicePlane())
                   {
                   static const double threshold = 0.5;
-                  static const double notInPlaneOpacity = 0.6;
                   static const double inPlaneOpacity = 1.0;
                   if (displayP1[2] < 0)
                     {
                     glyphSource->FilledOff();
-                    pointOpacity = notInPlaneOpacity;
-
                     if (displayP1[2] > -threshold)
                       {
-                      pointOpacity = inPlaneOpacity;
+                      projectionOpacity = inPlaneOpacity;
                       }
                     }
                   else if (displayP1[2] > 0)
                     {
                     glyphSource->FilledOn();
-                    pointOpacity = notInPlaneOpacity;
-
                     if (displayP1[2] < threshold)
                       {
-                      pointOpacity = inPlaneOpacity;
+                      projectionOpacity = inPlaneOpacity;
                       }
                     }
                   }
@@ -739,9 +734,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
                   {
                   glyphSource->FilledOn();
                   }
-                glyphSource->SetColor(pointColor);
-                handleRep->GetProperty()->SetColor(pointColor);
-                handleRep->GetProperty()->SetOpacity(pointOpacity);
+                glyphSource->SetColor(projectionColor);
+                handleRep->GetProperty()->SetColor(projectionColor);
+                handleRep->GetProperty()->SetOpacity(projectionOpacity);
                 handleRep->SetCursorShape(glyphSource->GetOutput());
                 handleRep->SetDisplayPosition(displayP1);
                 projectionSeed->On();
