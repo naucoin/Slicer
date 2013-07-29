@@ -135,7 +135,7 @@ public:
   vtkGetVector3Macro(SliceProjectionColor, double);
 
   /// Set opacity of projection on the 2D viewers
-  /// 1.0 by default
+  /// 0.6 by default
   vtkSetClampMacro(SliceProjectionOpacity, double, 0.0, 1.0);
   vtkGetMacro(SliceProjectionOpacity, double);
 

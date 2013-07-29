@@ -114,6 +114,16 @@ public:
   void SetDefaultMarkupsDisplayNodeSelectedColor(double *color);
   void SetDefaultMarkupsDisplayNodeSelectedColor(double r, double g, double b);
 
+  int GetDefaultMarkupsDisplayNodeSliceProjection();
+  void SetDefaultMarkupsDisplayNodeSliceProjection(int projection);
+
+  double *GetDefaultMarkupsDisplayNodeSliceProjectionColor();
+  void SetDefaultMarkupsDisplayNodeSliceProjectionColor(double *color);
+  void SetDefaultMarkupsDisplayNodeSliceProjectionColor(double r, double g, double b);
+
+  double GetDefaultMarkupsDisplayNodeSliceProjectionOpacity();
+  void SetDefaultMarkupsDisplayNodeSliceProjectionOpacity(double opacity);
+
   /// utility method to set up a display node from the defaults
   void SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *displayNode);
 

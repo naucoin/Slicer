@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>567</width>
-    <height>566</height>
+    <height>795</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -177,6 +177,28 @@
            </property>
           </widget>
          </item>
+         <item row="9" column="1">
+          <widget class="ctkCollapsibleGroupBox" name="pointFiducialProjectionPropertiesGroupBox">
+           <property name="title">
+            <string>Fiducial Projection</string>
+           </property>
+           <property name="collapsed">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="pointFiducialProjectionVerticalLayout">
+            <item>
+             <widget class="qMRMLMarkupsFiducialProjectionPropertyWidget" name="pointFiducialProjectionWidget"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="projectionLabel">
+           <property name="text">
+            <string>Projection</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -188,7 +210,7 @@
         <property name="text">
          <string>Modify List</string>
         </property>
-	<property name="collapsed">
+        <property name="collapsed">
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
@@ -470,21 +492,6 @@
            </property>
           </widget>
          </item>
-	 <item>
-	  <widget class="ctkCollapsibleGroupBox" name="pointFiducialProjectionPropertiesGroupBox">
-            <property name="title">
-             <string>Fiducial Projection</string>
-            </property>
-            <property name="collapsed">
-             <bool>true</bool>
-            </property>
-            <layout class="QVBoxLayout" name="pointFiducialProjectionVerticalLayout">
-             <item>
-              <widget class="qMRMLMarkupsFiducialProjectionPropertyWidget" name="pointFiducialProjectionWidget"/>
-             </item>
-            </layout>
-           </widget>
-	 </item>
         </layout>
        </widget>
       </item>
@@ -513,15 +520,32 @@
    <header>qMRMLNodeComboBox.h</header>
   </customwidget>
   <customwidget>
+   <class>qMRMLWidget</class>
+   <extends>QWidget</extends>
+   <header>qMRMLWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>qSlicerWidget</class>
    <extends>QWidget</extends>
    <header>qSlicerWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>qMRMLMarkupsFiducialProjectionPropertyWidget</class>
+   <extends>qMRMLWidget</extends>
+   <header>qMRMLMarkupsFiducialProjectionPropertyWidget.h</header>
+  </customwidget>
+  <customwidget>
    <class>ctkCollapsibleButton</class>
    <extends>QWidget</extends>
    <header>ctkCollapsibleButton.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -533,11 +557,6 @@
    <class>ctkSliderWidget</class>
    <extends>QWidget</extends>
    <header>ctkSliderWidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>qMRMLMarkupsFiducialProjectionPropertyWidget</class>
-   <extends>qMRMLWidget</extends>
-   <header>qMRMLMarkupsFiducialProjectionPropertyWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

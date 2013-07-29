@@ -116,6 +116,10 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
   TEST_SET_GET_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeOpacity, 0.0, 1.0);
   TEST_SET_GET_VECTOR3_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeColor, 0.0, 1.0);
   TEST_SET_GET_VECTOR3_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeSelectedColor, 0.0, 1.0);
+  TEST_SET_GET_INT_RANGE(logic1, DefaultMarkupsDisplayNodeSliceProjection, 0.0, 4.0);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(logic1, DefaultMarkupsDisplayNodeSliceProjectionColor, 0.0, 1.0);
+  TEST_SET_GET_DOUBLE(logic1, DefaultMarkupsDisplayNodeSliceProjectionOpacity, 0.0);
+  TEST_SET_GET_DOUBLE(logic1, DefaultMarkupsDisplayNodeSliceProjectionOpacity, 1.0);
 
   // make a test display node and reset it to defaults
   int originalGlyphType = logic1->GetDefaultMarkupsDisplayNodeGlyphType();

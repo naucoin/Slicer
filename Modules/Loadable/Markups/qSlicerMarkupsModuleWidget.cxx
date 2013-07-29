@@ -1023,6 +1023,16 @@ void qSlicerMarkupsModuleWidget::onSaveToDefaultDisplayPropertiesPushButtonClick
   settings->setValue("Markups/TextScale", displayNode->GetTextScale());
   settings->setValue("Markups/Opacity", displayNode->GetOpacity());
 
+  // projection
+  settings->setValue("Markups/SliceProjection", displayNode->GetSliceProjection());
+  double *projectionColor = displayNode->GetSliceProjectionColor();
+  if (projectionColor)
+    {
+    qcolor = QColor::fromRgbF(projectionColor[0], projectionColor[1], projectionColor[2]);
+    }
+  settings->setValue("Markups/SliceProjectionColor", qcolor);
+  settings->setValue("Markups/SliceProjectionOpacity", displayNode->GetSliceProjectionOpacity());
+
   // set the logic defaults from the settings
   this->updateLogicFromSettings();
 }
@@ -2124,7 +2134,10 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
       !settings->contains("Markups/UnselectedColor") ||
       !settings->contains("Markups/GlyphScale") ||
       !settings->contains("Markups/TextScale") ||
-      !settings->contains("Markups/Opacity"))
+      !settings->contains("Markups/Opacity") ||
+      !settings->contains("Markups/SliceProjection") ||
+      !settings->contains("Markups/SliceProjectionColor") ||
+      !settings->contains("Markups/SliceProjectionOpacity"))
     {
     qDebug() << "Markups: display settings not saved yet, using defaults";
     return;
@@ -2144,16 +2157,13 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
   double textScale = settings->value("Markups/TextScale").toDouble();
   double opacity = settings->value("Markups/Opacity").toDouble();
 
-  /*
-  qDebug() << "updateLogicFromSettings:";
-  qDebug() << "Settings glyph type = " << glyphType;
-  qDebug() << "Settings selected color = " << qcolor;
-  qDebug() << "Settings unselected color = " << qcolorUnsel;
-  qDebug() << "Settings glyph scale = " << glyphScale;
-  qDebug() << "Settings text scale = " << textScale;
-  qDebug() << "Settings opacity = " << opacity;
-  qDebug() << "Copying default settings to logic";
-  */
+  int sliceProjection = settings->value("Markups/SliceProjection").toInt();
+  variant = settings->value("Markups/SliceProjectionColor");
+  QColor qcolorProjection = variant.value<QColor>();
+  double projectionColor[3];
+  qMRMLUtils::qColorToColor(qcolorProjection, projectionColor);
+  double projectionOpacity = settings->value("Markups/SliceProjectionOpacity").toDouble();
+
   if (!this->markupsLogic())
     {
     qWarning() << "Unable to get markups logic";
@@ -2165,4 +2175,7 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
   this->markupsLogic()->SetDefaultMarkupsDisplayNodeSelectedColor(selectedColor);
   this->markupsLogic()->SetDefaultMarkupsDisplayNodeColor(unselectedColor);
   this->markupsLogic()->SetDefaultMarkupsDisplayNodeOpacity(opacity);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeSliceProjection(sliceProjection);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeSliceProjectionColor(projectionColor);
+  this->markupsLogic()->SetDefaultMarkupsDisplayNodeSliceProjectionOpacity(projectionOpacity);
 }

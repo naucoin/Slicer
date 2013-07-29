@@ -717,6 +717,52 @@ void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeSelectedColor(double r, 
 }
 
 //---------------------------------------------------------------------------
+int vtkSlicerMarkupsLogic::GetDefaultMarkupsDisplayNodeSliceProjection()
+{
+  return this->DefaultMarkupsDisplayNode->GetSliceProjection();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeSliceProjection(int projection)
+{
+  this->DefaultMarkupsDisplayNode->SetSliceProjection(projection);
+}
+
+//---------------------------------------------------------------------------
+double *vtkSlicerMarkupsLogic::GetDefaultMarkupsDisplayNodeSliceProjectionColor()
+{
+  return this->DefaultMarkupsDisplayNode->GetSliceProjectionColor();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeSliceProjectionColor(double *color)
+{
+  if (!color)
+    {
+    return;
+    }
+  this->DefaultMarkupsDisplayNode->SetSliceProjectionColor(color);
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeSliceProjectionColor(double r, double g, double b)
+{
+  this->DefaultMarkupsDisplayNode->SetSliceProjectionColor(r,g,b);
+}
+
+//---------------------------------------------------------------------------
+double vtkSlicerMarkupsLogic::GetDefaultMarkupsDisplayNodeSliceProjectionOpacity()
+{
+  return this->DefaultMarkupsDisplayNode->GetSliceProjectionOpacity();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeSliceProjectionOpacity(double opacity)
+{
+  this->DefaultMarkupsDisplayNode->SetSliceProjectionOpacity(opacity);
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerMarkupsLogic::SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *displayNode)
 {
   if (!displayNode)
@@ -730,6 +776,9 @@ void vtkSlicerMarkupsLogic::SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *
   displayNode->SetGlyphType(this->GetDefaultMarkupsDisplayNodeGlyphType());
   displayNode->SetGlyphScale(this->GetDefaultMarkupsDisplayNodeGlyphScale());
   displayNode->SetTextScale(this->GetDefaultMarkupsDisplayNodeTextScale());
+  displayNode->SetSliceProjection(this->GetDefaultMarkupsDisplayNodeSliceProjection());
+  displayNode->SetSliceProjectionColor(this->GetDefaultMarkupsDisplayNodeSliceProjectionColor());
+  displayNode->SetSliceProjectionOpacity(this->GetDefaultMarkupsDisplayNodeSliceProjectionOpacity());
 }
 
 //---------------------------------------------------------------------------
