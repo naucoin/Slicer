@@ -137,6 +137,13 @@ public:
   bool MoveNthMarkupToNewListAtIndex(int n, vtkMRMLMarkupsNode *markupsNode,
                                    vtkMRMLMarkupsNode *newMarkupsNode, int newIndex);
 
+  /// Searches the scene for annotation fidicual nodes, collecting a list
+  /// of annotation hierarchy nodes. Then iterates through those heirarchy nodes
+  /// and moves the fiducials that are under them into new markups nodes. Leaves
+  /// the top level heirarchy nodes intact as they may be parents to ruler or
+  /// ROIs but deletes the 1:1 hierarchy nodes.
+  void ConvertAnnotationFiducialsToMarkups();
+
 protected:
   vtkSlicerMarkupsLogic();
   virtual ~vtkSlicerMarkupsLogic();

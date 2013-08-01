@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>567</width>
-    <height>795</height>
+    <height>786</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -489,6 +489,16 @@
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="convertAnnotationFiducialsPushButton">
+           <property name="toolTip">
+            <string>Uses annotation fiduical hierarchies to make markup lists. Removes the annotations once they've been moved.</string>
+           </property>
+           <property name="text">
+            <string>Convert Annotation Fiducials to Markups Fiducial Lists</string>
            </property>
           </widget>
          </item>

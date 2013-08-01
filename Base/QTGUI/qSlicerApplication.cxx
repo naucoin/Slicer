@@ -442,7 +442,8 @@ QString qSlicerApplication::nodeModule(vtkMRMLNode* node)const
     }
   else if (node->IsA("vtkMRMLMarkupsNode") ||
            node->IsA("vtkMRMLMarkupsDisplayNode") ||
-           node->IsA("vtkMRMLMarkupsStorageNode"))
+           node->IsA("vtkMRMLMarkupsStorageNode") ||
+	   node->IsA("vtkMRMLAnnotationFiducialNode"))
     {
     return "Markups";
     }

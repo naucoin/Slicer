@@ -25,12 +25,19 @@
 #include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsStorageNode.h"
 
+// Annotation MRML includes
+#include "vtkMRMLAnnotationFiducialNode.h"
+#include "vtkMRMLAnnotationPointDisplayNode.h"
+#include "vtkMRMLAnnotationTextDisplayNode.h"
+
 // MRML includes
+#include "vtkMRMLHierarchyNode.h"
 #include "vtkMRMLSelectionNode.h"
 #include "vtkMRMLSliceNode.h"
 
 // VTK includes
 #include <vtkNew.h>
+#include <vtkStringArray.h>
 
 // STD includes
 #include <cassert>
@@ -147,7 +154,7 @@ void vtkSlicerMarkupsLogic::ObserveMRMLScene()
     // bar is triggered when leave it
     this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
 
-    selectionNode->AddNewPlaceNodeClassNameToList("vtkMRMLMarkupsFiducialNode", ":/Icons/MarkupsMouseModePlace.png", "Markups Fiducial");
+    selectionNode->AddNewPlaceNodeClassNameToList("vtkMRMLMarkupsFiducialNode", ":/Icons/MarkupsMouseModePlace.png", "Fiducial");
 
     // trigger an upate on the mouse mode toolbar
     this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
@@ -168,18 +175,11 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
 
   vtkMRMLMarkupsFiducialNode* fidNode = vtkMRMLMarkupsFiducialNode::New();
   this->GetMRMLScene()->RegisterNodeClass(fidNode);
-  // also register it as an annotation fiducial node so that this class can
-  // read in annotation fiducials from mrml scene files
-  this->GetMRMLScene()->RegisterNodeClass(fidNode, "AnnotationFiducials");
   fidNode->Delete();
 
   // Display nodes
   vtkMRMLMarkupsDisplayNode* markupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode);
-  // supercede annotation point display nodes, todo: figure out what to do about
-  // text scale
-  this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode,
-					  "AnnotationPointDisplay");
   markupsDisplayNode->Delete();
 
   // Storage Nodes
@@ -189,8 +189,6 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
 
   vtkMRMLMarkupsFiducialStorageNode* markupsFiducialStorageNode = vtkMRMLMarkupsFiducialStorageNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode);
-  this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode,
-					  "AnnotationControlPointsStorage");
   markupsFiducialStorageNode->Delete();
 }
 
@@ -814,4 +812,187 @@ bool vtkSlicerMarkupsLogic::MoveNthMarkupToNewListAtIndex(int n, vtkMRMLMarkupsN
   markupsNode->RemoveMarkup(n);
 
   return true;
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::ConvertAnnotationFiducialsToMarkups()
+{
+  if (!this->GetMRMLScene())
+    {
+    return;
+    }
+
+  vtkCollection *col = this->GetMRMLScene()->GetNodesByClass("vtkMRMLAnnotationFiducialNode");
+  int numberOfAnnotationFids = col->GetNumberOfItems();
+  if (numberOfAnnotationFids == 0)
+    {
+    col->RemoveAllItems();
+    col->Delete();
+    return;
+    }
+
+  // go through all the annotation fiducials and collect their hierarchies
+  vtkStringArray *hierarchyNodeIDs = vtkStringArray::New();
+
+  for (unsigned int n = 0; n < numberOfAnnotationFids; ++n)
+    {
+    vtkMRMLNode *mrmlNode = vtkMRMLNode::SafeDownCast(col->GetItemAsObject(n));
+    if (!mrmlNode)
+      {
+      continue;
+      }
+    vtkMRMLHierarchyNode *oneToOneHierarchyNode =
+      vtkMRMLHierarchyNode::GetAssociatedHierarchyNode(mrmlNode->GetScene(),
+                                                       mrmlNode->GetID());
+    if (!oneToOneHierarchyNode)
+      {
+      continue;
+      }
+    char * parentNodeID = oneToOneHierarchyNode->GetParentNodeID();
+    char * hierarchyName = oneToOneHierarchyNode->GetParentNode()->GetName();
+    // is it not already in the list of annotation hierarchy node ids?
+    vtkIdType id = hierarchyNodeIDs->LookupValue(parentNodeID);
+    if (id == -1)
+      {
+      vtkDebugMacro("Found unique annotation hierarchy node, id = " << parentNodeID << ", name = " << hierarchyName);
+      hierarchyNodeIDs->InsertNextValue(parentNodeID);
+      }
+    }
+
+  col->RemoveAllItems();
+  col->Delete();
+
+  if (hierarchyNodeIDs->GetNumberOfValues() == 0)
+    {
+    hierarchyNodeIDs->Delete();
+    return;
+    }
+  else
+    {
+    vtkDebugMacro("Converting " << hierarchyNodeIDs->GetNumberOfValues()
+                  << " annotation hierarchies to markup lists");
+    }
+  // now iterate over the hierarchies that have fiducials in them and convert
+  // them to markups lists
+  for (int i = 0; i < hierarchyNodeIDs->GetNumberOfValues(); ++i)
+    {
+    vtkMRMLNode *mrmlNode = NULL;
+    vtkMRMLHierarchyNode *hierarchyNode = NULL;
+    mrmlNode = this->GetMRMLScene()->GetNodeByID(hierarchyNodeIDs->GetValue(i));
+    if (!mrmlNode)
+      {
+      continue;
+      }
+    hierarchyNode = vtkMRMLHierarchyNode::SafeDownCast(mrmlNode);
+    if (!hierarchyNode)
+      {
+      continue;
+      }
+
+    // create a markups fiducial list with this name
+    std::string markupsListID = this->AddNewFiducialNode(hierarchyNode->GetName());
+    vtkMRMLMarkupsFiducialNode *markupsNode = NULL;
+    mrmlNode = this->GetMRMLScene()->GetNodeByID(markupsListID.c_str());
+    if (!mrmlNode)
+      {
+      continue;
+      }
+    markupsNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(mrmlNode);
+    if (!markupsNode)
+      {
+      continue;
+      }
+    // now get the fiducials in this annotation hierarchy
+    vtkCollection *children = vtkCollection::New();
+    hierarchyNode->GetAssociatedChildrendNodes(children, "vtkMRMLAnnotationFiducialNode");
+    vtkDebugMacro("Found " << children->GetNumberOfItems() << " annot fids in this hierarchy");
+    for (unsigned int c = 0; c < children->GetNumberOfItems(); ++c)
+      {
+      vtkMRMLAnnotationFiducialNode *annotNode;
+      annotNode = vtkMRMLAnnotationFiducialNode::SafeDownCast(children->GetItemAsObject(c));
+      if (!annotNode)
+        {
+        continue;
+        }
+      double coord[3];
+      annotNode->GetFiducialCoordinates(coord);
+      int fidIndex = markupsNode->AddFiducial(coord[0], coord[1], coord[2]);
+      vtkDebugMacro("Added a fiducial at index " << fidIndex);
+      markupsNode->SetNthMarkupLabel(fidIndex, std::string(annotNode->GetName()));
+      char *desc = annotNode->GetDescription();
+      if (desc)
+        {
+        markupsNode->SetNthMarkupDescription(fidIndex,std::string(desc));
+        }
+      markupsNode->SetNthMarkupSelected(fidIndex, annotNode->GetSelected());
+      markupsNode->SetNthMarkupVisibility(fidIndex,
+                                          annotNode->GetDisplayVisibility());
+      markupsNode->SetNthMarkupLocked(fidIndex, annotNode->GetLocked());
+      const char *assocNodeID = annotNode->GetAttribute("AssociatedNodeID");
+      if (assocNodeID)
+        {
+        markupsNode->SetNthMarkupAssociatedNodeID(fidIndex, assocNodeID);
+        }
+
+      // get the display nodes
+      vtkMRMLAnnotationPointDisplayNode *pointDisplayNode = NULL;
+      vtkMRMLAnnotationTextDisplayNode *textDisplayNode = NULL;
+      pointDisplayNode = annotNode->GetAnnotationPointDisplayNode();
+      textDisplayNode = annotNode->GetAnnotationTextDisplayNode();
+
+      if (c == 0)
+        {
+        // use the first display node to get display settings
+        vtkMRMLMarkupsDisplayNode *markupDisplayNode = markupsNode->GetMarkupsDisplayNode();
+        if (!markupDisplayNode || !pointDisplayNode || !textDisplayNode)
+          {
+          continue;
+          }
+        markupDisplayNode->SetColor(pointDisplayNode->GetColor());
+        markupDisplayNode->SetSelectedColor(pointDisplayNode->GetSelectedColor());
+        markupDisplayNode->SetGlyphScale(pointDisplayNode->GetGlyphScale());
+        markupDisplayNode->SetTextScale(textDisplayNode->GetTextScale());
+        markupDisplayNode->SetOpacity(pointDisplayNode->GetOpacity());
+        markupDisplayNode->SetPower(pointDisplayNode->GetPower());
+        markupDisplayNode->SetAmbient(pointDisplayNode->GetAmbient());
+        markupDisplayNode->SetDiffuse(pointDisplayNode->GetDiffuse());
+        markupDisplayNode->SetSpecular(pointDisplayNode->GetSpecular());
+        markupDisplayNode->SetSliceProjection(pointDisplayNode->GetSliceProjection());
+        markupDisplayNode->SetSliceProjectionColor(pointDisplayNode->GetProjectedColor());
+        markupDisplayNode->SetSliceProjectionOpacity(pointDisplayNode->GetProjectedOpacity());
+        }
+      //
+      // clean up the no longer needed annotation nodes
+      //
+      // remove the 1:1 hierarchy node
+      vtkMRMLHierarchyNode *oneToOneHierarchyNode =
+        vtkMRMLHierarchyNode::GetAssociatedHierarchyNode(annotNode->GetScene(),
+                                                         annotNode->GetID());
+      if (oneToOneHierarchyNode)
+        {
+        this->GetMRMLScene()->RemoveNode(oneToOneHierarchyNode);
+        }
+
+      // remove the display nodes
+      if (pointDisplayNode)
+        {
+        this->GetMRMLScene()->RemoveNode(pointDisplayNode);
+        }
+      if (textDisplayNode)
+        {
+        this->GetMRMLScene()->RemoveNode(textDisplayNode);
+        }
+      // is there a storage node?
+      vtkMRMLStorageNode *storageNode = annotNode->GetStorageNode();
+      if (storageNode)
+        {
+        this->GetMRMLScene()->RemoveNode(storageNode);
+        }
+      // now remove the annotation node
+      this->GetMRMLScene()->RemoveNode(annotNode);
+      }
+    children->RemoveAllItems();
+    children->Delete();
+    }
+  hierarchyNodeIDs->Delete();
 }

@@ -117,6 +117,10 @@
 	<label>Use List Name</label>
 	<description><![CDATA[Prefix the labels of new markups with the list name, on by default.]]></description>
       </parameter>
+      <parameter>
+	<label>Convert Annotation Fiducials to Markups Fiducial Lists</label>
+	<description><![CDATA[Uses annotation fiduical hierarchies to make markup lists. Removes the annotations once they've been moved.]]></description>
+      </parameter>
     </parameters>
     <parameters>
       <label>Markups Table</label>

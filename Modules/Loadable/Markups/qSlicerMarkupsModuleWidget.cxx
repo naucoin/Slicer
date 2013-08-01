@@ -28,6 +28,9 @@
 #include <QStringList>
 #include <QTableWidgetItem>
 
+// CTK includes
+#include "ctkMessageBox.h"
+
 // SlicerQt includes
 #include "qMRMLSceneModel.h"
 #include "qMRMLUtils.h"
@@ -246,6 +249,11 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   QObject::connect(this->useListNameForMarkupsCheckBox, SIGNAL(toggled(bool)),
                    q, SLOT(onUseListNameForMarkupsCheckBoxToggled(bool)));
   //
+  // set up the convert annotations button
+  //
+  QObject::connect(this->convertAnnotationFiducialsPushButton, SIGNAL(clicked()),
+                   q, SLOT(convertAnnotationFiducialsToMarkups()));
+  //
   // set up the table
   //
 
@@ -355,7 +363,40 @@ void qSlicerMarkupsModuleWidget::enter()
   // install some shortcuts for use while in this module
   this->installShortcuts();
 
+  this->checkForAnnotationFiducialConversion();
+
   this->updateWidgetFromMRML();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::checkForAnnotationFiducialConversion()
+{
+  // check to see if there are any annotation fiducial nodes
+  // and offer to import them as markups
+  int numFids = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLAnnotationFiducialNode");
+  if (numFids > 0)
+    {
+    ctkMessageBox convertMsgBox;
+    convertMsgBox.setWindowTitle("Convert Annotation hierarchies to Markups list nodes?");
+    QString labelText = QString("Convert ")
+      + QString::number(numFids)
+      + QString(" Annotation fiducials to Markups list nodes?")
+      + QString(" Moves all Annotation fiducials out of hierarchies (deletes")
+      + QString(" the nodes, but leaves the hierarchies in case rulers or")
+      + QString(" ROIs are mixed in) and into Markups fiducial list nodes.");
+    // don't show again check box conflicts with informative text, so use
+    // a long text
+    convertMsgBox.setText(labelText);
+    convertMsgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    convertMsgBox.setDefaultButton(QMessageBox::Yes);
+    convertMsgBox.setDontShowAgainVisible(true);
+    convertMsgBox.setDontShowAgainSettingsKey("Markups/AlwaysConvertAnnotationFiducials");
+    int ret = convertMsgBox.exec();
+    if (ret == QMessageBox::Yes)
+      {
+      this->convertAnnotationFiducialsToMarkups();
+      }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -379,6 +420,15 @@ void qSlicerMarkupsModuleWidget::removeShortcuts()
     this->pToAddShortcut->disconnect(SIGNAL(activated()));
     // TODO: when parent is set to null, using the mouse to place a fid when outside the Markups module is triggering a crash
 //    this->pToAddShortcut->setParent(NULL);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::convertAnnotationFiducialsToMarkups()
+{
+  if (this->markupsLogic())
+    {
+    this->markupsLogic()->ConvertAnnotationFiducialsToMarkups();
     }
 }
 
@@ -726,6 +776,7 @@ void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject* scene, vtkObject*
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onMRMLSceneEndImportEvent()
 {
+  this->checkForAnnotationFiducialConversion();
   this->updateWidgetFromMRML();
 }
 
@@ -736,6 +787,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
     {
     return;
     }
+  this->checkForAnnotationFiducialConversion();
   // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent";
   std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetSelectionNodeID() : std::string(""));
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
