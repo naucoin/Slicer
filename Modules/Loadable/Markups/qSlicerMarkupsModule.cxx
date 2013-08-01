@@ -72,7 +72,7 @@ qSlicerMarkupsModule::qSlicerMarkupsModule(QObject* _parent)
 //-----------------------------------------------------------------------------
 QStringList qSlicerMarkupsModule::categories()const
 {
-  return QStringList() << "Developer Tools";
+  return QStringList() << "Informatics";
 }
 
 //-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ qSlicerMarkupsModule::~qSlicerMarkupsModule()
 //-----------------------------------------------------------------------------
 QString qSlicerMarkupsModule::helpText()const
 {
-  QString help = 
+  QString help =
     "A module to create and manage markups in 2D and 3D."
     " Extends the Annotations module";
   return help;
