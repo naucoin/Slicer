@@ -418,11 +418,11 @@ int vtkSlicerTractographyInteractiveSeedingLogic::CreateTracts(vtkMRMLTractograp
 
   vtkMRMLTransformNode* vxformNode = volumeNode->GetParentTransformNode();
 
-  vtkMRMLAnnotationHierarchyNode *annotationListNode = vtkMRMLAnnotationHierarchyNode::SafeDownCast(seedingyNode);
-  vtkMRMLAnnotationControlPointsNode *annotationNode = vtkMRMLAnnotationControlPointsNode::SafeDownCast(seedingyNode);
-  vtkMRMLMarkupsFiducialNode *markupsFiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(seedingyNode);
-  vtkMRMLModelNode *modelNode = vtkMRMLModelNode::SafeDownCast(seedingyNode);
-  vtkMRMLScalarVolumeNode *labelMapNode = vtkMRMLScalarVolumeNode::SafeDownCast(seedingyNode);
+  vtkMRMLAnnotationHierarchyNode *annotationListNode = vtkMRMLAnnotationHierarchyNode::SafeDownCast(seedingNode);
+  vtkMRMLAnnotationControlPointsNode *annotationNode = vtkMRMLAnnotationControlPointsNode::SafeDownCast(seedingNode);
+  vtkMRMLMarkupsFiducialNode *markupsFiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(seedingNode);
+  vtkMRMLModelNode *modelNode = vtkMRMLModelNode::SafeDownCast(seedingNode);
+  vtkMRMLScalarVolumeNode *labelMapNode = vtkMRMLScalarVolumeNode::SafeDownCast(seedingNode);
 
    if( parametersNode->GetWriteToFile() )
     {
