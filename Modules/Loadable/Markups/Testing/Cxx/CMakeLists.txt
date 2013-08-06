@@ -44,17 +44,15 @@ MESSAGE(STATUS "Creating directory ${TEST_DIR}")
 FILE(MAKE_DIRECTORY ${TEST_DIR} )
 
 SIMPLE_TEST( vtkMRMLMarkupsDisplayNodeTest1 )
-SIMPLE_TEST( vtkSlicerMarkupsLogicTest1 )
-SIMPLE_TEST( vtkSlicerMarkupsLogicTest2 )
-SIMPLE_TEST( vtkSlicerMarkupsLogicTest3 )
+SIMPLE_TEST( vtkMRMLMarkupsFiducialNodeTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest2 )
+
 
 SET (TEST_FCSV ${TEST_DIR}/markupsFiducialStorageNode.fcsv)
 FILE(TO_NATIVE_PATH ${TEST_FCSV} TEST_FCSV_NATIVE)
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest1 ${TEST_FCSV_NATIVE} )
 
-SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 )
 
 # test legacy Slicer3 fcsv file
 SET (TEST_S3_FCSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer3.fcsv)
@@ -66,6 +64,13 @@ SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest2 ${TEST_S3_FCSV_NATIVE} )
 SET (TEST_S4_ACSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer4.acsv)
 FILE(TO_NATIVE_PATH ${TEST_S4_ACSV} TEST_S4_ACSV_NATIVE)
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest3 ${TEST_S4_ACSV_NATIVE} )
+
+SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 )
+
+# logic tests
+SIMPLE_TEST( vtkSlicerMarkupsLogicTest1 )
+SIMPLE_TEST( vtkSlicerMarkupsLogicTest2 )
+SIMPLE_TEST( vtkSlicerMarkupsLogicTest3 )
 
 # test Slicer4 annotation fiducials in a mrml file
 # TODO: enable this after final cut over

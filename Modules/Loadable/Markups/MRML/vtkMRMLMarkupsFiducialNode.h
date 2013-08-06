@@ -83,6 +83,9 @@ public:
   int AddFiducialFromArray(double pos[3]);
   /// Get the position of the nth fiducial
   void GetNthFiducialPosition(int n, double pos[3]);
+  /// Set the position of the nth fiducial
+  void SetNthFiducialPosition(int n, double x, double y, double z);
+  void SetNthFiducialPositionFromArray(int n, double pos[3]);
   /// Get/Set selected property on Nth fiducial
   bool GetNthFiducialSelected(int n = 0);
   void SetNthFiducialSelected(int n, bool flag);

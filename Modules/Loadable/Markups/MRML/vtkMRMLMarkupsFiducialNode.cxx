@@ -175,6 +175,18 @@ void vtkMRMLMarkupsFiducialNode::GetNthFiducialPosition(int n, double pos[3])
 }
 
 //-------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialNode::SetNthFiducialPositionFromArray(int n, double pos[3])
+{
+  this->SetMarkupPoint(n, 0, pos[0], pos[1], pos[2]);
+}
+
+//-------------------------------------------------------------------------
+void vtkMRMLMarkupsFiducialNode::SetNthFiducialPosition(int n, double x, double y, double z)
+{
+  this->SetMarkupPoint(n, 0, x, y, z);
+}
+
+//-------------------------------------------------------------------------
 bool vtkMRMLMarkupsFiducialNode::GetNthFiducialSelected(int n)
 {
   return this->GetNthMarkupSelected(n);
