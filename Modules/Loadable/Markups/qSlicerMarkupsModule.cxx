@@ -34,6 +34,7 @@
 #include <qSlicerNodeWriter.h>
 
 // Markups includes
+#include "MarkupsInstantiator.h"
 #include "qSlicerMarkupsModule.h"
 #include "qSlicerMarkupsModuleWidget.h"
 #include "qSlicerMarkupsIO.h"
