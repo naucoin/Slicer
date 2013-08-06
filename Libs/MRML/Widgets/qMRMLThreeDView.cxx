@@ -333,15 +333,17 @@ void qMRMLThreeDView::resetFocalPoint()
 }
 
 //------------------------------------------------------------------------------
-vtkCollection *qMRMLThreeDView::getDisplayableManagers()
+void qMRMLThreeDView::getDisplayableManagers(vtkCollection *displayableManagers)
 {
   Q_D(qMRMLThreeDView);
 
-  vtkCollection *col = vtkCollection::New();
+  if (!displayableManagers)
+    {
+    return;
+    }
   int num = d->DisplayableManagerGroup->GetDisplayableManagerCount();
   for (int n = 0; n < num; n++)
     {
-    col->AddItem(d->DisplayableManagerGroup->GetNthDisplayableManager(n));
+    displayableManagers->AddItem(d->DisplayableManagerGroup->GetNthDisplayableManager(n));
     }
-  return col;
 }

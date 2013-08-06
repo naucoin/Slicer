@@ -158,8 +158,8 @@ QString qMRMLThreeDWidget::viewLabel()const
 }
 
 //------------------------------------------------------------------------------
-vtkCollection * qMRMLThreeDWidget::getDisplayableManagers()
+void qMRMLThreeDWidget::getDisplayableManagers(vtkCollection *displayableManagers)
 {
   Q_D(qMRMLThreeDWidget);
-  return d->ThreeDView->getDisplayableManagers();
+  d->ThreeDView->getDisplayableManagers(displayableManagers);
 }

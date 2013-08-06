@@ -62,7 +62,7 @@ public:
 
   /// \sa qMRMLThreeDView::addDisplayableManager
   void addDisplayableManager(const QString& displayableManager);
-  Q_INVOKABLE vtkCollection *getDisplayableManagers();
+  Q_INVOKABLE void getDisplayableManagers(vtkCollection *displayableManagers);
 
   /// \sa qMRMLThreeDViewControllerWidget::viewLabel()
   /// \sa setiewLabel()
