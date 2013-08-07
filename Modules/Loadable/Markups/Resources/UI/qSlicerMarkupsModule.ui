@@ -51,11 +51,11 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCollapsibleButton" name="displayPropertiesCollapsibleButton">
+       <widget class="ctkCollapsibleGroupBox" name="displayPropertiesCollapsibleButton">
         <property name="toolTip">
          <string>Set display properties for this list</string>
         </property>
-        <property name="text">
+        <property name="title">
          <string>Display Properties</string>
         </property>
         <property name="collapsed">
@@ -203,11 +203,11 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCollapsibleButton" name="modifyListCollapsibleButton">
+       <widget class="ctkCollapsibleGroupBox" name="modifyListCollapsibleButton">
         <property name="toolTip">
          <string>Modify the list as a whole</string>
         </property>
-        <property name="text">
+        <property name="title">
          <string>Modify List</string>
         </property>
         <property name="collapsed">
@@ -288,11 +288,11 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCollapsibleButton" name="modifyPointsCollapsibleButton">
+       <widget class="ctkCollapsibleGroupBox" name="modifyPointsCollapsibleButton">
         <property name="toolTip">
          <string>Change properties of all points in a list</string>
         </property>
-        <property name="text">
+        <property name="title">
          <string>Modify Markups in List</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
@@ -412,11 +412,11 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCollapsibleButton" name="advancedCollapsibleButton">
+       <widget class="ctkCollapsibleGroupBox" name="advancedCollapsibleButton">
         <property name="toolTip">
-         <string>Naming options and volume interactions</string>
+         <string>Naming options, volume interactions, Annotations import</string>
         </property>
-        <property name="text">
+        <property name="title">
          <string>Advanced</string>
         </property>
         <property name="collapsed">
