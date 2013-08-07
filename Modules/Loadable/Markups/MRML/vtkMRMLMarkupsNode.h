@@ -123,6 +123,7 @@ public:
 
   /// Invoke events when markups change, passing the markup index if applicable
   /// Invoke the lock modified event when a markup's lock status is changed.
+  /// Invoke the label format modified event when markup label format changes
   /// Invoke the point modified event when a markup's location changes
   /// Invoke the NthMarkupModifiedEvent event when a markup's non location value
   /// Invoke the markup added event when adding a new markup to a markups node
@@ -131,6 +132,7 @@ public:
   enum
   {
     LockModifiedEvent = 19000,
+    LabelFormatModifiedEvent,
     PointModifiedEvent,
     NthMarkupModifiedEvent,
     MarkupAddedEvent,
@@ -243,12 +245,25 @@ public:
   virtual void ApplyTransformMatrix(vtkMatrix4x4* transformMatrix);
   virtual void ApplyTransform(vtkAbstractTransform* transform);
 
-  /// Toggle using the name of the markups list node to name the new points added to it.
-  /// If true, sets the label automatically as a numbered version of the list name.
-  /// If false, defauls to using M as the default prefix.
-  vtkSetMacro(UseListNameForMarkups, int);
-  vtkGetMacro(UseListNameForMarkups, int);
-  vtkBooleanMacro (UseListNameForMarkups, int);
+  /// The format string that defines the markup names, in standard printf notation, with
+  /// the addition of if %N is in the string, it's replaced by the list name.
+  /// %d will resolve to the highest not yet used list index integer
+  /// character strings will otherwise pass through
+  /// Defaults to %N-%d which will yield markup names of Name-0, Name-1, Name-2
+  /// Set invokes the LabelFormatModifedEvent
+  std::string GetMarkupLabelFormat();
+  void SetMarkupLabelFormat(std::string format);
+
+  /// If the MarkupLabelFormat contains the string %N, return a string
+  /// in which that has been replaced with the list name. If the list name is
+  /// NULL, replace it with an empty string. If the MarkupLabelFormat doesn't
+  /// contain %N, return MarkupLabelFormat
+  std::string ReplaceListNameInMarkupLabelFormat();
+
+  /// Update the MarkupLabelFormat string, if flag is true use the list name
+  /// replacment code, if flag is false, remove it and replace it with an empty
+  /// string. Defaults to prefix. Only adds it if not there already.
+  void UseListNameInMarkupLabelFormat(bool flag);
 
   /// Reimplemented to take into account the modified time of the markups
   /// Returns true if the node (default behavior) or the markups are modified
@@ -289,7 +304,7 @@ private:
 
   int Locked;
 
-  int UseListNameForMarkups;
+  std::string MarkupLabelFormat;
 
   // Keep track of the number of markups that were added to the list, always
   // incrementing, not decreasing when they're removed. Used to help create

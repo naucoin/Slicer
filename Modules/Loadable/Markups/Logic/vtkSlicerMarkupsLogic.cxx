@@ -996,3 +996,83 @@ void vtkSlicerMarkupsLogic::ConvertAnnotationFiducialsToMarkups()
     }
   hierarchyNodeIDs->Delete();
 }
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::RenameAllMarkupsFromCurrentFormat(vtkMRMLMarkupsNode *markupsNode)
+{
+  if (!markupsNode)
+    {
+    return;
+    }
+
+  int numberOfMarkups = markupsNode->GetNumberOfMarkups();
+  // get the format string with the list name replaced
+  std::string formatString = markupsNode->ReplaceListNameInMarkupLabelFormat();
+  bool numberInFormat = false;
+  char buff[MARKUPS_BUFFER_SIZE];
+  if (formatString.find("%d") != std::string::npos ||
+      formatString.find("%g") != std::string::npos ||
+      formatString.find("%f") != std::string::npos)
+    {
+    numberInFormat = true;
+    }
+  for (int n = 0; n < numberOfMarkups; ++n)
+    {
+    std::string oldLabel = markupsNode->GetNthMarkupLabel(n);
+    std::string oldNumber;
+    if (numberInFormat)
+      {
+      // extract any number from the old label
+      // is there more than one number in the old label?
+      // - find the start of the first number
+      std::string numbers = std::string("0123456789.");
+      size_t firstNumber = oldLabel.find_first_of(numbers);
+      size_t secondNumber = std::string::npos;
+      size_t endOfFirstNumber = std::string::npos;
+      size_t keepNumberStart = std::string::npos;
+      size_t keepNumberEnd = std::string::npos;
+      if (firstNumber != std::string::npos)
+        {
+        endOfFirstNumber = oldLabel.find_first_not_of(numbers, firstNumber);
+        secondNumber = oldLabel.find_first_of(numbers, endOfFirstNumber);
+        }
+      if (secondNumber != std::string::npos)
+        {
+        vtkWarningMacro("RenameAllMarkupsFromCurrentFormat: more than one number in markup " << n << ", keeping second one: " << oldLabel.c_str());
+        keepNumberStart = secondNumber;
+        keepNumberEnd = oldLabel.find_first_not_of(numbers, keepNumberStart);
+        }
+      else
+        {
+        // use the first number
+        keepNumberStart = firstNumber;
+        keepNumberEnd = endOfFirstNumber;
+        }
+      if (keepNumberStart != std::string::npos)
+        {
+        oldNumber = oldLabel.substr(keepNumberStart, keepNumberEnd - keepNumberStart);
+        if (formatString.find("%d") != std::string::npos)
+          {
+          // integer
+          sprintf(buff,formatString.c_str(),atoi(oldNumber.c_str()));
+          }
+        else
+          {
+          // float
+          sprintf(buff,formatString.c_str(),atof(oldNumber.c_str()));
+          }
+        }
+      else
+        {
+        // no number found, use n
+        sprintf(buff,formatString.c_str(),n);
+        }
+      markupsNode->SetNthMarkupLabel(n, std::string(buff));
+      }
+    else
+      {
+      // no number in the format, so just rename it
+      markupsNode->SetNthMarkupLabel(n, formatString);
+      }
+    }
+}

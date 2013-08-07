@@ -36,7 +36,20 @@ int vtkMRMLMarkupsNodeTest1(int , char * [] )
   EXERCISE_BASIC_DISPLAYABLE_MRML_METHODS( vtkMRMLMarkupsNode, node1 );
 
   TEST_SET_GET_BOOLEAN(node1, Locked);
-  TEST_SET_GET_BOOLEAN(node1, UseListNameForMarkups);
+
+  node1->SetMarkupLabelFormat(std::string("-%d"));
+  node1->SetName("testingname");
+  node1->UseListNameInMarkupLabelFormat(true);
+  std::string formatTest = node1->ReplaceListNameInMarkupLabelFormat();
+  if (formatTest.compare("testingname-%d") != 0)
+    {
+    std::cerr << "Failed to add list name to the format, "
+              << "expected 'testingname-%d' but got " << formatTest.c_str()
+              << std::endl;
+    return EXIT_FAILURE;
+    }
+  node1->UseListNameInMarkupLabelFormat(false);
+  node1->UseListNameInMarkupLabelFormat(true);
 
   node1->AddText("testing");
 

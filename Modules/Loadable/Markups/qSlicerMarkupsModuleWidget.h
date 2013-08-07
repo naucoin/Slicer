@@ -143,6 +143,17 @@ public slots:
   /// Update the markup from the check box
   void onUseListNameForMarkupsCheckBoxToggled(bool flag);
 
+  /// Update the markup label from the line edit entry
+  void onNameFormatLineEditTextEdited(const QString text);
+
+  /// Reset the name format string and use list name to default
+  void onResetNameFormatToDefaultPushButtonClicked();
+
+  /// Iterate over the markups in the currently active list and rename them
+  /// using the current name format. Attempts to preserve any numbers already
+  /// present.
+  void onRenameAllWithCurrentNameFormatPushButtonClicked();
+
   /// Update the mrml node from the table
   void onActiveMarkupTableCellChanged(int row, int column);
   /// React to clicks in the table
@@ -158,7 +169,9 @@ public slots:
   void moveSelectedToNamedList(QString listName);
 
   /// Enable/disable editing the table if the markups node is un/locked
-  void onActiveMarkupsNodeLockModifiedEvent();//vtkMRMLNode *markupsNode);
+  void onActiveMarkupsNodeLockModifiedEvent();
+  /// Update the format text entry from the node
+  void onActiveMarkupsNodeLabelFormatModifiedEvent();
   /// Update the table with the modified point information if the node is
   /// active
   void onActiveMarkupsNodePointModifiedEvent(vtkObject *caller, vtkObject *callData);

@@ -244,10 +244,20 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   QObject::connect(this->useListNameForMarkupsCheckBox, SIGNAL(toggled(bool)),
                    q, SLOT(onUseListNameForMarkupsCheckBoxToggled(bool)));
   //
-  // set up the use list name for markups check box
+  // set up the name format line edit
   //
-  QObject::connect(this->useListNameForMarkupsCheckBox, SIGNAL(toggled(bool)),
-                   q, SLOT(onUseListNameForMarkupsCheckBoxToggled(bool)));
+  QObject::connect(this->nameFormatLineEdit, SIGNAL(textEdited(const QString &)),
+		   q, SLOT(onNameFormatLineEditTextEdited(const QString &)));
+  //
+  // set up the reset format button
+  //
+  QObject::connect(this->resetNameFormatToDefaultPushButton, SIGNAL(clicked()),
+                   q, SLOT(onResetNameFormatToDefaultPushButtonClicked()));
+  //
+  // set up the rename all button
+  //
+  QObject::connect(this->renameAllWithCurrentNameFormatPushButton, SIGNAL(clicked()),
+                   q, SLOT(onRenameAllWithCurrentNameFormatPushButtonClicked()));
   //
   // set up the convert annotations button
   //
@@ -601,6 +611,10 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
     {
     d->pointFiducialProjectionWidget->setMRMLFiducialNode(0);
     }
+
+  // update the list name format
+  QString nameFormat = QString(markupsNode->GetMarkupLabelFormat().c_str());
+  d->nameFormatLineEdit->setText(nameFormat);
 
   // update the table
   int numberOfMarkups = markupsNode->GetNumberOfMarkups();
@@ -1569,14 +1583,70 @@ void qSlicerMarkupsModuleWidget::onUseListNameForMarkupsCheckBoxToggled(bool fla
     qDebug() << QString("List name check box toggled: unable to get current list");
     return;
     }
-  if (flag)
+  // update the format string
+  listNode->UseListNameInMarkupLabelFormat(flag);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onNameFormatLineEditTextEdited(const QString text)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  vtkMRMLMarkupsNode *listNode = NULL;
+  if (mrmlNode)
     {
-    listNode->UseListNameForMarkupsOn();
+    listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
     }
-  else
+  if (!listNode)
     {
-    listNode->UseListNameForMarkupsOff();
+    qDebug() << QString("Name format edited: unable to get current list");
+    return;
     }
+  listNode->SetMarkupLabelFormat(std::string(text.toLatin1()));
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onResetNameFormatToDefaultPushButtonClicked()
+{
+   Q_D(qSlicerMarkupsModuleWidget);
+
+   // get the active list
+   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+   vtkMRMLMarkupsNode *listNode = NULL;
+   if (mrmlNode)
+     {
+     listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+     }
+   if (!listNode)
+     {
+     qDebug() << QString("Reset name format: unable to get current list");
+     return;
+     }
+   // make a new default markups node and use its value for the name format
+   vtkSmartPointer<vtkMRMLMarkupsNode> defaultNode = vtkSmartPointer<vtkMRMLMarkupsNode>::New();
+   listNode->SetMarkupLabelFormat(defaultNode->GetMarkupLabelFormat());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRenameAllWithCurrentNameFormatPushButtonClicked()
+{
+   Q_D(qSlicerMarkupsModuleWidget);
+
+   if (!this->markupsLogic())
+    {
+    qDebug() << "Cannot rename without a logic class!";
+    return;
+    }
+   // get the active list
+   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+   vtkMRMLMarkupsNode *listNode = NULL;
+   if (mrmlNode)
+     {
+     listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+     }
+   this->markupsLogic()->RenameAllMarkupsFromCurrentFormat(listNode);
 }
 
 //-----------------------------------------------------------------------------
@@ -1953,6 +2023,8 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
         // qDebug() << "\tdisconnecting " << node->GetID();
         this->qvtkDisconnect(node, vtkMRMLMarkupsNode::LockModifiedEvent,
                              this, SLOT(onActiveMarkupsNodeLockModifiedEvent()));
+        this->qvtkDisconnect(node, vtkMRMLMarkupsNode::LabelFormatModifiedEvent,
+                             this, SLOT(onActiveMarkupsNodeLabelFormatModifiedEvent()));
         this->qvtkDisconnect(node, vtkMRMLMarkupsNode::PointModifiedEvent,
                              this, SLOT(onActiveMarkupsNodePointModifiedEvent(vtkObject*,vtkObject*)));
         this->qvtkDisconnect(node, vtkMRMLMarkupsNode::NthMarkupModifiedEvent,
@@ -1981,6 +2053,8 @@ void qSlicerMarkupsModuleWidget::observeMarkupsNode(vtkMRMLNode *markupsNode)
       // add connections for this node
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::LockModifiedEvent,
                         this, SLOT(onActiveMarkupsNodeLockModifiedEvent()));
+      this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::LabelFormatModifiedEvent,
+                        this, SLOT(onActiveMarkupsNodeLabelFormatModifiedEvent()));
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::PointModifiedEvent,
                         this, SLOT(onActiveMarkupsNodePointModifiedEvent(vtkObject*,vtkObject*)));
       this->qvtkConnect(markupsNode, vtkMRMLMarkupsNode::NthMarkupModifiedEvent,
@@ -2004,20 +2078,48 @@ void qSlicerMarkupsModuleWidget::clearGUI()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLockModifiedEvent()//vtkMRMLNode *markupsNode)
+void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLockModifiedEvent()
 {
   Q_D(qSlicerMarkupsModuleWidget);
 
-  QString activeMarkupsNodeID = d->activeMarkupMRMLNodeComboBox->currentNodeID();
-  QString nodeID;
-  //if (markupsNode)
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
     {
-    //nodeID = QString(markupsNode->GetID());
+    return;
     }
-    //qDebug() << QString("onActiveMarkupsNodeLockModifiedEvent, passed node id = ") +  nodeID + QString(", active markups node id = ") + activeMarkupsNodeID;
-  if (activeMarkupsNodeID.compare(nodeID) != 0)
+  vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (!markupsNode)
     {
-    //qDebug() << "Got event from non active node " + nodeID + ", active id = " + activeMarkupsNodeID;
+    return;
+    }
+  if (markupsNode->GetLocked())
+    {
+    // disable the table
+    d->activeMarkupTableWidget->setEnabled(false);
+    }
+  else
+    {
+    // enable it
+    d->activeMarkupTableWidget->setEnabled(true);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onActiveMarkupsNodeLabelFormatModifiedEvent()
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (markupsNode)
+    {
+    d->nameFormatLineEdit->setText(markupsNode->GetMarkupLabelFormat().c_str());
     }
 }
 

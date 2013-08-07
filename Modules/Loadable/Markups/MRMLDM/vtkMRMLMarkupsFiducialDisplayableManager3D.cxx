@@ -753,17 +753,6 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
   // set values on it
   activeFiducialNode->SetNthFiducialWorldCoordinates(fiducialIndex,worldCoordinates1);
   // std::cout << "OnClickInRenderWindow: Setting " << fiducialIndex << "th fiducial label from " << activeFiducialNode->GetNthFiducialLabel(fiducialIndex);
-  if (!activeFiducialNode->GetUseListNameForMarkups())
-    {
-    int numberOfMarkups = activeFiducialNode->GetNumberOfMarkups();
-    std::stringstream ss;
-    ss << numberOfMarkups;
-    std::string numberString;
-    ss >> numberString;
-    std::string labelString = std::string("F") + numberString;
-    activeFiducialNode->SetNthFiducialLabel(fiducialIndex, labelString);
-    }
-  // std::cout << " to "  << activeFiducialNode->GetNthFiducialLabel(fiducialIndex) << std::endl;
 
   // reset updating state
   this->Updating = 0;

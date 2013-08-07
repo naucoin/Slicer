@@ -144,6 +144,12 @@ public:
   /// ROIs but deletes the 1:1 hierarchy nodes.
   void ConvertAnnotationFiducialsToMarkups();
 
+  /// Iterate over the markups in the list and reset the markup labels using
+  /// the current MarkupLabelFormat setting. Try to keep current numbering.
+  /// Will work if there's a %d, %g or %f in the format string, but precision
+  /// is not handled.
+  void RenameAllMarkupsFromCurrentFormat(vtkMRMLMarkupsNode *markupsNode);
+
 protected:
   vtkSlicerMarkupsLogic();
   virtual ~vtkSlicerMarkupsLogic();

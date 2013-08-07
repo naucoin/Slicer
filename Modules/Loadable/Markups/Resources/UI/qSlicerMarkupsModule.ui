@@ -480,17 +480,85 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="useListNameForMarkupsCheckBox">
-           <property name="toolTip">
-            <string>Prefix the labels of new markups with the list name</string>
+          <layout class="QFormLayout" name="formLayout">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
            </property>
-           <property name="text">
-            <string>Use List Name</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
+           <item row="0" column="0">
+            <widget class="QLabel" name="nameFormatLabel">
+             <property name="toolTip">
+              <string>Include %N for list name, %d for number.</string>
+             </property>
+             <property name="text">
+              <string>Name Format</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="nameFormatLineEdit">
+             <property name="toolTip">
+              <string>Format for creating names of new markups, using sprintf format style. %N is replaced by the list name, %d by an integer.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="useListNameForMarkupsLabel">
+             <property name="toolTip">
+              <string>Toggle using the list name replacement symbol in the name format.</string>
+             </property>
+             <property name="text">
+              <string>Use List Name Prefix in Format</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="useListNameForMarkupsCheckBox">
+             <property name="toolTip">
+              <string>Toggle using the list name as a prefix in the name format.</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="resetNameFormatToDefaultLabel">
+             <property name="text">
+              <string>Reset Name Format to Default</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="resetNameFormatToDefaultPushButton">
+             <property name="toolTip">
+              <string>Rest the name format field to the default value.</string>
+             </property>
+             <property name="text">
+              <string>Reset</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="renameAllWithCurrentNameFormatLabel">
+             <property name="toolTip">
+              <string>Rename all markups in list according to the current name format setting.</string>
+             </property>
+             <property name="text">
+              <string>Rename All Using Current Format</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="renameAllWithCurrentNameFormatPushButton">
+             <property name="toolTip">
+              <string>Rename all markups in this list according to the current name format, trying to preserve numbers.</string>
+             </property>
+             <property name="text">
+              <string>Rename</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
           <widget class="QPushButton" name="convertAnnotationFiducialsPushButton">

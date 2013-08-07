@@ -64,49 +64,47 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     std::cerr << "Failure to add a new node to a valid scene, got id of '" << id.c_str() << "'" << std::endl;
     return EXIT_FAILURE;
     }
-  else
+
+  vtkMRMLNode *mrmlNode = scene->GetNodeByID(id.c_str());
+  if (!mrmlNode)
     {
-    vtkMRMLNode *mrmlNode = scene->GetNodeByID(id.c_str());
-    if (!mrmlNode)
-      {
-      std::cerr << "Failure to add a new node to a valid scene, couldn't find node with id'" << id.c_str() << "'" << std::endl;
-      return EXIT_FAILURE;
-      }
-    char *name = mrmlNode->GetName();
-    if (!name || strcmp(testName, name) != 0)
-      {
-      std::cerr << "Failed to set a name on the new node, got node name of '" << (name ? name : "null") << "'" << std::endl;
-      return EXIT_FAILURE;
-      }
-    std::cout << "Added a new markup node to the scene, id = '" << id.c_str() << "', name = '" << name << "'" <<  std::endl;
-    vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
-    if (!markupsNode)
-      {
-      std::cerr << "Failed to get the new node as a markups node" << std::endl;
-      return EXIT_FAILURE;
-      }
-    // test the list stuff
-    logic1->SetAllMarkupsVisibility(NULL, true);
-    logic1->SetAllMarkupsLocked(NULL, false);
-    logic1->SetAllMarkupsSelected(NULL, true);
-
-    // no points
-    logic1->SetAllMarkupsVisibility(markupsNode, false);
-    logic1->SetAllMarkupsVisibility(markupsNode, true);
-    logic1->SetAllMarkupsLocked(markupsNode, true);
-    logic1->SetAllMarkupsLocked(markupsNode, false);
-    logic1->SetAllMarkupsSelected(markupsNode, false);
-    logic1->SetAllMarkupsSelected(markupsNode, true);
-
-    // add some points
-    markupsNode->AddMarkupWithNPoints(5);
-    logic1->SetAllMarkupsVisibility(markupsNode, false);
-    logic1->SetAllMarkupsVisibility(markupsNode, true);
-    logic1->SetAllMarkupsLocked(markupsNode, true);
-    logic1->SetAllMarkupsLocked(markupsNode, false);
-    logic1->SetAllMarkupsSelected(markupsNode, false);
-    logic1->SetAllMarkupsSelected(markupsNode, true);
+    std::cerr << "Failure to add a new node to a valid scene, couldn't find node with id'" << id.c_str() << "'" << std::endl;
+    return EXIT_FAILURE;
     }
+  char *name = mrmlNode->GetName();
+  if (!name || strcmp(testName, name) != 0)
+    {
+    std::cerr << "Failed to set a name on the new node, got node name of '" << (name ? name : "null") << "'" << std::endl;
+    return EXIT_FAILURE;
+    }
+  std::cout << "Added a new markup node to the scene, id = '" << id.c_str() << "', name = '" << name << "'" <<  std::endl;
+  vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+  if (!markupsNode)
+    {
+    std::cerr << "Failed to get the new node as a markups node" << std::endl;
+    return EXIT_FAILURE;
+    }
+  // test the list stuff
+  logic1->SetAllMarkupsVisibility(NULL, true);
+  logic1->SetAllMarkupsLocked(NULL, false);
+  logic1->SetAllMarkupsSelected(NULL, true);
+
+  // no points
+  logic1->SetAllMarkupsVisibility(markupsNode, false);
+  logic1->SetAllMarkupsVisibility(markupsNode, true);
+  logic1->SetAllMarkupsLocked(markupsNode, true);
+  logic1->SetAllMarkupsLocked(markupsNode, false);
+  logic1->SetAllMarkupsSelected(markupsNode, false);
+  logic1->SetAllMarkupsSelected(markupsNode, true);
+
+  // add some points
+  markupsNode->AddMarkupWithNPoints(5);
+  logic1->SetAllMarkupsVisibility(markupsNode, false);
+  logic1->SetAllMarkupsVisibility(markupsNode, true);
+  logic1->SetAllMarkupsLocked(markupsNode, true);
+  logic1->SetAllMarkupsLocked(markupsNode, false);
+  logic1->SetAllMarkupsSelected(markupsNode, false);
+  logic1->SetAllMarkupsSelected(markupsNode, true);
 
   // test the default display node settings
   vtkSmartPointer<vtkMRMLMarkupsDisplayNode> displayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();
@@ -192,6 +190,46 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
   else
     {
     std::cout << "Added a fid to the active fid list, index = " << fidIndex << std::endl;
+    }
+
+  // test the renaming
+  std::string activeListID = logic1->GetActiveListID();
+  mrmlNode = scene->GetNodeByID(activeListID.c_str());
+  vtkMRMLMarkupsNode *activeMarkupsNode = NULL;
+  if (mrmlNode)
+    {
+    activeMarkupsNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+    }
+  if (!activeMarkupsNode)
+    {
+    std::cerr << "Failed to get active markups list from id " << activeListID.c_str() << std::endl;
+    applicationLogic->Delete();
+    return EXIT_FAILURE;
+    }
+
+  std::cout << "Before renaming:" << std::endl;
+  for (int i = 0; i < activeMarkupsNode->GetNumberOfMarkups(); ++i)
+    {
+    std::cout << "Markup " << i << " label = "
+              << activeMarkupsNode->GetNthMarkupLabel(i).c_str() << std::endl;
+    }
+  activeMarkupsNode->SetName("RenamingTest");
+  activeMarkupsNode->SetMarkupLabelFormat("T %d %N");
+  logic1->RenameAllMarkupsFromCurrentFormat(activeMarkupsNode);
+  std::string newLabel = activeMarkupsNode->GetNthMarkupLabel(0);
+  std::string expectedLabel = std::string("T 1 RenamingTest");
+  if (newLabel.compare(expectedLabel) != 0)
+    {
+    std::cerr << "After rename, expected " << expectedLabel.c_str()
+              << ", but got " << newLabel.c_str() << std::endl;
+    applicationLogic->Delete();
+    return EXIT_FAILURE;
+    }
+  std::cout << "After renaming:" << std::endl;
+  for (int i = 0; i < activeMarkupsNode->GetNumberOfMarkups(); ++i)
+    {
+    std::cout << "Markup " << i << " label = "
+              << activeMarkupsNode->GetNthMarkupLabel(i).c_str() << std::endl;
     }
 
   // cleanup

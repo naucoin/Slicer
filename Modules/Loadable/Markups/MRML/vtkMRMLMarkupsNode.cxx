@@ -48,7 +48,7 @@ vtkMRMLMarkupsNode::vtkMRMLMarkupsNode()
 {
   this->TextList = vtkStringArray::New();
   this->Locked = 0;
-  this->UseListNameForMarkups = 1;
+  this->MarkupLabelFormat = std::string("%N-%d");
   this->MaximumNumberOfMarkups = 0;
 }
 
@@ -66,7 +66,7 @@ void vtkMRMLMarkupsNode::WriteXML(ostream& of, int nIndent)
   vtkIndent indent(nIndent);
 
   of << indent << " locked=\"" << this->Locked << "\"";
-  of << indent << " useListNameForMarkups=\"" << this->UseListNameForMarkups << "\"";
+  of << indent << " markupLabelFormat=\"" << this->MarkupLabelFormat.c_str() << "\"";
 
   int textLength = this->TextList->GetNumberOfValues();
 
@@ -99,9 +99,9 @@ void vtkMRMLMarkupsNode::ReadXMLAttributes(const char** atts)
       {
       this->SetLocked(atof(attValue));
       }
-    else if (!strcmp(attName, "useListNameForMarkups"))
+    else if (!strcmp(attName, "markupLabelFormat"))
       {
-      this->SetUseListNameForMarkups(atof(attValue));
+      this->SetMarkupLabelFormat(attValue);
       }
     }
   this->EndModify(disabledModify);
@@ -119,7 +119,7 @@ void vtkMRMLMarkupsNode::Copy(vtkMRMLNode *anode)
     }
 
   this->SetLocked(node->GetLocked());
-  this->SetUseListNameForMarkups(node->GetUseListNameForMarkups());
+  this->SetMarkupLabelFormat(node->GetMarkupLabelFormat());
   this->TextList->DeepCopy(node->TextList);
 
   this->Markups.clear();
@@ -184,8 +184,7 @@ void vtkMRMLMarkupsNode::PrintSelf(ostream& os, vtkIndent indent)
   Superclass::PrintSelf(os,indent);
 
   os << indent << "Locked: " << this->Locked << "\n";
-  os << indent << "UseListNameForMarkups: " << this->UseListNameForMarkups << "\n";
-
+  os << indent << "MarkupLabelFormat: " << this->MarkupLabelFormat.c_str() << "\n";
   for (int i = 0; i < this->GetNumberOfMarkups(); i++)
     {
     os << indent << "Markup " << i << ":\n";
@@ -218,7 +217,6 @@ void vtkMRMLMarkupsNode::RemoveAllMarkups()
   this->TextList->Initialize();
 
   this->Locked = 0;
-  this->UseListNameForMarkups = 1;
   this->MaximumNumberOfMarkups = 0;
 
   this->Modified();
@@ -443,19 +441,11 @@ void vtkMRMLMarkupsNode::InitMarkup(Markup *markup)
   markup->ID = id;
 
   // set a default label with a number higher than others in the list
-  std::string numberString;
-  std::stringstream ss;
-  ss << this->MaximumNumberOfMarkups + 1;
-  ss >> numberString;
-  if (this->GetUseListNameForMarkups() &&
-      this->GetName() != NULL)
-    {
-    markup->Label = std::string(this->GetName()) + std::string("-") + numberString;
-    }
-  else
-    {
-    markup->Label = numberString;
-    }
+  int number = this->MaximumNumberOfMarkups + 1;
+  std::string formatString = this->ReplaceListNameInMarkupLabelFormat();
+  char buff[MARKUPS_BUFFER_SIZE];
+  sprintf(buff, formatString.c_str(), number);
+  markup->Label = std::string(buff);
 
   // use an empty description
   markup->Description = std::string("");
@@ -670,8 +660,7 @@ bool vtkMRMLMarkupsNode::InsertMarkup(Markup m, int targetIndex)
     {
     this->InvokeEvent(vtkMRMLMarkupsNode::MarkupAddedEvent);
     }
-    std::cout << "InsertMarkup " << std::endl;
-    vtkWarningMacro("InsertMarkup");
+
   return true;
 }
 
@@ -1390,4 +1379,68 @@ std::string vtkMRMLMarkupsNode::GenerateUniqueMarkupID()
     }
 
   return id;
+}
+
+//---------------------------------------------------------------------------
+std::string vtkMRMLMarkupsNode::GetMarkupLabelFormat()
+{
+  return this->MarkupLabelFormat;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsNode::SetMarkupLabelFormat(std::string format)
+{
+  if (this->MarkupLabelFormat.compare(format) == 0)
+    {
+    return;
+    }
+  this->MarkupLabelFormat = format;
+
+  this->Modified();
+  if (!this->GetDisableModifiedEvent())
+    {
+    // invoke a label format modified event
+    this->InvokeEvent(vtkMRMLMarkupsNode::LabelFormatModifiedEvent);
+    }
+}
+
+//---------------------------------------------------------------------------
+std::string vtkMRMLMarkupsNode::ReplaceListNameInMarkupLabelFormat()
+{
+  std::string newFormatString = this->MarkupLabelFormat;
+  size_t replacePos = newFormatString.find("%N");
+  if (replacePos != std::string::npos)
+    {
+    // replace the special character with the list name, or an empty string if
+    // no list name is set
+    std::string name;
+    if (this->GetName() != NULL)
+      {
+      name = std::string(this->GetName());
+      }
+    newFormatString.replace(replacePos, 2, name);
+    }
+  return newFormatString;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsNode::UseListNameInMarkupLabelFormat(bool flag)
+{
+  std::string newFormatString = this->MarkupLabelFormat;
+  size_t replacePos = newFormatString.find("%N");
+  if (flag == true &&
+      replacePos == std::string::npos)
+    {
+    // prepend the special replacement string
+    newFormatString = std::string("%N") + newFormatString;
+    }
+  else if (flag == false &&
+           replacePos != std::string::npos)
+    {
+    // remove the special replacement string
+    std::string emptyString;
+    newFormatString.replace(replacePos, 2, emptyString);
+    }
+  // and set it
+  this->SetMarkupLabelFormat(newFormatString);
 }
