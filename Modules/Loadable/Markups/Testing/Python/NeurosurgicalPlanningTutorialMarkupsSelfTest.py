@@ -286,10 +286,15 @@ class NeurosurgicalPlanningTutorialMarkupsSelfTestLogic:
     wr.setStoppingValue(0.15)
 
     print("Moving the fiducial")
-    fidNode.SetNthFiducialPosition(0, r, 23.015878, s)
-
-    print("Moving the fiducial one more time")
-    fidNode.SetNthFiducialPosition(0, 36.072468, 11.967388, s)
+    for y in range(-20, 100, 5):
+      msg = "Moving the fiducial to y = " + str(y)
+      print msg
+      moveMsg = qt.QDialog()
+      moveMsg.setLayout(qt.QVBoxLayout())
+      moveMsg.layout().addWidget(qt.QLabel(msg))
+      qt.QTimer.singleShot(250, moveMsg.close)
+      moveMsg.exec_()
+      fidNode.SetNthFiducialPosition(0, r, y, s)
 
     return True
 
