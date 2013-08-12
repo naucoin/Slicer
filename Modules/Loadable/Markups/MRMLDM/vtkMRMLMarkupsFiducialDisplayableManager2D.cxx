@@ -403,7 +403,11 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthSeedPositionFromMRML(i
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkupsFiducialNode* fiducialNode, vtkSeedWidget *seedWidget)
 {
-
+  if (!seedWidget->GetRepresentation())
+    {
+    vtkErrorMacro("SetNthSeed: no representation in seed widget!");
+    return;
+    }
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
 
   if (!seedRepresentation)
@@ -871,7 +875,12 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     if (handleRep)
       {
       vtkDebugMacro("SetNthSeed: have a 3d handle representation in 2d light box, resetting it.");
+      vtkNew<vtkPointHandleRepresentation2D> handle;
+      seedRepresentation->SetHandleRepresentation(handle.GetPointer());
       updateHandleType = true;
+      handleRep = NULL;
+      pointHandleRep =
+        vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation());
       }
     }
   else
@@ -879,13 +888,24 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     if (pointHandleRep)
       {
       vtkDebugMacro("SetNthSeed: Not in light box, but have a point handle.");
+      vtkNew<vtkOrientedPolygonalHandleRepresentation3D> handle;
+      // default to a sphere glyph, update in propagate mrml to widget
+      vtkNew<vtkMarkupsGlyphSource2D> glyphSource;
+      glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Sphere3D);
+      glyphSource->Update();
+      glyphSource->SetScale(1.0);
+      handle->SetHandle(glyphSource->GetOutput());
+      seedRepresentation->SetHandleRepresentation(handle.GetPointer());
       updateHandleType = true;
+      pointHandleRep = NULL;
+      handleRep =
+        vtkOrientedPolygonalHandleRepresentation3D::SafeDownCast(seedRepresentation->GetHandleRepresentation());
       }
     }
   if (updateHandleType)
     {
-    // in annotations module, it deletes the whole thing and re-calls PropagateMRMLToWidget
-    vtkWarningMacro("WARNING: need to update handle type!!!!");
+    vtkDebugMacro("WARNING: updated the handle type");
+    seedWidget->CreateDefaultRepresentation();
     }
 
   // iterate over the fiducials in this markup

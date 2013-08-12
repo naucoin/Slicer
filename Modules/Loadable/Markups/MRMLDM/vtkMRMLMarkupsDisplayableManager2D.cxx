@@ -1177,6 +1177,11 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToWorldCoordinates(double * d
 /// Convert world to display coordinates
 void vtkMRMLMarkupsDisplayableManager2D::GetWorldToDisplayCoordinates(double r, double a, double s, double * displayCoordinates)
 {
+  if (!this->GetSliceNode())
+    {
+    vtkErrorMacro("GetWorldToDisplayCoordinates: no slice node!");
+    return;
+    }
 
   // we will get the transformation matrix to convert world coordinates to the display coordinates of the specific sliceNode
 
@@ -1215,6 +1220,11 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToViewportCoordinates(double 
 
   if (viewportCoordinates == NULL)
     {
+    return;
+    }
+  if (!this->GetInteractor())
+    {
+    vtkErrorMacro("GetDisplayToViewportCoordinates: No interactor!");
     return;
     }
   double windowWidth = this->GetInteractor()->GetRenderWindow()->GetSize()[0];

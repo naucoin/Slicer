@@ -198,25 +198,6 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   QObject::connect(this->activeMarkupMRMLNodeComboBox, SIGNAL(nodeAddedByUser(vtkMRMLNode*)),
                    q, SLOT(onActiveMarkupMRMLNodeAdded(vtkMRMLNode*)));
 
-  vtkMRMLNode *selectionNode = NULL;
-  if (q->mrmlScene() && q->markupsLogic())
-    {
-    selectionNode = q->mrmlScene()->GetNodeByID(q->markupsLogic()->GetSelectionNodeID());
-    }
-  else
-    {
-    //qDebug() << "Either no mrml scene or logic set! (scene = " << q->mrmlScene() << ", logic = " << q->markupsLogic() << ", q = " << q;
-    }
-  if (selectionNode)
-    {
-    q->qvtkConnect(selectionNode, vtkMRMLSelectionNode::ActivePlaceNodeIDChangedEvent,
-                   q, SLOT(onSelectionNodeActivePlaceNodeIDChanged()));
-    }
-  else
-    {
-    //qDebug() << "No selection node found in scene!";
-    }
-
   //
   // add an action to create a new markups list using the display node
   // settings from the currently active list
@@ -365,6 +346,16 @@ void qSlicerMarkupsModuleWidget::enter()
                     this, SLOT(onMRMLSceneEndBatchProcessEvent()));
   this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
                     this, SLOT(onMRMLSceneEndCloseEvent()));
+
+  if (this->mrmlScene() && this->markupsLogic())
+    {
+    vtkMRMLNode *selectionNode = this->mrmlScene()->GetNodeByID(this->markupsLogic()->GetSelectionNodeID());
+    if (selectionNode)
+      {
+      this->qvtkConnect(selectionNode, vtkMRMLSelectionNode::ActivePlaceNodeIDChangedEvent,
+                        this, SLOT(onSelectionNodeActivePlaceNodeIDChanged()));
+      }
+    }
 
   // now enable the combo box and update
   //d->activeMarkupMRMLNodeComboBox->setEnabled(true);
@@ -1829,32 +1820,43 @@ void qSlicerMarkupsModuleWidget::onRightClickActiveMarkupTableWidget(QPoint pos)
   // qDebug() << "onRightClickActiveMarkupTableWidget: pos = " << pos;
 
   QMenu menu;
-  QMenu *moveMenu = menu.addMenu(QString("Move fiducial to another list"));
 
-  QAction *moveToSameIndexInListAction =
-    new QAction(QString("Move fiducial to same index in another list"), moveMenu);
-  QAction *moveToTopOfListAction =
-    new QAction(QString("Move fiducial to top of another list"), moveMenu);
-  QAction *moveToBottomOfListAction =
-    new QAction(QString("Move fiducial to bottom of another list"), moveMenu);
+  // Delete
+  QAction *deleteFiducialAction =
+    new QAction(QString("Delete highlighted fiducial(s)"), &menu);
+  menu.addAction(deleteFiducialAction);
+  QObject::connect(deleteFiducialAction, SIGNAL(triggered()),
+                   this, SLOT(onDeleteMarkupPushButtonClicked()));
 
-  moveMenu->addAction(moveToSameIndexInListAction);
-  moveMenu->addAction(moveToTopOfListAction);
-  moveMenu->addAction(moveToBottomOfListAction);
+  // Move, if there's another list in the scene
+  if (this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode") > 1)
+    {
+    QMenu *moveMenu = menu.addMenu(QString("Move fiducial to another list"));
 
-  QSignalMapper *signalMapper = new QSignalMapper(this);
-  QObject::connect(moveToSameIndexInListAction, SIGNAL(triggered()),
-          signalMapper, SLOT(map()));
-  QObject::connect(moveToTopOfListAction, SIGNAL(triggered()),
-          signalMapper, SLOT(map()));
-  QObject::connect(moveToBottomOfListAction, SIGNAL(triggered()),
-          signalMapper, SLOT(map()));
-  signalMapper->setMapping(moveToSameIndexInListAction, QString("Same"));
-  signalMapper->setMapping(moveToTopOfListAction, QString("Top"));
-  signalMapper->setMapping(moveToBottomOfListAction, QString("Bottom"));
-  QObject::connect(signalMapper, SIGNAL(mapped(QString)),
-                   this, SLOT(onMoveToOtherListActionTriggered(QString)));
+    QAction *moveToSameIndexInListAction =
+      new QAction(QString("Move fiducial to same index in another list"), moveMenu);
+    QAction *moveToTopOfListAction =
+      new QAction(QString("Move fiducial to top of another list"), moveMenu);
+    QAction *moveToBottomOfListAction =
+      new QAction(QString("Move fiducial to bottom of another list"), moveMenu);
 
+    moveMenu->addAction(moveToSameIndexInListAction);
+    moveMenu->addAction(moveToTopOfListAction);
+    moveMenu->addAction(moveToBottomOfListAction);
+
+    QSignalMapper *signalMapper = new QSignalMapper(this);
+    QObject::connect(moveToSameIndexInListAction, SIGNAL(triggered()),
+                     signalMapper, SLOT(map()));
+    QObject::connect(moveToTopOfListAction, SIGNAL(triggered()),
+                     signalMapper, SLOT(map()));
+    QObject::connect(moveToBottomOfListAction, SIGNAL(triggered()),
+                     signalMapper, SLOT(map()));
+    signalMapper->setMapping(moveToSameIndexInListAction, QString("Same"));
+    signalMapper->setMapping(moveToTopOfListAction, QString("Top"));
+    signalMapper->setMapping(moveToBottomOfListAction, QString("Bottom"));
+    QObject::connect(signalMapper, SIGNAL(mapped(QString)),
+                     this, SLOT(onMoveToOtherListActionTriggered(QString)));
+    }
   menu.exec(QCursor::pos());
 }
 
@@ -1870,15 +1872,6 @@ void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destin
 
   // qDebug() << "onMoveToOtherListActionTriggered: " << destinationPosition;
 
-  // sanity check: is there another list to move to?
-  vtkCollection *col = this->mrmlScene()->GetNodesByClass("vtkMRMLMarkupsNode");
-  unsigned int numNodes = col->GetNumberOfItems();
-  if (numNodes < 2)
-    {
-    qWarning() << "No other list to move it to! Define another list first.";
-    return;
-    }
-
   // get the active list
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
   if (!mrmlNode)
@@ -1890,6 +1883,18 @@ void qSlicerMarkupsModuleWidget::onMoveToOtherListActionTriggered(QString destin
     {
     return;
     }
+
+  // sanity check: is there another list to move to?
+  vtkCollection *col = this->mrmlScene()->GetNodesByClass("vtkMRMLMarkupsNode");
+  unsigned int numNodes = col->GetNumberOfItems();
+  if (numNodes < 2)
+    {
+    col->RemoveAllItems();
+    col->Delete();
+    qWarning() << "No other list to move it to! Define another list first.";
+    return;
+    }
+
   // get the target list
   QStringList otherLists;
   for (unsigned int n = 0; n < numNodes; n++)

@@ -277,6 +277,11 @@ class NeurosurgicalPlanningTutorialMarkupsSelfTestLogic:
     s = 58.74121
     fidNode.AddFiducial(r,a,s)
 
+    # make it active
+    selectionNode = slicer.mrmlScene.GetNodeByID("vtkMRMLSelectionNodeSingleton")
+    if (selectionNode != None):
+      selectionNode.SetReferenceActivePlaceNodeID(fidNode.GetID())
+
     # set up the arguments
     wr = slicer.modules.tractographyinteractiveseeding.widgetRepresentation()
     wr.setDiffusionTensorVolumeNode(dtiVolume)

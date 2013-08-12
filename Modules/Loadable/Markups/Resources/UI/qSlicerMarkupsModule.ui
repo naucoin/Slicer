@@ -222,7 +222,7 @@
       <item row="0" column="5">
        <widget class="QPushButton" name="deleteMarkupPushButton">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="toolTip">
          <string>Delete the highlighted markup(s) from the active list</string>
@@ -239,7 +239,7 @@
       <item row="1" column="5">
        <widget class="QPushButton" name="deleteAllMarkupsInListPushButton">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="toolTip">
          <string>Remove all markups from the active list</string>
