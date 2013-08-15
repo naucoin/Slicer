@@ -67,22 +67,22 @@ class EndoscopyWidget:
     cameraNodeSelector.connect('currentNodeChanged(bool)', self.enableOrDisableCreateButton)
     cameraNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.setCameraNode)
     pathFormLayout.addRow("Camera:", cameraNodeSelector)
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)', 
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                         cameraNodeSelector, 'setMRMLScene(vtkMRMLScene*)')
-    
+
     # Input fiducials node selector
     inputFiducialsNodeSelector = slicer.qMRMLNodeComboBox()
     inputFiducialsNodeSelector.objectName = 'inputFiducialsNodeSelector'
     inputFiducialsNodeSelector.toolTip = "Select a fiducial list to define control points for the path."
-    inputFiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationHierarchyNode', 'vtkMRMLFiducialListNode']
+    inputFiducialsNodeSelector.nodeTypes = ['vtkMRMLMarkupsFiducialNode', 'vtkMRMLAnnotationHierarchyNode', 'vtkMRMLFiducialListNode']
     inputFiducialsNodeSelector.noneEnabled = True
     inputFiducialsNodeSelector.addEnabled = False
     inputFiducialsNodeSelector.removeEnabled = False
     inputFiducialsNodeSelector.connect('currentNodeChanged(bool)', self.enableOrDisableCreateButton)
     pathFormLayout.addRow("Input Fiducials:", inputFiducialsNodeSelector)
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)', 
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                         inputFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')
-    
+
     # CreatePath button
     createPathButton = qt.QPushButton("Create path")
     createPathButton.toolTip = "Create the path."
@@ -292,7 +292,7 @@ class EndoscopyComputePath:
       collection = vtk.vtkCollection()
       self.fids.GetChildrenDisplayableNodes(collection)
       self.n = collection.GetNumberOfItems()
-      if self.n == 0: 
+      if self.n == 0:
         return
       self.p = numpy.zeros((self.n,3))
       for i in xrange(self.n):
@@ -300,7 +300,20 @@ class EndoscopyComputePath:
         coords = [0,0,0]
         f.GetFiducialCoordinates(coords)
         self.p[i] = coords
-    else: 
+    elif self.fids.GetClassName() == "vtkMRMLMarkupsFiducialNode":
+      # slicer4 Markups node
+      self.n = self.fids.GetNumberOfFiducials()
+      n = self.n
+      if n == 0:
+        return
+      # get fiducial positions
+      # sets self.p
+      self.p = numpy.zeros((n,3))
+      for i in xrange(n):
+        coord = [0.0, 0.0, 0.0]
+        self.fids.GetNthFiducialPosition(i, coord)
+        self.p[i] = coord
+    else:
       # slicer3 style fiducial lists
       self.n = self.fids.GetNumberOfFiducials()
       n = self.n

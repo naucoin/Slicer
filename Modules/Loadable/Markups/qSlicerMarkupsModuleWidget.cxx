@@ -283,6 +283,9 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // listen for click on a markup
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)),
                    q, SLOT(onActiveMarkupTableCellClicked(QTableWidgetItem*)));
+  // listen for the current cell changing (happens when arrows are used to navigate)
+  QObject::connect(this->activeMarkupTableWidget, SIGNAL(currentCellChanged(int, int, int, int)),
+		   q, SLOT(onActiveMarkupTableCurrentCellChanged(int, int, int, int)));
   // listen for a right click
   this->activeMarkupTableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(customContextMenuRequested(QPoint)),
@@ -654,6 +657,8 @@ void qSlicerMarkupsModuleWidget::updateRow(int m)
     {
     selectedItem->setCheckState(Qt::Unchecked);
     }
+  // disable editing so that a double click won't bring up an entry box
+  selectedItem->setFlags(selectedItem->flags() & ~Qt::ItemIsEditable);
   int selectedIndex = d->columnIndex("Selected");
   if (d->activeMarkupTableWidget->item(m,selectedIndex) == NULL ||
       (d->activeMarkupTableWidget->item(m,selectedIndex)->checkState() != selectedItem->checkState()))
@@ -666,6 +671,8 @@ void qSlicerMarkupsModuleWidget::updateRow(int m)
   // disable checkable
   lockedItem->setData(Qt::CheckStateRole, QVariant());
   lockedItem->setFlags(lockedItem->flags() & ~Qt::ItemIsUserCheckable);
+  // disable editing so that a double click won't bring up an entry box
+  lockedItem->setFlags(lockedItem->flags() & ~Qt::ItemIsEditable);
   if (markupsNode->GetNthMarkupLocked(m))
     {
     lockedItem->setData(Qt::UserRole, QVariant(true));
@@ -688,6 +695,8 @@ void qSlicerMarkupsModuleWidget::updateRow(int m)
   // disable checkable
   visibleItem->setData(Qt::CheckStateRole, QVariant());
   visibleItem->setFlags(visibleItem->flags() & ~Qt::ItemIsUserCheckable);
+  // disable editing so that a double click won't bring up an entry box
+  visibleItem->setFlags(visibleItem->flags() & ~Qt::ItemIsEditable);
   if (markupsNode->GetNthMarkupVisibility(m))
     {
     visibleItem->setData(Qt::UserRole, QVariant(true));
@@ -1770,33 +1779,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
   int column = item->column();
   //qDebug() << "onActiveMarkupTableCellClicked: row = " << row << ", col = " << column;
 
-  if (column == d->columnIndex(QString("Name")))
-    {
-    // is jumping enabled?
-    if (d->jumpSlicesGroupBox->isChecked())
-      {
-      // use the node id + row index
-      // get the active list
-      vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
-      if (!mrmlNode)
-        {
-        return;
-        }
-      // offset or center?
-      bool jumpCentered = false;
-      if (d->jumpCenteredRadioButton->isChecked())
-        {
-        jumpCentered = true;
-        }
-      // jump to it
-      if (this->markupsLogic())
-        {
-        // qDebug() << "\tjumping to " << row << "th point in markup";
-        this->markupsLogic()->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), row, jumpCentered);
-        }
-      }
-    }
-  else if (column == d->columnIndex(QString("Visible")) ||
+  if (column == d->columnIndex(QString("Visible")) ||
            column == d->columnIndex(QString("Locked")))
     {
     // toggle the user role, the icon update is triggered by this change
@@ -1810,6 +1793,37 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellClicked(QTableWidgetItem
       }
     }
 
+}
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onActiveMarkupTableCurrentCellChanged(
+     int currentRow, int currentColumn, int previousRow, int previousColumn)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+   // is jumping disabled?
+  if (!d->jumpSlicesGroupBox->isChecked())
+    {
+    return;
+    }
+  // otherwise jump to that slice
+
+  // get the active list
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  // offset or center?
+  bool jumpCentered = false;
+  if (d->jumpCenteredRadioButton->isChecked())
+    {
+    jumpCentered = true;
+    }
+  // jump to it
+  if (this->markupsLogic())
+    {
+    this->markupsLogic()->JumpSlicesToNthPointInMarkup(mrmlNode->GetID(), currentRow, jumpCentered);
+    }
 }
 
 //-----------------------------------------------------------------------------

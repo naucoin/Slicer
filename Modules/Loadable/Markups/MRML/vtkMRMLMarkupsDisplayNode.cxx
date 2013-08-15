@@ -70,9 +70,9 @@ vtkMRMLMarkupsDisplayNode::vtkMRMLMarkupsDisplayNode()
   this->Power = 1;
 
   // markup display node settings
-  this->TextScale = 4.5;
+  this->TextScale = 3.4;
   this->GlyphType = vtkMRMLMarkupsDisplayNode::Sphere3D;
-  this->GlyphScale = 5.0;
+  this->GlyphScale = 2.1;
 
   // projection settings
   this->SliceProjection = (vtkMRMLMarkupsDisplayNode::ProjectionOff |

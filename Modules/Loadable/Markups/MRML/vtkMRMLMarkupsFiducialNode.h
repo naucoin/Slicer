@@ -78,6 +78,8 @@ public:
   vtkMRMLMarkupsDisplayNode *GetMarkupsDisplayNode();
 
   /// Wrap some of the generic markup methods
+  /// Get the number of fiducials in this node
+  int GetNumberOfFiducials() { return this->GetNumberOfMarkups(); } ;
   /// Add a new fiducial and return the fiducial index
   int AddFiducial(double x, double y, double z);
   int AddFiducialFromArray(double pos[3]);

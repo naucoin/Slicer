@@ -158,7 +158,9 @@ public slots:
   void onActiveMarkupTableCellChanged(int row, int column);
   /// React to clicks in the table
   void onActiveMarkupTableCellClicked(QTableWidgetItem* item);
-
+  /// React to arrows setting the current cell
+  void onActiveMarkupTableCurrentCellChanged(int currentRow, int currentColumn,
+					     int previousRow, int previousColumn);
   /// Provide a right click menu in the table
   void onRightClickActiveMarkupTableWidget(QPoint pos);
   /// Right click action slots
