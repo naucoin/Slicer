@@ -152,10 +152,14 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
   if (useFiducialColor)
     {
     d->FiducialDisplayNode->SliceProjectionUseFiducialColorOn();
+    d->pointProjectionColorLabel->setEnabled(false);
+    d->pointProjectionColorPickerButton->setEnabled(false);
     }
   else
     {
     d->FiducialDisplayNode->SliceProjectionUseFiducialColorOff();
+    d->pointProjectionColorLabel->setEnabled(true);
+    d->pointProjectionColorPickerButton->setEnabled(true);
     }
 }
 
@@ -216,8 +220,10 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
   d->pointProjectionColorPickerButton->setColor(displayColor);
 
   // -- Use Fiducial Color
-  d->pointUseFiducialColorCheckBox->setChecked(
-     d->FiducialDisplayNode->GetSliceProjectionUseFiducialColor());
+  bool useFiducialColor = d->FiducialDisplayNode->GetSliceProjectionUseFiducialColor();
+  d->pointUseFiducialColorCheckBox->setChecked(useFiducialColor);
+  d->pointProjectionColorLabel->setEnabled(!useFiducialColor);
+  d->pointProjectionColorPickerButton->setEnabled(!useFiducialColor);
 
   // -- Outlined Behind Slice Plane
   d->pointOutlinedBehindSlicePlaneCheckBox->setChecked(

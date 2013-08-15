@@ -24,3 +24,11 @@ slicerMacroBuildScriptedModule(
   RESOURCES ${MARKUPS_PYTHON_RESOURCES}
   )
 slicer_add_python_unittest(SCRIPT NeurosurgicalPlanningTutorialMarkupsSelfTest.py)
+
+# Test fiducials in compare viewers
+slicerMacroBuildScriptedModule(
+  NAME MarkupsInCompareViewersSelfTest
+  SCRIPTS MarkupsInCompareViewersSelfTest.py
+  RESOURCES ${MARKUPS_PYTHON_RESOURCES}
+  )
+slicer_add_python_unittest(SCRIPT MarkupsInCompareViewersSelfTest.py)

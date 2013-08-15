@@ -1421,25 +1421,3 @@ std::string vtkMRMLMarkupsNode::ReplaceListNameInMarkupLabelFormat()
     }
   return newFormatString;
 }
-
-//---------------------------------------------------------------------------
-void vtkMRMLMarkupsNode::UseListNameInMarkupLabelFormat(bool flag)
-{
-  std::string newFormatString = this->MarkupLabelFormat;
-  size_t replacePos = newFormatString.find("%N");
-  if (flag == true &&
-      replacePos == std::string::npos)
-    {
-    // prepend the special replacement string
-    newFormatString = std::string("%N") + newFormatString;
-    }
-  else if (flag == false &&
-           replacePos != std::string::npos)
-    {
-    // remove the special replacement string
-    std::string emptyString;
-    newFormatString.replace(replacePos, 2, emptyString);
-    }
-  // and set it
-  this->SetMarkupLabelFormat(newFormatString);
-}

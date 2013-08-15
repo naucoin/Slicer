@@ -991,7 +991,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     vtkRenderer* pokedRenderer = this->GetInteractor()->FindPokedRenderer(coords[0],coords[1]);
     if (!pokedRenderer)
       {
-      vtkErrorMacro("RestrictDisplayCoordinatesToViewport: Could not find the poked renderer!")
+      vtkErrorMacro("IsWidgetDisplayableOnSlice: Could not find the poked renderer!")
       return false;
       }
 
@@ -999,7 +999,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     pokedRenderer->NormalizedDisplayToViewport(coords[0],coords[1]);
     pokedRenderer->ViewportToNormalizedViewport(coords[0],coords[1]);
 
-    if ((coords[0]>0.0) && (coords[1]<1.0) && (coords[1]>0.0) && (coords[1]<1.0))
+    if ((coords[0]>0.0) && (coords[0]<1.0) && (coords[1]>0.0) && (coords[1]<1.0))
       {
       // current point is inside of view
       inViewport = true;
@@ -1007,10 +1007,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
 
     } // end of for loop through control points
 
-
   return showWidget && inViewport;
-
-
 }
 
 //---------------------------------------------------------------------------

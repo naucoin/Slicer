@@ -96,7 +96,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="pointOutlinedBehindSlicePlaneLabel">
      <property name="toolTip">
-      <string>Fiducial projection is displayed filled (opacity = Projection Opacity) when on top of slice plane, outlined when behind, and with full opacity when in the plane</string>
+      <string>Fiducial projection is displayed filled (opacity = Projection Opacity) when on top of slice plane, outlined when behind, and with full opacity when in the plane. Outline isn't used for some glyphs (Dash2D, Cross2D, Starburst).</string>
      </property>
      <property name="text">
       <string>Outlined Behind Slice Plane</string>
@@ -106,7 +106,7 @@
    <item row="4" column="1">
     <widget class="QCheckBox" name="pointOutlinedBehindSlicePlaneCheckBox">
      <property name="toolTip">
-      <string>Fiducial projection is displayed filled (opacity = Projection Opacity) when on top of slice plane, outlined when behind, and with full opacity when in the plane</string>
+      <string>Fiducial projection is displayed filled (opacity = Projection Opacity) when on top of slice plane, outlined when behind, and with full opacity when in the plane. Outline isn't used for some glyphs (Dash2D, Cross2D, Starburst).</string>
      </property>
      <property name="text">
       <string/>

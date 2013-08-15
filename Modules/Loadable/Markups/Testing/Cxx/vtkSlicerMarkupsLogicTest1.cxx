@@ -86,25 +86,34 @@ int vtkSlicerMarkupsLogicTest1(int , char * [] )
     }
   // test the list stuff
   logic1->SetAllMarkupsVisibility(NULL, true);
+  logic1->ToggleAllMarkupsVisibility(NULL);
   logic1->SetAllMarkupsLocked(NULL, false);
+  logic1->ToggleAllMarkupsLocked(NULL);
   logic1->SetAllMarkupsSelected(NULL, true);
+  logic1->ToggleAllMarkupsSelected(NULL);
 
   // no points
   logic1->SetAllMarkupsVisibility(markupsNode, false);
   logic1->SetAllMarkupsVisibility(markupsNode, true);
+  logic1->ToggleAllMarkupsVisibility(markupsNode);
   logic1->SetAllMarkupsLocked(markupsNode, true);
   logic1->SetAllMarkupsLocked(markupsNode, false);
+  logic1->ToggleAllMarkupsLocked(markupsNode);
   logic1->SetAllMarkupsSelected(markupsNode, false);
   logic1->SetAllMarkupsSelected(markupsNode, true);
+  logic1->ToggleAllMarkupsSelected(markupsNode);
 
   // add some points
   markupsNode->AddMarkupWithNPoints(5);
   logic1->SetAllMarkupsVisibility(markupsNode, false);
   logic1->SetAllMarkupsVisibility(markupsNode, true);
+  logic1->ToggleAllMarkupsVisibility(markupsNode);
   logic1->SetAllMarkupsLocked(markupsNode, true);
   logic1->SetAllMarkupsLocked(markupsNode, false);
+  logic1->ToggleAllMarkupsLocked(markupsNode);
   logic1->SetAllMarkupsSelected(markupsNode, false);
   logic1->SetAllMarkupsSelected(markupsNode, true);
+  logic1->ToggleAllMarkupsSelected(markupsNode);
 
   // test the default display node settings
   vtkSmartPointer<vtkMRMLMarkupsDisplayNode> displayNode = vtkSmartPointer<vtkMRMLMarkupsDisplayNode>::New();

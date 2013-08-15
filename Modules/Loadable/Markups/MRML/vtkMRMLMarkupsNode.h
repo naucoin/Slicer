@@ -262,11 +262,6 @@ public:
   /// contain %N, return MarkupLabelFormat
   std::string ReplaceListNameInMarkupLabelFormat();
 
-  /// Update the MarkupLabelFormat string, if flag is true use the list name
-  /// replacment code, if flag is false, remove it and replace it with an empty
-  /// string. Defaults to prefix. Only adds it if not there already.
-  void UseListNameInMarkupLabelFormat(bool flag);
-
   /// Reimplemented to take into account the modified time of the markups
   /// Returns true if the node (default behavior) or the markups are modified
   /// since read/written.

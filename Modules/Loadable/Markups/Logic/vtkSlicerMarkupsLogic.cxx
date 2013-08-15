@@ -570,6 +570,21 @@ void vtkSlicerMarkupsLogic::SetAllMarkupsVisibility(vtkMRMLMarkupsNode *node, bo
 }
 
 //---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::ToggleAllMarkupsVisibility(vtkMRMLMarkupsNode *node)
+{
+  if (!node)
+    {
+    vtkDebugMacro("ToggleAllMarkupsVisibility: No list");
+    return;
+    }
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    node->SetNthMarkupVisibility(i, !(node->GetNthMarkupVisibility(i)));
+    }
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerMarkupsLogic::SetAllMarkupsLocked(vtkMRMLMarkupsNode *node, bool flag)
 {
   if (!node)
@@ -585,6 +600,21 @@ void vtkSlicerMarkupsLogic::SetAllMarkupsLocked(vtkMRMLMarkupsNode *node, bool f
 }
 
 //---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::ToggleAllMarkupsLocked(vtkMRMLMarkupsNode *node)
+{
+  if (!node)
+    {
+    vtkDebugMacro("ToggleAllMarkupsLocked: No list");
+    return;
+    }
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    node->SetNthMarkupLocked(i, !(node->GetNthMarkupLocked(i)));
+    }
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerMarkupsLogic::SetAllMarkupsSelected(vtkMRMLMarkupsNode *node, bool flag)
 {
   if (!node)
@@ -596,6 +626,21 @@ void vtkSlicerMarkupsLogic::SetAllMarkupsSelected(vtkMRMLMarkupsNode *node, bool
   for (int i = 0; i < numMarkups; i++)
     {
     node->SetNthMarkupSelected(i, flag);
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::ToggleAllMarkupsSelected(vtkMRMLMarkupsNode *node)
+{
+  if (!node)
+    {
+    vtkDebugMacro("ToggleAllMarkupsSelected: No list");
+    return;
+    }
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    node->SetNthMarkupSelected(i, !(node->GetNthMarkupSelected(i)));
     }
 }
 
