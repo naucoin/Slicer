@@ -73,7 +73,7 @@ qSlicerMarkupsModule::qSlicerMarkupsModule(QObject* _parent)
 //-----------------------------------------------------------------------------
 QStringList qSlicerMarkupsModule::categories()const
 {
-  return QStringList() << "Informatics";
+  return QStringList() << "" << "Informatics";
 }
 
 //-----------------------------------------------------------------------------
