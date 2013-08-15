@@ -50,20 +50,17 @@ SIMPLE_TEST( vtkMRMLMarkupsNodeTest2 )
 
 
 SET (TEST_FCSV ${TEST_DIR}/markupsFiducialStorageNode.fcsv)
-FILE(TO_NATIVE_PATH ${TEST_FCSV} TEST_FCSV_NATIVE)
-SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest1 ${TEST_FCSV_NATIVE} )
+SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest1 ${TEST_FCSV} )
 
 
 # test legacy Slicer3 fcsv file
 SET (TEST_S3_FCSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer3.fcsv)
-FILE(TO_NATIVE_PATH ${TEST_S3_FCSV} TEST_S3_FCSV_NATIVE)
-MESSAGE(STATUS "Slicer 3 fiducials test: \nCMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}\n file for markups = ${TEST_S3_FCSV_NATIVE}")
-SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest2 ${TEST_S3_FCSV_NATIVE} )
+MESSAGE(STATUS "Slicer 3 fiducials test: \nCMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}\n file for markups = ${TEST_S3_FCSV}")
+SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest2 ${TEST_S3_FCSV} )
 
 # test Slicer4 annotation acsv file
 SET (TEST_S4_ACSV ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/slicer4.acsv)
-FILE(TO_NATIVE_PATH ${TEST_S4_ACSV} TEST_S4_ACSV_NATIVE)
-SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest3 ${TEST_S4_ACSV_NATIVE} )
+SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest3 ${TEST_S4_ACSV} )
 
 SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 )
 
@@ -75,5 +72,4 @@ SIMPLE_TEST( vtkSlicerMarkupsLogicTest3 )
 # test Slicer4 annotation fiducials in a mrml file
 # TODO: enable this after final cut over
 # SET (TEST_S4_ANNOTATION_MRML ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Input/AnnotationTest/AnnotationFiducialsTest.mrml)
-# FILE(TO_NATIVE_PATH ${TEST_S4_ANNOTATION_MRML} TEST_S4_ANNOTATION_MRML_NATIVE)
-# SIMPLE_TEST( vtkMarkupsAnnotationSceneTest ${TEST_S4_ANNOTATION_MRML_NATIVE} )
+# SIMPLE_TEST( vtkMarkupsAnnotationSceneTest ${TEST_S4_ANNOTATION_MRML} )
