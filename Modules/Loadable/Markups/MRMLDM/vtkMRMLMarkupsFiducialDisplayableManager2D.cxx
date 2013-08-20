@@ -636,7 +636,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         if ((pointDisplayNode->GetSliceProjection() & pointDisplayNode->ProjectionOn) &&
             pointDisplayNode->GetVisibility())
           {
-          double glyphScale = pointDisplayNode->GetGlyphScale()*2;
+          double glyphScale = pointDisplayNode->GetGlyphScale()*2.0;
           int glyphType = pointDisplayNode->GetGlyphType();
           if (glyphType == vtkMRMLMarkupsDisplayNode::Sphere3D)
             {
@@ -668,7 +668,6 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
             vtkNew<vtkMarkupsGlyphSource2D> glyph;
             glyph->SetGlyphType(glyphType);
             glyph->SetScale(glyphScale);
-            glyph->SetScale2(glyphScale);
             glyph->SetColor(projectionColor);
 
             vtkNew<vtkPointHandleRepresentation2D> handle;
@@ -719,7 +718,15 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
                   static const double inPlaneOpacity = 1.0;
                   if (displayP1[2] < 0)
                     {
-                    glyphSource->FilledOff();
+                    // when the glyph source is a cross2d or a dash2d, filled
+                    // off is not working correctly, the lines extend to the
+                    // edges of the viewer (the scaling is applied to line
+                    // length
+                    if (glyphType != vtkMRMLMarkupsDisplayNode::Dash2D &&
+                        glyphType != vtkMRMLMarkupsDisplayNode::Cross2D)
+                      {
+                      glyphSource->FilledOff();
+                      }
                     if (displayP1[2] > -threshold)
                       {
                       projectionOpacity = inPlaneOpacity;
@@ -894,6 +901,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
       glyphSource->SetGlyphType(vtkMRMLMarkupsDisplayNode::Sphere3D);
       glyphSource->Update();
       glyphSource->SetScale(1.0);
+      glyphSource->SetScale2(1.0);
       handle->SetHandle(glyphSource->GetOutput());
       seedRepresentation->SetHandleRepresentation(handle.GetPointer());
       updateHandleType = true;

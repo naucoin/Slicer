@@ -24,6 +24,7 @@
 
 // VTK includes
 #include <vtkAbstractWidget.h>
+#include <vtkCollection.h>
 #include <vtkHandleWidget.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -35,6 +36,7 @@
 #include <vtkSphereHandleRepresentation.h>
 
 // MRML includes
+#include <vtkMRMLScene.h>
 #include <vtkMRMLSliceNode.h>
 
 // STD includes
@@ -364,20 +366,66 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
     }
 
   // go through the list and remove the projection points for it
-  for (int n = 0; n < node->GetNumberOfMarkups(); ++n)
+  // this can get called after a markup has been removed from the list,
+  // so turn it around and iterate through all the markups in all the lists,
+  // then delete the widget point projections for those that don't match up to
+  // points in the scene
+  vtkCollection *col = NULL;
+  if (node->GetScene() != NULL)
     {
-    std::string pointID = node->GetNthMarkupID(n);
-    WidgetPointProjectionsIt widgetPointProjectionIterator = this->WidgetPointProjections.find(pointID);
-    if (widgetPointProjectionIterator != this->WidgetPointProjections.end())
+    col = node->GetScene()->GetNodesByClass("vtkMRMLMarkupsNode");
+    }
+  else
+    {
+    // without a scene to get the other nodes from, default to just using this node
+    col = vtkCollection::New();
+    col->AddItem(node);
+    }
+
+ unsigned int numberOfMarkupsNodes = col->GetNumberOfItems();
+ // use a map so can use find, it's markup id: list node id
+ std::map<std::string, std::string> currentMarkupIDs;
+ for (unsigned int i = 0; i < numberOfMarkupsNodes; ++i)
+   {
+   vtkMRMLMarkupsNode *markupsNode = vtkMRMLMarkupsNode::SafeDownCast(col->GetItemAsObject(i));
+   if (!markupsNode)
+     {
+     continue;
+     }
+   for (int n = 0; n < markupsNode->GetNumberOfMarkups(); ++n)
+    {
+    std::string pointID = markupsNode->GetNthMarkupID(n);
+    currentMarkupIDs[pointID] = std::string(markupsNode->GetID());
+    }
+   }
+ col->RemoveAllItems();
+ col->Delete();
+
+ WidgetPointProjectionsIt widgetPointProjectionIterator = this->WidgetPointProjections.begin();
+ // build up a vector of points to erase from the point projection map
+ std::vector<std::string> projectionsToErase;
+ for (; widgetPointProjectionIterator != this->WidgetPointProjections.end(); widgetPointProjectionIterator++)
+   {
+   // does this point projection correspond to a valid markup id?
+   std::string pointID = widgetPointProjectionIterator->first;
+   std::map<std::string,std::string>::iterator it;
+   it = currentMarkupIDs.find(pointID);
+   if (it == currentMarkupIDs.end())
       {
-      if (this->WidgetPointProjections[pointID])
-        {
-        this->WidgetPointProjections[pointID]->Off();
-        this->WidgetPointProjections[pointID]->Delete();
-        }
-      this->WidgetPointProjections.erase(pointID);
+      // add it to a list of point to erase
+      projectionsToErase.push_back(pointID);
       }
-  }
+   }
+ for (unsigned int p = 0; p < projectionsToErase.size(); ++p)
+   {
+   std::string pointID = projectionsToErase[p];
+   if (this->WidgetPointProjections[pointID])
+     {
+     this->WidgetPointProjections[pointID]->Off();
+     this->WidgetPointProjections[pointID]->Delete();
+     }
+   this->WidgetPointProjections.erase(pointID);
+   }
 
   vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt nodeIterator = std::find(
       this->MarkupsNodeList.begin(),

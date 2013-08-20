@@ -56,7 +56,12 @@ public:
 
   /// Refresh the gui from the currently active markup node as determined by
   /// the selection node
+  /// \sa updateWidgetFromDisplayNode()
   void updateWidgetFromMRML();
+  /// Update the GUI elements related to the display properties from MRML, by
+  /// getting the display node associated with the active markups node.
+  /// \sa  updateWidgetFromMRML()
+  void updateWidgetFromDisplayNode();
   /// Refresh a row of the gui from the mth markup in the currently active
   /// markup node as defined by the selection node combo box
   void updateRow(int m);
@@ -106,6 +111,8 @@ public slots:
   void onTextScaleSliderWidgetChanged(double value);
   void onOpacitySliderWidgetChanged(double value);
 
+  void onMarkupScaleSliderWidgetValueChanged(double value);
+
   /// Display property button slots
   void onResetToDefaultDisplayPropertiesPushButtonClicked();
   void onSaveToDefaultDisplayPropertiesPushButtonClicked();
@@ -113,10 +120,13 @@ public slots:
   /// List button slots
   void onVisibilityOnAllMarkupsInListPushButtonClicked();
   void onVisibilityOffAllMarkupsInListPushButtonClicked();
+  void onVisibilityAllMarkupsInListToggled();
   void onLockAllMarkupsInListPushButtonClicked();
   void onUnlockAllMarkupsInListPushButtonClicked();
+  void onLockAllMarkupsInListToggled();
   void onSelectAllMarkupsInListPushButtonClicked();
   void onDeselectAllMarkupsInListPushButtonClicked();
+  void onSelectedAllMarkupsInListToggled();
   void onAddMarkupPushButtonClicked();
   void onMoveMarkupUpPushButtonClicked();
   void onMoveMarkupDownPushButtonClicked();
@@ -140,9 +150,6 @@ public slots:
   /// Toggle the markups node locked flag
   void onListLockedUnlockedPushButtonClicked();
 
-  /// Update the markup from the check box
-  void onUseListNameForMarkupsCheckBoxToggled(bool flag);
-
   /// Update the markup label from the line edit entry
   void onNameFormatLineEditTextEdited(const QString text);
 
@@ -163,6 +170,8 @@ public slots:
 					     int previousRow, int previousColumn);
   /// Provide a right click menu in the table
   void onRightClickActiveMarkupTableWidget(QPoint pos);
+  /// Jump slices action slot
+  void onJumpSlicesActionTriggered();
   /// Right click action slots
   void onMoveToOtherListActionTriggered(QString destinationPosition);
   /// Respond to the user selecting another list to move selected markups to
@@ -183,6 +192,8 @@ public slots:
   void onActiveMarkupsNodeMarkupRemovedEvent();//vtkMRMLNode *markupsNode);
   /// Update a table row from a modified markup
   void onActiveMarkupsNodeNthMarkupModifiedEvent(vtkObject *caller, vtkObject *callData);
+  /// Update the display properties widgets when the display node is modified
+  void onActiveMarkupsNodeDisplayModifiedEvent();
 
   /// Create a new markups node and copy the display node settings from the
   /// current markups node if set, otherwise just uses the defaults.

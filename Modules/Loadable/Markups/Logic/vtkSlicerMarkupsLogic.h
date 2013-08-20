@@ -88,8 +88,11 @@ public:
 
   /// Utility methods to operate on all markups in a markups node
   void SetAllMarkupsVisibility(vtkMRMLMarkupsNode *node, bool flag);
+  void ToggleAllMarkupsVisibility(vtkMRMLMarkupsNode *node);
   void SetAllMarkupsLocked(vtkMRMLMarkupsNode *node, bool flag);
+  void ToggleAllMarkupsLocked(vtkMRMLMarkupsNode *node);
   void SetAllMarkupsSelected(vtkMRMLMarkupsNode *node, bool flag);
+  void ToggleAllMarkupsSelected(vtkMRMLMarkupsNode *node);
 
   /// set/get the default markups display node settings
   int GetDefaultMarkupsDisplayNodeGlyphType();

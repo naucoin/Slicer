@@ -12,6 +12,7 @@
     <file>Icons/MarkupsMoveDown.png</file>
     <file>Icons/MarkupsMoveUp.png</file>
     <file>Icons/MarkupsSelected.png</file>
+    <file>Icons/MarkupsSelectedOrUnselected.png</file>
     <file>Icons/MarkupsUnselected.png</file>
   </qresource>
 </RCC>

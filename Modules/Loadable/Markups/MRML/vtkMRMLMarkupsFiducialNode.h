@@ -51,7 +51,7 @@ public:
 
   virtual vtkMRMLNode* CreateNodeInstance();
   // Get node XML tag name (like Volume, Model)
-  virtual const char* GetNodeTagName() {return "MarkupsFiducial";};
+  virtual const char* GetNodeTagName() {return "FiducialList";};
 
   // Read node attributes from XML file
   virtual void ReadXMLAttributes( const char** atts);

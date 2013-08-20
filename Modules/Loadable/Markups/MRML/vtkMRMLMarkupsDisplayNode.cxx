@@ -54,13 +54,13 @@ vtkMRMLMarkupsDisplayNode::vtkMRMLMarkupsDisplayNode()
   this->SetScalarVisibility(0);
   this->SetTensorVisibility(0);
 
-  this->Color[0] = 0.7373;
-  this->Color[1] = 0.2549;
-  this->Color[2] = 0.1098;
+  this->Color[0] = 0.4;
+  this->Color[1] = 1.0;
+  this->Color[2] = 1.0;
 
-  this->SelectedColor[0] = 0.2667;
-  this->SelectedColor[1] = 0.6745;
-  this->SelectedColor[2] = 0.3922;
+  this->SelectedColor[0] = 1.0;
+  this->SelectedColor[1] = 0.5;
+  this->SelectedColor[2] = 0.5;
 
   this->SetName("");
   this->Opacity = 1.0;
