@@ -792,7 +792,7 @@ void vtkMRMLMarkupsNode::SetMarkupPointWorld(const int markupIndex, const int po
   transformToWorld->Identity();
   if (tnode != NULL)
   {
-	  if (tnode->IsLinear())
+      if (tnode->IsLinear())
     {
     vtkMRMLLinearTransformNode *lnode = vtkMRMLLinearTransformNode::SafeDownCast(tnode);
     lnode->GetMatrixTransformToWorld(transformToWorld);

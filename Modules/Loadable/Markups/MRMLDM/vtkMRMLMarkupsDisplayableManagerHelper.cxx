@@ -82,8 +82,8 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PrintSelf(ostream& os, vtkIndent in
         vtkWarningMacro("PrintSelf: no seed representation for widget assoc with markups node " << widgetIterator->first->GetID());
         }
       os << indent.GetNextIndent().GetNextIndent() << "enabled = "
-	 << widgetIterator->second->GetEnabled()
-	 << ", number of seeds = " << numberOfSeeds << std::endl;
+     << widgetIterator->second->GetEnabled()
+     << ", number of seeds = " << numberOfSeeds << std::endl;
       }
     }
 
@@ -196,8 +196,8 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode *no
     }
 
   vtkDebugMacro("UpdateLocked: isLockedOnNode = " << isLockedOnNode
-		<< ", isLockedOnWidget = " << isLockedOnWidget
-		<< ", isLockedOnInteraction = " << isLockedOnInteraction);
+        << ", isLockedOnWidget = " << isLockedOnWidget
+        << ", isLockedOnInteraction = " << isLockedOnInteraction);
   // only update the processEvents state of the widget if it is different than
   // what the markups node or the interaction node says it needs to be
   if ( (isLockedOnNode && !isLockedOnWidget) ||

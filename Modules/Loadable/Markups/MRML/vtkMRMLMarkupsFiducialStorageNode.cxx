@@ -361,19 +361,19 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
             markupsNode->SetNthMarkupLocked(thisMarkupNumber,lock);
 
             // label
-	    // the label may have quotes around it, look for the end quote and comma
-	    // std::cout << "Line ss = '" << ss.str().c_str() << "'" << std::endl;
-	    std::string labelDescID;
-	    getline(ss, labelDescID);
-	    // if there's no quote at the start of the line, the label was
+        // the label may have quotes around it, look for the end quote and comma
+        // std::cout << "Line ss = '" << ss.str().c_str() << "'" << std::endl;
+        std::string labelDescID;
+        getline(ss, labelDescID);
+        // if there's no quote at the start of the line, the label was
             // checked to be sure that there are no commas in it, so extract
             // to the next comma
             size_t endCommaPos;
-	    if (labelDescID[0] != '"')
-	      {
+        if (labelDescID[0] != '"')
+          {
               endCommaPos = labelDescID.find(",");
               component = labelDescID.substr(0, endCommaPos);
-	      }
+          }
             else
               {
               component = this->GetFirstQuotedString(labelDescID, &endCommaPos);
@@ -393,12 +393,12 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
             // description
             // get the rest of the string after the label
             std::string descID = labelDescID.substr(endCommaPos + 1);
-	    // the description may have quotes around it as well
-	    if (descID[0] != '"')
-	      {
+        // the description may have quotes around it as well
+        if (descID[0] != '"')
+          {
               endCommaPos = descID.find(",");
               component = descID.substr(0, endCommaPos);
-	      }
+          }
             else
               {
               component = this->GetFirstQuotedString(descID, &endCommaPos);
@@ -417,9 +417,9 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
 
             // in case the file was written by hand, the associated node id
             // might be empty
-	    size_t associatedNodeIDPos = ss.str().find_last_of(',');
-	    if (associatedNodeIDPos != std::string::npos)
-	      {
+        size_t associatedNodeIDPos = ss.str().find_last_of(',');
+        if (associatedNodeIDPos != std::string::npos)
+          {
               component = ss.str().substr(associatedNodeIDPos + 1);
               if (component.size())
                 {
@@ -432,11 +432,11 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
                 vtkDebugMacro("no associated node id");
                 markupsNode->SetNthMarkupAssociatedNodeID(thisMarkupNumber,"");
                 }
-	      }
-	    else
-	      {
+          }
+        else
+          {
               markupsNode->SetNthMarkupAssociatedNodeID(thisMarkupNumber,"");
-	      }
+          }
 
             thisMarkupNumber++;
             vtkDebugMacro("Line parsed, got id = " << id << ", vis = " << vis << ", sel = " << sel

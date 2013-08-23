@@ -147,7 +147,7 @@ protected:
   /// true if the position changed
   virtual bool UpdateNthSeedPositionFromMRML(int vtkNotUsed(n),
                  vtkAbstractWidget *vtkNotUsed(widget),
-		 vtkMRMLMarkupsNode *vtkNotUsed(markupsNode))
+         vtkMRMLMarkupsNode *vtkNotUsed(markupsNode))
     { return false; };
   /// Update just the position for the widget, implemented by subclasses.
   virtual void UpdatePosition(vtkAbstractWidget *vtkNotUsed(widget), vtkMRMLNode *vtkNotUsed(node)) {};

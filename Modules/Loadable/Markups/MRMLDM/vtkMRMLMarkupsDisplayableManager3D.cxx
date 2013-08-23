@@ -562,9 +562,9 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsDisplayNodeModifiedEvent(v
     }
 
   vtkDebugMacro("OnMRMLMarkupsDisplayNodeModifiedEvent: found the markups node "
-		<< markupsNode->GetID()
-		<< " associated with the modified display node "
-		<< markupsDisplayNode->GetID());
+        << markupsNode->GetID()
+        << " associated with the modified display node "
+        << markupsDisplayNode->GetID());
   vtkAbstractWidget * widget = this->Helper->GetWidget(markupsNode);
 
   // Propagate MRML changes to widget
@@ -975,9 +975,9 @@ void vtkMRMLMarkupsDisplayableManager3D::GetDisplayToViewportCoordinates(double 
     viewportCoordinates[1] = y/windowHeight;
     }
   vtkDebugMacro("GetDisplayToViewportCoordinates: x = " << x
-		<< ", y = " << y
-		<< ", returning viewport = "
-		<< viewportCoordinates[0] << ", " << viewportCoordinates[1]);
+        << ", y = " << y
+        << ", returning viewport = "
+        << viewportCoordinates[0] << ", " << viewportCoordinates[1]);
 }
 
 //---------------------------------------------------------------------------

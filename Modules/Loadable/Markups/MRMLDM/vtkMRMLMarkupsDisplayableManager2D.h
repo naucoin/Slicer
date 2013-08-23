@@ -102,7 +102,7 @@ public:
   /// Update a single seed from markup position, implemented by the subclasses, return
   /// true if the position changed
   virtual bool UpdateNthSeedPositionFromMRML(int vtkNotUsed(n),
-		 vtkAbstractWidget *vtkNotUsed(widget),
+         vtkAbstractWidget *vtkNotUsed(widget),
                  vtkMRMLMarkupsNode *vtkNotUsed(markupsNode))
     { return false; };
 

@@ -580,7 +580,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLMarkupsDisplayNodeModifiedEvent(v
     }
 
   vtkDebugMacro("OnMRMLMarkupsDisplayNodeModifiedEvent: found the markups node "
-		<< markupsNode->GetID()
+        << markupsNode->GetID()
                 << " associated with the modified display node "
                 << markupsDisplayNode->GetID());
   vtkAbstractWidget * widget = this->Helper->GetWidget(markupsNode);

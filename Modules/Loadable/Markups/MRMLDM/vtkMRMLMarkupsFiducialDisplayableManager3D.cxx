@@ -329,10 +329,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
   if (!handleRep)
     {
     vtkErrorMacro("Failed to get an oriented polygonal handle rep for n = "
-		  << n << ", number of seeds = "
-		  << seedRepresentation->GetNumberOfSeeds()
-		  << ", handle rep = "
-		  << (seedRepresentation->GetHandleRepresentation(n) ? seedRepresentation->GetHandleRepresentation(n)->GetClassName() : "null"));
+          << n << ", number of seeds = "
+          << seedRepresentation->GetNumberOfSeeds()
+          << ", handle rep = "
+          << (seedRepresentation->GetHandleRepresentation(n) ? seedRepresentation->GetHandleRepresentation(n)->GetClassName() : "null"));
     return;
     }
 
@@ -400,10 +400,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
       oldGlyphType != displayNode->GetGlyphType())
     {
     vtkDebugMacro("3D: DisplayNode glyph type = "
-		  << displayNode->GetGlyphType()
-		  << " = " << displayNode->GetGlyphTypeAsString()
-		  << ", is 3d glyph = "
-		  << (displayNode->GlyphTypeIs3D() ? "true" : "false"));
+          << displayNode->GetGlyphType()
+          << " = " << displayNode->GetGlyphTypeAsString()
+          << ", is 3d glyph = "
+          << (displayNode->GlyphTypeIs3D() ? "true" : "false"));
     if (displayNode->GlyphTypeIs3D())
       {
       if (displayNode->GetGlyphType() == vtkMRMLMarkupsDisplayNode::Sphere3D)
@@ -635,16 +635,16 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::PropagateWidgetToMRML(vtkAbstra
     double worldCoordinates1[4];
     seedRepresentation->GetSeedWorldPosition(n,worldCoordinates1);
     vtkDebugMacro("PropagateWidgetToMRML: 3d: widget seed " << n
-		  << " world coords = " << worldCoordinates1[0] << ", "
-		  << worldCoordinates1[1] << ", "<< worldCoordinates1[2]);
+          << " world coords = " << worldCoordinates1[0] << ", "
+          << worldCoordinates1[1] << ", "<< worldCoordinates1[2]);
 
     // was there a change?
     double currentCoordinates[4];
     fiducialNode->GetNthFiducialWorldCoordinates(n,currentCoordinates);
     vtkDebugMacro("PropagateWidgetToMRML: fiducial " << n
-		  << " current world coordinates = " << currentCoordinates[0]
-		  << ", " << currentCoordinates[1] << ", "
-		  << currentCoordinates[2]);
+          << " current world coordinates = " << currentCoordinates[0]
+          << ", " << currentCoordinates[1] << ", "
+          << currentCoordinates[2]);
 
     double currentCoords[3];
     currentCoords[0] = currentCoordinates[0];
@@ -723,10 +723,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
     else
       {
       vtkDebugMacro("OnClickInRenderWindow: active markup id = "
-		    << (activeMarkupsID ? activeMarkupsID : "null")
-		    << ", mrml node is "
-		    << (mrmlNode ? mrmlNode->GetID() : "null")
-		    << ", not a vtkMRMLMarkupsFiducialNode");
+            << (activeMarkupsID ? activeMarkupsID : "null")
+            << ", mrml node is "
+            << (mrmlNode ? mrmlNode->GetID() : "null")
+            << ", not a vtkMRMLMarkupsFiducialNode");
       }
     }
 
@@ -829,9 +829,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnInteractorStyleEvent(int even
     {
     char *keySym = this->GetInteractor()->GetKeySym();
     vtkDebugMacro("OnInteractorStyleEvent 3D: key press event position = "
-		  << this->GetInteractor()->GetEventPosition()[0] << ", "
-		  << this->GetInteractor()->GetEventPosition()[1]
-		  << ", key sym = " << (keySym == NULL ? "null" : keySym));
+          << this->GetInteractor()->GetEventPosition()[0] << ", "
+          << this->GetInteractor()->GetEventPosition()[1]
+          << ", key sym = " << (keySym == NULL ? "null" : keySym));
     if (!keySym)
       {
       return;

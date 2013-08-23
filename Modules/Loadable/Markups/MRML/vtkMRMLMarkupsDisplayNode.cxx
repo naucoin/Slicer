@@ -148,7 +148,7 @@ void vtkMRMLMarkupsDisplayNode::ReadXMLAttributes(const char** atts)
       ss >> this->SliceProjection;
       }
     else if (!strcmp(attName, "sliceProjectionColor") ||
-	     !strcmp(attName, "projectedColor"))
+         !strcmp(attName, "projectedColor"))
       {
       std::stringstream ss;
       ss << attValue;
@@ -157,7 +157,7 @@ void vtkMRMLMarkupsDisplayNode::ReadXMLAttributes(const char** atts)
       ss >> this->SliceProjectionColor[2];
       }
     else if (!strcmp(attName, "sliceProjectionOpacity") ||
-	     !strcmp(attName, "projectedOpacity"))
+         !strcmp(attName, "projectedOpacity"))
       {
       std::stringstream ss;
       ss << attValue;
