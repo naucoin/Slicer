@@ -82,10 +82,6 @@ vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
 
   this->Focus = "vtkMRMLMarkupsNode";
 
-  // by default, this displayableManager handles a 2d view, so the SliceNode
-  // must be set when it's assigned to a viewer
-  this->SliceNode = 0;
-
   // by default, multiply the display node scale by this when setting scale on elements in 2d windows
   this->ScaleFactor2D = 0.00333;
 
@@ -105,8 +101,6 @@ vtkMRMLMarkupsDisplayableManager2D::~vtkMRMLMarkupsDisplayableManager2D()
 
   this->Helper->Delete();
   this->ClickCounter->Delete();
-
-  this->SliceNode = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -115,10 +109,10 @@ void vtkMRMLMarkupsDisplayableManager2D::PrintSelf(ostream& os, vtkIndent indent
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "DisableInteractorStyleEventsProcessing = " << this->DisableInteractorStyleEventsProcessing << std::endl;
-  if (this->SliceNode &&
-      this->SliceNode->GetID())
+  if (this->GetMRMLSliceNode() &&
+      this->GetMRMLSliceNode()->GetID())
     {
-    os << indent << "Slice node id = " << this->SliceNode->GetID() << std::endl;
+    os << indent << "Slice node id = " << this->GetMRMLSliceNode()->GetID() << std::endl;
     }
   else
     {
@@ -661,37 +655,12 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLDisplayableNodeModifiedEvent(vtkO
 
   if (sliceNode)
     {
-    // the associated renderWindow is a 2D SliceView
-    // this is the entry point for all events fired by one of the three sliceviews
-    // (f.e. change slice number, zoom etc.)
-
-    // we remember that this instance of the displayableManager deals with 2D
-    // this is important for widget creation etc. and save the actual SliceNode
-    // because during Slicer startup the SliceViews fire events, it will be always set correctly
-    this->SliceNode = sliceNode;
-
     // now we call the handle for specific sliceNode actions
     this->OnMRMLSliceNodeModifiedEvent();
 
     // and exit
     return;
     }
-
-  vtkMRMLViewNode * viewNode = vtkMRMLViewNode::SafeDownCast(caller);
-
-  if (viewNode)
-    {
-    // the associated renderWindow is a 3D View
-    vtkDebugMacro("OnMRMLDisplayableNodeModifiedEvent: This displayableManager handles a ThreeD view.")
-    return;
-    }
-
-}
-
-//---------------------------------------------------------------------------
-vtkMRMLSliceNode * vtkMRMLMarkupsDisplayableManager2D::GetSliceNode()
-{
-  return this->SliceNode;
 }
 
 //---------------------------------------------------------------------------
@@ -775,7 +744,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSliceNodeModifiedEvent()
 bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarkupsNode* node, int markupIndex)
 {
 
-  vtkMRMLSliceNode* sliceNode = this->GetSliceNode();
+  vtkMRMLSliceNode* sliceNode = this->GetMRMLSliceNode();
   // if no slice node, it doesn't constrain the visibility, so return that
   // it's visible
   if (!sliceNode)
@@ -892,14 +861,14 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
         vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
         if (mrmlAppLogic)
           {
-          sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetSliceNode());
+          sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetMRMLSliceNode());
           }
         if (sliceLogic)
           {
           double *volumeSliceSpacing = sliceLogic->GetLowestVolumeSliceSpacing();
           if (volumeSliceSpacing != NULL)
             {
-            vtkDebugMacro("Slice node " << this->GetSliceNode()->GetName()
+            vtkDebugMacro("Slice node " << this->GetMRMLSliceNode()->GetName()
                           << ": volumeSliceSpacing = "
                           << volumeSliceSpacing[0] << ", "
                           << volumeSliceSpacing[1] << ", "
@@ -917,7 +886,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
         // calculate the distance from the point in world space to the
         // plane defined by the slice node normal and origin (using same
         // convention as the vtkMRMLThreeDReformatDisplayableManager)
-        vtkMatrix4x4 *sliceToRAS = this->GetSliceNode()->GetSliceToRAS();
+        vtkMatrix4x4 *sliceToRAS = this->GetMRMLSliceNode()->GetSliceToRAS();
         double slicePlaneNormal[3], slicePlaneOrigin[3];
         slicePlaneNormal[0] = sliceToRAS->GetElement(0,2);
         slicePlaneNormal[1] = sliceToRAS->GetElement(1,2);
@@ -952,7 +921,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
         // the third coordinate of the displayCoordinates is the distance to the slice
         float distanceToSlice = displayCoordinates[2];
         float maxDistance = 0.5 + (sliceNode->GetDimensions()[2] - 1);
-        vtkDebugMacro("Slice node " << this->GetSliceNode()->GetName()
+        vtkDebugMacro("Slice node " << this->GetMRMLSliceNode()->GetName()
                       << ": distance to slice = " << distanceToSlice
                       << ", maxDistance = " << maxDistance
                       << "\n\tslice node dimenions[2] = "
@@ -1055,7 +1024,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnClickInRenderWindowGetCoordinates()
     {
     const char *associatedNodeID = NULL;
     // is there a volume in the background?
-    if (this->GetSliceNode())
+    if (this->GetMRMLSliceNode())
       {
       // find the slice composite node in the scene with the matching layout
       // name
@@ -1064,11 +1033,11 @@ void vtkMRMLMarkupsDisplayableManager2D::OnClickInRenderWindowGetCoordinates()
       vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
       if (mrmlAppLogic)
         {
-        sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetSliceNode());
+        sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetMRMLSliceNode());
         }
       if (sliceLogic)
         {
-        sliceCompositeNode = sliceLogic->GetSliceCompositeNode(this->GetSliceNode());
+        sliceCompositeNode = sliceLogic->GetSliceCompositeNode(this->GetMRMLSliceNode());
         }
       if (sliceCompositeNode)
         {
@@ -1128,8 +1097,8 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToWorldCoordinates(double x, 
 //    double windowWidth = this->GetInteractor()->GetRenderWindow()->GetSize()[0];
 //    double windowHeight = this->GetInteractor()->GetRenderWindow()->GetSize()[1];
 
-//    int numberOfColumns = this->GetSliceNode()->GetLayoutGridColumns();
-//    int numberOfRows = this->GetSliceNode()->GetLayoutGridRows();
+//    int numberOfColumns = this->GetMRMLSliceNode()->GetLayoutGridColumns();
+//    int numberOfRows = this->GetMRMLSliceNode()->GetLayoutGridRows();
 
 //    float tempX = x / windowWidth;
 //    float tempY = (windowHeight - y) / windowHeight;
@@ -1138,7 +1107,7 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToWorldCoordinates(double x, 
 
   vtkRenderer* pokedRenderer = this->GetInteractor()->FindPokedRenderer(x,y);
 
-  vtkMatrix4x4 * xyToRasMatrix = this->GetSliceNode()->GetXYToRAS();
+  vtkMatrix4x4 * xyToRasMatrix = this->GetMRMLSliceNode()->GetXYToRAS();
 
   double displayCoordinates[4];
   displayCoordinates[0] = x - pokedRenderer->GetOrigin()[0];
@@ -1163,7 +1132,7 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToWorldCoordinates(double * d
 /// Convert world to display coordinates
 void vtkMRMLMarkupsDisplayableManager2D::GetWorldToDisplayCoordinates(double r, double a, double s, double * displayCoordinates)
 {
-  if (!this->GetSliceNode())
+  if (!this->GetMRMLSliceNode())
     {
     vtkErrorMacro("GetWorldToDisplayCoordinates: no slice node!");
     return;
@@ -1171,7 +1140,7 @@ void vtkMRMLMarkupsDisplayableManager2D::GetWorldToDisplayCoordinates(double r, 
 
   // we will get the transformation matrix to convert world coordinates to the display coordinates of the specific sliceNode
 
-  vtkMatrix4x4 * xyToRasMatrix = this->GetSliceNode()->GetXYToRAS();
+  vtkMatrix4x4 * xyToRasMatrix = this->GetMRMLSliceNode()->GetXYToRAS();
   vtkNew<vtkMatrix4x4> rasToXyMatrix;
 
   // we need to invert this matrix
@@ -1216,8 +1185,8 @@ void vtkMRMLMarkupsDisplayableManager2D::GetDisplayToViewportCoordinates(double 
   double windowWidth = this->GetInteractor()->GetRenderWindow()->GetSize()[0];
   double windowHeight = this->GetInteractor()->GetRenderWindow()->GetSize()[1];
 
-  int numberOfColumns = this->GetSliceNode()->GetLayoutGridColumns();
-  int numberOfRows = this->GetSliceNode()->GetLayoutGridRows();
+  int numberOfColumns = this->GetMRMLSliceNode()->GetLayoutGridColumns();
+  int numberOfRows = this->GetMRMLSliceNode()->GetLayoutGridRows();
 
   float tempX = x / windowWidth;
   float tempY = (windowHeight - y) / windowHeight;
@@ -1511,7 +1480,7 @@ vtkAbstractWidget * vtkMRMLMarkupsDisplayableManager2D::AddWidget(vtkMRMLMarkups
 bool vtkMRMLMarkupsDisplayableManager2D::IsInLightboxMode()
 {
   bool flag = false;
-  vtkMRMLSliceNode *sliceNode = this->GetSliceNode();
+  vtkMRMLSliceNode *sliceNode = this->GetMRMLSliceNode();
   if (sliceNode)
     {
     int numberOfColumns = sliceNode->GetLayoutGridColumns();

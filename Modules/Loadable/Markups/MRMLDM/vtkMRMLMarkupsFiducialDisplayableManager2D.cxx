@@ -387,7 +387,7 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthSeedPositionFromMRML(i
     {
     // only update when really changed
     vtkDebugMacro("UpdateNthSeedPositionFromMRML: " << n << ": "
-                  << this->GetSliceNode()->GetName()
+                  << this->GetMRMLSliceNode()->GetName()
                   << ": display coordinates changed:\n\tseed display = "
                   << displayCoordinatesBuffer1[0] << ", " << displayCoordinatesBuffer1[1]
                   << "\n\tfid display =  " << displayCoordinates1[0] << ", " << displayCoordinates1[1] );
@@ -396,7 +396,7 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthSeedPositionFromMRML(i
     }
   else
     {
-    vtkDebugMacro("UpdateNthSeedPositionFromMRML: " <<  this->GetSliceNode()->GetName() << ": display coordinates unchanged!");
+    vtkDebugMacro("UpdateNthSeedPositionFromMRML: " <<  this->GetMRMLSliceNode()->GetName() << ": display coordinates unchanged!");
     }
   return positionChanged;
 }
