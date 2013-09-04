@@ -120,6 +120,10 @@ protected:
   vtkMRMLMarkupsDisplayableManager2D();
   virtual ~vtkMRMLMarkupsDisplayableManager2D();
 
+  /// Initialize the displayable manager based on its associated
+  /// vtkMRMLSliceNode
+  virtual void Create();
+
   virtual void ProcessMRMLNodesEvents(vtkObject *caller, unsigned long event, void *callData);
 
   /// Wrap the superclass render request in a check for batch processing
@@ -257,6 +261,10 @@ private:
 
   /// Scale factor for 2d windows
   double ScaleFactor2D;
+
+  /// Internal class to respond to changes in the slice composite node
+  class vtkInternal;
+  vtkInternal * Internal;
 };
 
 #endif

@@ -57,6 +57,7 @@
 #include <vtkSeedRepresentation.h>
 #include <vtkSeedWidget.h>
 #include <vtkSmartPointer.h>
+#include <vtkWeakPointer.h>
 #include <vtkWidgetRepresentation.h>
 
 // STD includes
@@ -71,6 +72,109 @@ typedef void (*fp)(void);
 //---------------------------------------------------------------------------
 vtkStandardNewMacro (vtkMRMLMarkupsDisplayableManager2D);
 vtkCxxRevisionMacro (vtkMRMLMarkupsDisplayableManager2D, "$Revision: 1.2 $");
+
+//---------------------------------------------------------------------------
+class vtkMRMLMarkupsDisplayableManager2D::vtkInternal
+{
+public:
+  vtkInternal(vtkMRMLMarkupsDisplayableManager2D * external);
+  ~vtkInternal();
+
+  vtkObserverManager* GetMRMLNodesObserverManager();
+  void Modified();
+
+  // Slice
+  void UpdateSliceNode();
+  // Slice Composite
+  vtkMRMLSliceCompositeNode* FindSliceCompositeNode();
+  void SetSliceCompositeNode(vtkMRMLSliceCompositeNode* compositeNode);
+
+  vtkMRMLMarkupsDisplayableManager2D*        External;
+  vtkWeakPointer<vtkMRMLSliceCompositeNode>  SliceCompositeNode;
+};
+
+//---------------------------------------------------------------------------
+// vtkInternal methods
+
+//---------------------------------------------------------------------------
+vtkMRMLMarkupsDisplayableManager2D::vtkInternal
+::vtkInternal(vtkMRMLMarkupsDisplayableManager2D * external)
+{
+  this->External = external;
+  this->SliceCompositeNode = 0;
+}
+
+//---------------------------------------------------------------------------
+vtkMRMLMarkupsDisplayableManager2D::vtkInternal::~vtkInternal()
+{
+  this->SetSliceCompositeNode(0);
+}
+
+//---------------------------------------------------------------------------
+vtkObserverManager* vtkMRMLMarkupsDisplayableManager2D::vtkInternal::GetMRMLNodesObserverManager()
+{
+  return this->External->GetMRMLNodesObserverManager();
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::vtkInternal::Modified()
+{
+  return this->External->Modified();
+}
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::vtkInternal::UpdateSliceNode()
+{
+  if (!this->External)
+    {
+    return;
+    }
+  assert(!this->External->GetMRMLSliceNode() || this->External->GetMRMLSliceNode()->GetLayoutName());
+  // search the scene for a matching slice composite node
+  if (!this->SliceCompositeNode.GetPointer() || // the slice composite has been deleted
+      !this->SliceCompositeNode->GetLayoutName() || // the slice composite points to a diff slice node
+      strcmp(this->SliceCompositeNode->GetLayoutName(),
+             this->External->GetMRMLSliceNode()->GetLayoutName()))
+    {
+    vtkMRMLSliceCompositeNode* sliceCompositeNode =
+      this->FindSliceCompositeNode();
+    this->SetSliceCompositeNode(sliceCompositeNode);
+    }
+}
+
+//---------------------------------------------------------------------------
+vtkMRMLSliceCompositeNode* vtkMRMLMarkupsDisplayableManager2D::vtkInternal
+::FindSliceCompositeNode()
+{
+  if (this->External->GetMRMLSliceNode() == 0 ||
+      this->External->GetMRMLApplicationLogic() == 0)
+    {
+    return 0;
+    }
+
+  vtkMRMLSliceLogic *sliceLogic = NULL;
+  vtkMRMLApplicationLogic *mrmlAppLogic = this->External->GetMRMLApplicationLogic();
+  if (mrmlAppLogic)
+    {
+    sliceLogic = mrmlAppLogic->GetSliceLogic(this->External->GetMRMLSliceNode());
+    }
+  if (sliceLogic)
+    {
+    return sliceLogic->GetSliceCompositeNode(this->External->GetMRMLSliceNode());
+    }
+  // no matching slice composite node is found
+  return 0;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::vtkInternal
+::SetSliceCompositeNode(vtkMRMLSliceCompositeNode* compositeNode)
+{
+  if (this->SliceCompositeNode == compositeNode)
+    {
+    return;
+    }
+  vtkSetAndObserveMRMLNodeMacro(this->SliceCompositeNode, compositeNode);
+}
 
 //---------------------------------------------------------------------------
 vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
@@ -89,6 +193,8 @@ vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
   this->LastClickWorldCoordinates[1]=0.0;
   this->LastClickWorldCoordinates[2]=0.0;
   this->LastClickWorldCoordinates[3]=1.0;
+
+  this->Internal = new vtkInternal(this);
 }
 
 //---------------------------------------------------------------------------
@@ -101,6 +207,8 @@ vtkMRMLMarkupsDisplayableManager2D::~vtkMRMLMarkupsDisplayableManager2D()
 
   this->Helper->Delete();
   this->ClickCounter->Delete();
+
+  delete this->Internal;
 }
 
 //---------------------------------------------------------------------------
@@ -226,6 +334,11 @@ void vtkMRMLMarkupsDisplayableManager2D::RemoveMRMLObservers()
     vtkUnObserveMRMLNodeMacro(*it);
     ++it;
     }
+
+  if (this->GetMRMLScene())
+    {
+    this->Internal->SetSliceCompositeNode(0);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -236,6 +349,9 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateFromMRML()
     {
     return;
     }
+
+  this->Internal->UpdateSliceNode();
+
   // check if there are any of these nodes in the scene
   if (this->GetMRMLScene()->GetNumberOfNodesByClass(this->Focus) < 1)
     {
@@ -304,6 +420,8 @@ void vtkMRMLMarkupsDisplayableManager2D
   vtkMRMLMarkupsNode * markupsNode = vtkMRMLMarkupsNode::SafeDownCast(caller);
   vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::SafeDownCast(caller);
   vtkMRMLInteractionNode * interactionNode = vtkMRMLInteractionNode::SafeDownCast(caller);
+  vtkMRMLSliceCompositeNode * sliceCompositeNode = vtkMRMLSliceCompositeNode::SafeDownCast(caller);
+
   int *nPtr = NULL;
   int n = -1;
   if (callData != 0)
@@ -365,6 +483,13 @@ void vtkMRMLMarkupsDisplayableManager2D
       // for the markups that is getting placed, but don't update locking on persistence changed event
       this->Helper->UpdateLockedAllWidgetsFromInteractionNode(interactionNode);
       }
+    }
+  else if (sliceCompositeNode)
+    {
+    // update requested will trigger an update from mrml when the
+    // requested render is done
+    this->SetUpdateFromMRMLRequested(1);
+    this->RequestRender();
     }
   else
     {
@@ -725,6 +850,8 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateWidgetVisibility(vtkMRMLMarkupsNo
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSliceNodeModifiedEvent()
 {
+  this->Internal->UpdateSliceNode();
+
   // run through all markup nodes in the helper
   vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt it;
   it = this->Helper->MarkupsNodeList.begin();
@@ -737,6 +864,11 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSliceNodeModifiedEvent()
     this->PropagateMRMLToWidget(markupsNode, widget);
 
     ++it;
+    }
+
+  if (this->Helper->MarkupsNodeList.size() > 0)
+    {
+    this->RequestRender();
     }
 }
 
@@ -966,6 +1098,13 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     } // end of for loop through control points
 
   return showWidget && inViewport;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::Create()
+{
+  // Setup the SliceCompositeNode
+  this->Internal->UpdateSliceNode();
 }
 
 //---------------------------------------------------------------------------
