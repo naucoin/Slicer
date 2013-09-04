@@ -895,21 +895,12 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
   bool showWidget = true;
   bool inViewport = false;
 
-  // down cast the node as a controlpoints node to get the coordinates
-  vtkMRMLMarkupsNode * controlPointsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
-
-  if (!controlPointsNode)
+  int numberOfPointss =  node->GetNumberOfPointsInNthMarkup(markupIndex);
+  for (int i=0; i < numberOfPointss; i++)
     {
-    vtkErrorMacro("IsWidgetDisplayableOnSlice: Could not get the controlpoints node.")
-    return 0;
-    }
-
-  int numberOfControlPoints =  controlPointsNode->GetNumberOfPointsInNthMarkup(markupIndex);
-  for (int i=0; i < numberOfControlPoints; i++)
-    {
-    // we loop through all controlpoints of each node
+    // we loop through all points of each node
     double transformedWorldCoordinates[4];
-    controlPointsNode->GetMarkupPointWorld(markupIndex, i, transformedWorldCoordinates);
+    node->GetMarkupPointWorld(markupIndex, i, transformedWorldCoordinates);
 
     // now get the displayCoordinates for the transformed worldCoordinates
     double displayCoordinates[4];
@@ -923,7 +914,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
       // get the corresponding lightbox index for this display coordinate and
       // check if it's in the range of the current number of light boxes being
       // displayed in the grid rows/columns.
-      int lightboxIndex = this->GetLightboxIndex(controlPointsNode, markupIndex, i);
+      int lightboxIndex = this->GetLightboxIndex(node, markupIndex, i);
       int numberOfLightboxes = sliceNode->GetLayoutGridColumns() * sliceNode->GetLayoutGridRows();
       if (lightboxIndex < 0 ||
           lightboxIndex >= numberOfLightboxes)
@@ -1032,7 +1023,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
         // this gives the distance to light box plane 0, but have to offset by
         // number of light box planes (as determined by the light box index) times the volume
         // slice spacing
-        int lightboxIndex = this->GetLightboxIndex(controlPointsNode, markupIndex, i);
+        int lightboxIndex = this->GetLightboxIndex(node, markupIndex, i);
         double lightboxOffset = lightboxIndex * spacing;
         double distanceToSlice = distanceToPlane - lightboxOffset;
         double maxDistance = 0.5;
@@ -1063,7 +1054,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
           // if the distance to the slice is more than 0.5mm, we know that at least one coordinate of the widget is outside the current activeSlice
           // hence, we do not want to show this widget
           showWidget = false;
-          // we don't even need to continue parsing the controlpoints, because we know the widget will not be shown
+          // we don't even need to continue parsing the points, because we know the widget will not be shown
           break;
           }
         }
@@ -1072,8 +1063,8 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     // -----------------------------------------
     // special cases when the slices get panned:
 
-    // if all of the controlpoints are outside the viewport coordinates, the widget should not be shown
-    // if one controlpoint is inside the viewport coordinates, the widget should be shown
+    // if all of the points are outside the viewport coordinates, the widget should not be shown
+    // if one point is inside the viewport coordinates, the widget should be shown
 
     // we need to check if we are inside the viewport
     double coords[2] = {displayCoordinates[0], displayCoordinates[1]};
@@ -1095,7 +1086,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
       inViewport = true;
       }
 
-    } // end of for loop through control points
+    } // end of for loop through points
 
   return showWidget && inViewport;
 }
@@ -1585,6 +1576,17 @@ void vtkMRMLMarkupsDisplayableManager2D::GetWorldToLocalCoordinates(vtkMRMLMarku
 /// Create a new widget for this markups node and save it to the helper.
 vtkAbstractWidget * vtkMRMLMarkupsDisplayableManager2D::AddWidget(vtkMRMLMarkupsNode *markupsNode)
 {
+  if (!this->GetRenderer())
+    {
+    vtkWarningMacro("AddWidget: no renderer!");
+    return NULL ;
+    }
+  if (!this->GetRenderer()->GetActiveCamera())
+    {
+    vtkWarningMacro("AddWidget: no active camera on renderer!");
+    return NULL ;
+    }
+
   vtkDebugMacro("AddWidget: calling create widget");
   vtkAbstractWidget* newWidget = this->CreateWidget(markupsNode);
   if (!newWidget)
@@ -1596,21 +1598,16 @@ vtkAbstractWidget * vtkMRMLMarkupsDisplayableManager2D::AddWidget(vtkMRMLMarkups
   // record the mapping between node and widget in the helper
   this->Helper->RecordWidgetForNode(newWidget,markupsNode);
 
-  vtkDebugMacro("AddWidget: saved to helper ");
-//  vtkIndent indent;
-//  this->Helper->PrintSelf(std::cout, indent);
-
   // Refresh observers
   this->SetAndObserveNode(markupsNode);
 
-  // TODO do we need this render call?
-  this->RequestRender();
-
-  // ?
+  // Add the call backs so DM subclasses can respond to vtkWidget interactions
   this->OnWidgetCreated(newWidget, markupsNode);
 
   // now set up the new widget
-  this->PropagateMRMLToWidget(markupsNode, newWidget);
+  //this->PropagateMRMLToWidget(markupsNode, newWidget);
+  this->SetUpdateFromMRMLRequested(1);
+  this->RequestRender();
 
   return newWidget;
 }
