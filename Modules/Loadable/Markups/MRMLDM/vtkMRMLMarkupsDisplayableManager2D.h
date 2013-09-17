@@ -152,7 +152,7 @@ protected:
   virtual void OnMRMLSliceNodeModifiedEvent();
 
   /// Check, if the widget is displayable in the current slice geometry for
-  /// this markup, returns true if a 3d displayable manager
+  /// this markup
   virtual bool IsWidgetDisplayableOnSlice(vtkMRMLMarkupsNode* node, int markupIndex = 0);
 
   /// Observe one node

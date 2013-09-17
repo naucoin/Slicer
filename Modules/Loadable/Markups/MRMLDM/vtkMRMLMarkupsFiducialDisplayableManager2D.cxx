@@ -181,7 +181,16 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PrintSelf(ostream& os, vtkInden
 /// Create a new seed widget.
 vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtkMRMLMarkupsNode* node)
 {
-
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("CreateWidget: no renderer!");
+    return 0;
+    }
+  if (!this->GetRenderer()->GetActiveCamera())
+    {
+    vtkErrorMacro("CreateWidget: no active camera on renderer!");
+    return 0;
+    }
   if (!node)
     {
     vtkErrorMacro("CreateWidget: Node not set!")
@@ -291,6 +300,13 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnWidgetCreated(vtkAbstractWidg
   widget->AddObserver(vtkCommand::InteractionEvent,myCallback);
   myCallback->Delete();
 
+  // enable it
+  widget->SetEnabled(1);
+  vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
+  if (seedWidget)
+    {
+    seedWidget->CompleteInteraction();
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -356,16 +372,34 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthSeedPositionFromMRML(i
     {
     return false;
     }
+
   vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
   if (!seedWidget)
     {
     return false;
     }
+  if (!seedWidget->GetCurrentRenderer())
+    {
+    vtkErrorMacro("UpdateNthSeedPositionFromMRML: No current renderer on seed widget");
+    return false;
+    }
+
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());
   if (!seedRepresentation)
     {
     return false;
     }
+  if (seedRepresentation->GetRenderer() == NULL)
+    {
+    vtkErrorMacro("UpdateNthSeedPositionFromMRML: No renderer on seed representation");
+    return false;
+    }
+  if (seedRepresentation->GetRenderer()->GetActiveCamera() == NULL)
+    {
+    vtkErrorMacro("UpdateNthSeedPositionFromMRML: current renderer does not have an active camera");
+    return false;
+    }
+
   bool positionChanged = false;
 
 //  std::cout << "UpdateNthSeedPositionFromMRML: n = " << n << std::endl;
@@ -393,6 +427,7 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthSeedPositionFromMRML(i
                   << "\n\tfid display =  " << displayCoordinates1[0] << ", " << displayCoordinates1[1] );
     seedRepresentation->SetSeedDisplayPosition(n,displayCoordinates1);
     positionChanged = true;
+    this->RequestRender();
     }
   else
     {
@@ -482,7 +517,6 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
     {
     fidVisible = false;
     }
-
   if (handleRep)
     {
     // set the glyph type if a new handle was created, or the glyph type changed
@@ -604,21 +638,34 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         {
         handleRep->LabelVisibilityOn();
         }
-      seedWidget->GetSeed(n)->EnabledOn();
+      if (seedWidget->GetSeed(n))
+        {
+        seedWidget->GetSeed(n)->EnabledOn();
+        }
+      else
+        {
+        vtkErrorMacro("Unable to get seed " << n);
+        }
       // if the fiducial is visible, turn off projection
       vtkSeedWidget* fiducialSeed = vtkSeedWidget::SafeDownCast(this->Helper->GetPointProjectionWidget(fiducialNode->GetNthMarkupID(n)));
       if (fiducialSeed && fiducialSeed->GetSeed(0))
-    {
+        {
         fiducialSeed->GetSeed(0)->Off();
-    }
+        }
       }
     else
       {
       handleRep->VisibilityOff();
       handleRep->HandleVisibilityOff();
       handleRep->LabelVisibilityOff();
-      seedWidget->GetSeed(n)->EnabledOff();
-
+      if (!seedWidget->GetSeed(n))
+        {
+        vtkErrorMacro("SetNthSeed: Unable to get seed widget seed # " << n);
+        }
+      else
+        {
+        seedWidget->GetSeed(n)->EnabledOff();
+        }
       // if the widget is not shown on the slice, show the intersection
       if (fiducialNode &&
           fiducialNode->GetDisplayNode())
@@ -780,6 +827,12 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         (interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place)
         && (interactionNode->GetPlaceModePersistence() == 1);
       }
+    if (!seedWidget->GetSeed(n))
+      {
+      vtkErrorMacro("SetNthSeed: unable to get seed " << n);
+      }
+    else
+      {
     if (listLocked || seedLocked || persistentPlaceMode)
       {
       seedWidget->GetSeed(n)->ProcessEventsOff();
@@ -788,7 +841,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       {
       seedWidget->GetSeed(n)->ProcessEventsOn();
       }
-
+      }
     }
   else if (pointHandleRep)
     {
@@ -803,6 +856,51 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       {
       // use the unselected color
       pointHandleRep->GetProperty()->SetColor(displayNode->GetColor());
+      }
+    // update visibility
+    if (fidVisible)
+      {
+      // if in light box mode, may need to reset the renderer on this handle
+      // 0 is for the first point, only one in a fiducial
+      int lightboxIndex = this->GetLightboxIndex(fiducialNode, n, 0);
+      // the visibile on slice check already made sure that this is a visible
+      // light box index
+      // get the right renderer index by checking the z coordinate
+      vtkRenderer* currentRenderer = this->GetRenderer(lightboxIndex);
+      if (pointHandleRep->GetRenderer() != currentRenderer)
+        {
+        // if the pointHandleRep is on, need to turn it off to set the renderer
+        bool toggleOffOn = false;
+        if (pointHandleRep->GetVisibility())
+          {
+          // turn it off..
+          pointHandleRep->VisibilityOff();
+          toggleOffOn = true;
+          }
+        // ..place it and its representation to the right renderer..
+        pointHandleRep->SetRenderer(currentRenderer);
+        if (toggleOffOn)
+          {
+          // ..and turn it on again!
+          pointHandleRep->VisibilityOn();
+          }
+        seedWidget->GetSeed(n)->EnabledOn();
+        // complete interaction?
+        seedWidget->CompleteInteraction();
+        // we need to render again
+        if (currentRenderer)
+          {
+          currentRenderer->Render();
+          }
+        }
+      }
+    else
+      {
+      if (pointHandleRep->GetVisibility())
+        {
+        pointHandleRep->VisibilityOff();
+        seedWidget->GetSeed(n)->EnabledOff();
+        }
       }
     }
 }
@@ -823,6 +921,17 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     return;
     }
 
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: no renderer!");
+    return;
+    }
+  if (!this->GetRenderer()->GetActiveCamera())
+    {
+    vtkErrorMacro("PropagateMRMLToWidget: no active camera on renderer!");
+    return;
+    }
+
   // cast to the specific widget
   vtkSeedWidget* seedWidget = vtkSeedWidget::SafeDownCast(widget);
 
@@ -837,6 +946,40 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     // ignore events not caused by seed movement
     // return;
     // std::cout << "2D: Seed widget state is not moving: state = " << seedWidget->GetWidgetState() << " != " << vtkSeedWidget::MovingSeed << std::endl;
+    }
+
+  // make sure the renderer is set, for now use first fiducial to get light box
+  // TBD: make sure that this isn't over riding the setting of the renderer on
+  // the seeds when in light box mode...
+  //  int lightboxIndex = this->GetLightboxIndex(node, 0, 0);
+  vtkRenderer* currentRenderer = this->GetRenderer();//lightboxIndex);
+  if (seedWidget->GetCurrentRenderer() != currentRenderer ||
+      seedWidget->GetRepresentation()->GetRenderer() != currentRenderer)
+    {
+    // if the widget is on, need to turn it off to set the renderer
+    bool toggleOffOn = false;
+    if (seedWidget->GetEnabled())
+      {
+      // turn it off..
+      seedWidget->Off();
+      toggleOffOn = true;
+      }
+    // ..place it and its representation to the right renderer..
+    seedWidget->SetCurrentRenderer(currentRenderer);
+    seedWidget->GetRepresentation()->SetRenderer(currentRenderer);
+    if (toggleOffOn)
+      {
+      // ..and turn it on again!
+      seedWidget->On();
+      }
+    // for a seed widget, go to complete interaction state
+    seedWidget->CompleteInteraction();
+    }
+
+  if (this->IsInLightboxMode())
+    {
+    // update visibility of widget as a whole (over rides any light box mode seed settings)
+    this->UpdateWidgetVisibility(node);
     }
 
   // cast to the specific mrml node
@@ -928,15 +1071,14 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     this->SetNthSeed(n, fiducialNode, seedWidget);
     }
 
-  // now update the position of all the seeds - done in SetNthSeed now
-  //this->UpdatePosition(widget, node);
-
   // update lock status
   this->Helper->UpdateLocked(node, this->GetInteractionNode());
 
-  // update visibility of widget as a whole
-  // std::cout << "PropagateMRMLToWidget: calling UpdateWidgetVisibility" << std::endl;
-  this->UpdateWidgetVisibility(node);
+  if (!this->IsInLightboxMode())
+    {
+    // update visibility of widget as a whole (over rides any light box mode seed settings)
+    this->UpdateWidgetVisibility(node);
+    }
 
   if (seedRepresentation)
     {
@@ -1348,8 +1490,8 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::OnMRMLMarkupsNodeMarkupAddedEve
    }
 
   // this call will create a new handle and set it
-  // std::cout << "OnMRMLMarkupsNodeMarkupAddedEvent: adding to markups node that currently has " << markupsNode->GetNumberOfMarkups() << std::endl;
   int n = markupsNode->GetNumberOfMarkups() - 1;
+  // if it's the first seed, update the seed widget visibility first
   this->SetNthSeed(n, vtkMRMLMarkupsFiducialNode::SafeDownCast(markupsNode), seedWidget);
 
   vtkSeedRepresentation * seedRepresentation = vtkSeedRepresentation::SafeDownCast(seedWidget->GetRepresentation());

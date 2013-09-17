@@ -373,6 +373,12 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateFromMRML()
       if (this->GetWidget(markupsNode) == NULL)
         {
         vtkDebugMacro("UpdateFromMRML: creating a widget for node " << markupsNode->GetID());
+        // has a renderer been set yet?
+        if (this->GetRenderer() == NULL)
+          {
+          vtkErrorMacro("UpdateFromMRML: no renderer!");
+          return;
+          }
         vtkAbstractWidget *widget = this->AddWidget(markupsNode);
         if (widget)
           {
@@ -383,6 +389,11 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateFromMRML()
           {
           vtkErrorMacro("UpdateFromMRML: failed to create a widget for node " << markupsNode->GetID());
           }
+        }
+      else
+        {
+        // update the widget?
+        // this->PropagateMRMLToWidget(markupsNode, this->GetWidget(markupsNode));
         }
       }
     node = this->GetMRMLScene()->GetNextNodeByClass(this->Focus);
@@ -811,7 +822,7 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateWidgetVisibility(vtkMRMLMarkupsNo
    bool visibleOnNode = true;
    if (displayNode)
      {
-     visibleOnNode = (displayNode->GetVisibility()== 1 ? true : false);
+     visibleOnNode = (displayNode->GetVisibility() == 1 ? true : false);
      }
    // check if the widget is visible according to the widget state
    bool visibleOnWidget = (widget->GetEnabled() == 1 ? true : false);
@@ -841,10 +852,6 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateWidgetVisibility(vtkMRMLMarkupsNo
        vtkDebugMacro("UpdateWidgetVisibility: complete interaction");
        }
      }
-
-   // it's visible, just update the position
-   //  this->UpdatePosition(widget, markupsNode);
-
 }
 
 //---------------------------------------------------------------------------
@@ -893,10 +900,10 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     }
 
   bool showWidget = true;
-  bool inViewport = false;
+  bool inViewport = true;
 
-  int numberOfPointss =  node->GetNumberOfPointsInNthMarkup(markupIndex);
-  for (int i=0; i < numberOfPointss; i++)
+  int numberOfPoints =  node->GetNumberOfPointsInNthMarkup(markupIndex);
+  for (int i=0; i < numberOfPoints; i++)
     {
     // we loop through all points of each node
     double transformedWorldCoordinates[4];
@@ -923,49 +930,8 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
         }
       else
         {
-        // get the right renderer index by checking the z coordinate
-        vtkRenderer* currentRenderer = this->GetRenderer(lightboxIndex);
-
-        // now we get the widget..
-        vtkAbstractWidget* widget = this->GetWidget(node);
-
-        // TODO this code blocks the movement of the widget in lightbox mode
-        if (widget &&
-            (widget->GetCurrentRenderer() != currentRenderer ||
-             widget->GetRepresentation()->GetRenderer() != currentRenderer))
-          {
-          // if the widget is on, need to turn it off to set the renderer
-          bool toggleOffOn = false;
-          if (widget->GetEnabled())
-            {
-            // turn it off..
-            widget->Off();
-            toggleOffOn = true;
-            }
-          // ..place it and its representation to the right renderer..
-          widget->SetCurrentRenderer(currentRenderer);
-          widget->GetRepresentation()->SetRenderer(currentRenderer);
-          if (toggleOffOn)
-            {
-            // ..and turn it on again!
-            widget->On();
-            }
-          // if it's a seed widget, go to complete interaction state
-          vtkSeedWidget *seedWidget = vtkSeedWidget::SafeDownCast(widget);
-          if (seedWidget)
-            {
-            vtkDebugMacro("SeedWidget: Complete interaction");
-            seedWidget->CompleteInteraction();
-            }
-
-          // we need to render again
-          if (currentRenderer)
-            {
-            currentRenderer->Render();
-            }
-          }
+        vtkDebugMacro("In light box, show the widget " << markupIndex);
         }
-
       //
       // End of Lightbox specific code
       //
@@ -1080,10 +1046,12 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     pokedRenderer->NormalizedDisplayToViewport(coords[0],coords[1]);
     pokedRenderer->ViewportToNormalizedViewport(coords[0],coords[1]);
 
-    if ((coords[0]>0.0) && (coords[0]<1.0) && (coords[1]>0.0) && (coords[1]<1.0))
+    if ((coords[0] < 0.0) || (coords[0] > 1.0) ||
+        (coords[1] < 0.0) || (coords[1] > 1.0))
       {
-      // current point is inside of view
-      inViewport = true;
+      // current point is outside of view
+      inViewport = false;
+      break;
       }
 
     } // end of for loop through points
