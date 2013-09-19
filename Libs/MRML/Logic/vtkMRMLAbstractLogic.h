@@ -297,6 +297,16 @@ protected:
   /// \sa ProcessMRMLSceneEvents, SetMRMLSceneInternal
   /// \sa OnMRMLSceneStartRestore
   virtual void OnMRMLSceneEndRestore(){}
+  /// If vtkMRMLScene::StartLayoutChangeEvent has been set to be observed in
+  ///  SetMRMLSceneInternal, it is called when the scene fires the event
+  /// \sa ProcessMRMLSceneEvents, SetMRMLSceneInternal
+  /// \sa OnMRMLSceneEndLayoutChange
+  virtual void OnMRMLSceneStartLayoutChange(){}
+  /// If vtkMRMLScene::EndLayoutChangeEvent has been set to be observed in
+  ///  SetMRMLSceneInternal, it is called when the scene fires the event
+  /// \sa ProcessMRMLSceneEvents, SetMRMLSceneInternal
+  /// \sa OnMRMLSceneStartLayoutChange
+  virtual void OnMRMLSceneEndLayoutChange(){}
   /// If vtkMRMLScene::SceneNewEvent has been set to be observed in
   ///  SetMRMLSceneInternal, it is called when the scene fires the event
   /// \sa ProcessMRMLSceneEvents, SetMRMLSceneInternal

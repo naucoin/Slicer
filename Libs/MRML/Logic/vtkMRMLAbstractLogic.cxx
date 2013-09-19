@@ -465,6 +465,12 @@ void vtkMRMLAbstractLogic
     case vtkMRMLScene::EndRestoreEvent:
       this->OnMRMLSceneEndRestore();
       break;
+    case vtkMRMLScene::StartLayoutChangeEvent:
+      this->OnMRMLSceneStartLayoutChange();
+      break;
+    case vtkMRMLScene::EndLayoutChangeEvent:
+      this->OnMRMLSceneEndLayoutChange();
+      break;
     case vtkMRMLScene::NewSceneEvent:
       this->OnMRMLSceneNew();
       break;
