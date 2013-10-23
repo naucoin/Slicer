@@ -97,7 +97,7 @@ public:
     vtkSeedWidget *widget = vtkSeedWidget::SafeDownCast(this->Widget);
     if (widget && this->DisplayableManager && this->Node)
       {
-      vtkMRMLSliceNode *sliceNode = this->DisplayableManager->GetSliceNode();
+      vtkMRMLSliceNode *sliceNode = this->DisplayableManager->GetMRMLSliceNode();
       if (sliceNode)
         {
         int modifiedWasDisabled = this->Node->GetDisableModifiedEvent();
