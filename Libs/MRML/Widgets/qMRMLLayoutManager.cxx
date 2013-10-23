@@ -964,9 +964,7 @@ void qMRMLLayoutManager::setLayout(int layout)
       {
       layout = vtkMRMLLayoutNode::SlicerLayoutConventionalView;
       }
-    this->mrmlScene()->StartState(vtkMRMLScene::LayoutChangeState);
     d->MRMLLayoutNode->SetViewArrangement(layout);
-    this->mrmlScene()->EndState(vtkMRMLScene::LayoutChangeState);
     }
 }
 

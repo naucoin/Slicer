@@ -448,10 +448,6 @@ public:
   /// only synchronize with the scene when the scene is no longer in
   ///  \a BatchProcessState (EndBatchProcessEvent being fired).
   ///
-  /// The layout manager brackets the call to set view arrangement with
-  /// start and end \a LayoutChangeState so that displayable managers can choose
-  /// to delay updating widgets until the layout change is complete.
-  ///
   /// The call <code>scene->Connect("myScene.mrml");</code> that closes and
   /// import a scene will fire the events:
   /// vtkMRMLScene::StartBatchProcessEvent,
@@ -479,7 +475,6 @@ public:
     ImportState = 0x0004 | BatchProcessState,
     RestoreState = 0x0008 | BatchProcessState,
     SaveState = 0x0010,
-    LayoutChangeState = 0x0020,
     };
 
   /// Returns the current state of the scene.
@@ -497,8 +492,6 @@ public:
   inline bool IsImporting()const;
   /// Return true if the scene is in Restore state, false otherwise
   inline bool IsRestoring()const;
-  /// Return true if the scene is in LayoutChange state, false otherwise
-  inline bool IsLayoutChanging()const;
 
   /// Flag the scene as being in a \a state mode.
   /// A matching EndState(\a state) must be called later.
@@ -579,10 +572,6 @@ public:
     StartSaveEvent = StateEvent | StartEvent | SaveState,
     EndSaveEvent = StateEvent | EndEvent | SaveState,
     ProgressSaveEvent = StateEvent | ProgressEvent | SaveState,
-
-    StartLayoutChangeEvent = StateEvent | StartEvent | LayoutChangeState,
-    EndLayoutChangeEvent = StateEvent | EndEvent | LayoutChangeState,
-    ProgressLayoutChangeEvent = StateEvent | ProgressEvent | LayoutChangeState,
     };
 
   /// the version of the last loaded scene file
@@ -758,13 +747,6 @@ bool vtkMRMLScene::IsRestoring()const
 {
   return (this->GetStates() & vtkMRMLScene::RestoreState)
          == vtkMRMLScene::RestoreState;
-}
-
-//------------------------------------------------------------------------------
-bool vtkMRMLScene::IsLayoutChanging()const
-{
-  return (this->GetStates() & vtkMRMLScene::LayoutChangeState)
-         == vtkMRMLScene::LayoutChangeState;
 }
 
 #endif

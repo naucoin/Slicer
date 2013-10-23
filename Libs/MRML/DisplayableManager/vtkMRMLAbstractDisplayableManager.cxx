@@ -773,8 +773,6 @@ void vtkMRMLAbstractDisplayableManager::SetMRMLSceneInternal(vtkMRMLScene* newSc
   sceneEvents->InsertNextValue(vtkMRMLScene::NewSceneEvent);
   sceneEvents->InsertNextValue(vtkMRMLScene::NodeAddedEvent);
   sceneEvents->InsertNextValue(vtkMRMLScene::NodeRemovedEvent);
-  sceneEvents->InsertNextValue(vtkMRMLScene::StartLayoutChangeEvent);
-  sceneEvents->InsertNextValue(vtkMRMLScene::EndLayoutChangeEvent);
 
   this->SetAndObserveMRMLSceneEventsInternal(newScene, sceneEvents.GetPointer());
 }
