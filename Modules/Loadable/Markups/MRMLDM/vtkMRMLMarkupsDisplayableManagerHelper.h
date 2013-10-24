@@ -135,6 +135,10 @@ public:
   /// Clear out the saved list of glyph types, called on scene close or node removed
   void ClearNodeGlyphTypes();
 
+  /// Call render on all abstract widgets, use with caution, though it should
+  /// try to reduce the number of extra renders
+  void RenderAllWidgets();
+
 protected:
 
   vtkMRMLMarkupsDisplayableManagerHelper();

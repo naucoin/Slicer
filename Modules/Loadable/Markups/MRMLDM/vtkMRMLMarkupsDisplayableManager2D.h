@@ -32,10 +32,11 @@
 #include <vtkHandleWidget.h>
 #include <vtkSeedWidget.h>
 
+class vtkAbstractWidget;
+class vtkMRMLMarkupsDisplayNode;
 class vtkMRMLMarkupsNode;
 class vtkSlicerViewerWidget;
-class vtkMRMLMarkupsDisplayNode;
-class vtkAbstractWidget;
+class vtkMRMLLayoutNode;
 
 /// \ingroup Slicer_QtModules_Markups
 class  VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsDisplayableManager2D :
@@ -164,6 +165,14 @@ protected:
   void AddObserversToInteractionNode();
   void RemoveObserversFromInteractionNode();
 
+  /// Return the singleton layout node if present in the scene,
+  /// NULL otherwise
+  vtkMRMLLayoutNode *GetLayoutNode();
+
+  /// Observe the layout node.
+  void AddObserversToLayoutNode();
+  void RemoveObserversFromLayoutNode();
+
   /// Preset functions for certain events.
   void OnMRMLMarkupsNodeModifiedEvent(vtkMRMLNode* node);
   void OnMRMLMarkupsNodeTransformModifiedEvent(vtkMRMLNode* node);
@@ -251,6 +260,8 @@ protected:
 
   double LastClickWorldCoordinates[4];
 
+  vtkGetMacro(LayoutChanging, bool);
+
 private:
 
   vtkMRMLMarkupsDisplayableManager2D(const vtkMRMLMarkupsDisplayableManager2D&); /// Not implemented
@@ -265,6 +276,9 @@ private:
   /// Internal class to respond to changes in the slice composite node
   class vtkInternal;
   vtkInternal * Internal;
+
+  /// Layout changing flag
+  bool LayoutChanging;
 };
 
 #endif

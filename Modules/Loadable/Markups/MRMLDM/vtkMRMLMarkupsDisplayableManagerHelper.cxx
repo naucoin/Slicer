@@ -681,3 +681,19 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PrintNodeGlyphTypes()
       }
     }
 }
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::RenderAllWidgets()
+{
+  std::cout << "RenderAllWidgets\n";
+   WidgetsIt widgetIterator = this->Widgets.begin();
+  for (widgetIterator =  this->Widgets.begin();
+       widgetIterator != this->Widgets.end();
+       ++widgetIterator)
+    {
+    if (widgetIterator->second != NULL)
+      {
+      widgetIterator->second->Render();
+      }
+    }
+}

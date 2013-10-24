@@ -29,6 +29,7 @@
 // MRML includes
 #include <vtkMRMLApplicationLogic.h>
 #include <vtkMRMLInteractionNode.h>
+#include <vtkMRMLLayoutNode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLSelectionNode.h>
 #include <vtkMRMLSliceCompositeNode.h>
@@ -194,6 +195,8 @@ vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
   this->LastClickWorldCoordinates[3]=1.0;
 
   this->Internal = new vtkInternal(this);
+
+  this->LayoutChanging = false;
 }
 
 //---------------------------------------------------------------------------
@@ -310,6 +313,62 @@ void vtkMRMLMarkupsDisplayableManager2D::RemoveObserversFromInteractionNode()
 }
 
 //---------------------------------------------------------------------------
+vtkMRMLLayoutNode *vtkMRMLMarkupsDisplayableManager2D::GetLayoutNode()
+{
+  if (!this->GetMRMLScene())
+    {
+    return NULL;
+    }
+  vtkMRMLLayoutNode *layoutNode = NULL;
+  vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNthNodeByClass(0, "vtkMRMLLayoutNode");
+  if (mrmlNode)
+    {
+    layoutNode = vtkMRMLLayoutNode::SafeDownCast(mrmlNode);
+    }
+  return layoutNode;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::AddObserversToLayoutNode()
+{
+  if (!this->GetMRMLScene())
+    {
+    return;
+    }
+  // also observe the layout node for changes
+  vtkMRMLLayoutNode *layoutNode = this->GetLayoutNode();
+  if (layoutNode)
+    {
+    vtkIntArray *layoutEvents = vtkIntArray::New();
+    vtkNew<vtkFloatArray> priorities;
+    float normalPriority = 0.0;
+    float lowPriority = -5.0;
+    layoutEvents->InsertNextValue(vtkMRMLLayoutNode::LayoutChangeStartEvent);
+    priorities->InsertNextValue(normalPriority);
+    layoutEvents->InsertNextValue(vtkMRMLLayoutNode::LayoutChangeEndEvent);
+    priorities->InsertNextValue(lowPriority);
+    vtkObserveMRMLNodeEventsPrioritiesMacro(layoutNode, layoutEvents, priorities.GetPointer());
+    layoutEvents->Delete();
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::RemoveObserversFromLayoutNode()
+{
+  if (!this->GetMRMLScene())
+    {
+    return;
+    }
+
+  // find the layout node
+  vtkMRMLLayoutNode *layoutNode =  this->GetLayoutNode();
+  if (layoutNode)
+    {
+    vtkUnObserveMRMLNodeMacro(layoutNode);
+    }
+}
+
+//---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManager2D::RequestRender()
 {
   if (!this->GetMRMLScene())
@@ -350,6 +409,11 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateFromMRML()
     }
 
   this->Internal->UpdateSliceNode();
+
+  if (this->LayoutChanging)
+    {
+    return;
+    }
 
   // check if there are any of these nodes in the scene
   if (this->GetMRMLScene()->GetNumberOfNodesByClass(this->Focus) < 1)
@@ -412,14 +476,14 @@ void vtkMRMLMarkupsDisplayableManager2D::SetMRMLSceneInternal(vtkMRMLScene* newS
   if (newScene)
     {
     this->AddObserversToInteractionNode();
+    this->AddObserversToLayoutNode();
     }
   else
     {
     // there's no scene to get the interaction node from, so this won't do anything
     this->RemoveObserversFromInteractionNode();
+    this->RemoveObserversFromLayoutNode();
     }
-  vtkDebugMacro("SetMRMLSceneInternal: add observer on interaction node now?");
-
 }
 
 //---------------------------------------------------------------------------
@@ -431,6 +495,7 @@ void vtkMRMLMarkupsDisplayableManager2D
   vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::SafeDownCast(caller);
   vtkMRMLInteractionNode * interactionNode = vtkMRMLInteractionNode::SafeDownCast(caller);
   vtkMRMLSliceCompositeNode * sliceCompositeNode = vtkMRMLSliceCompositeNode::SafeDownCast(caller);
+  vtkMRMLLayoutNode * layoutNode = vtkMRMLLayoutNode::SafeDownCast(caller);
 
   int *nPtr = NULL;
   int n = -1;
@@ -501,6 +566,18 @@ void vtkMRMLMarkupsDisplayableManager2D
     this->SetUpdateFromMRMLRequested(1);
     this->RequestRender();
     }
+  else if (layoutNode)
+    {
+    if (event == vtkMRMLLayoutNode::LayoutChangeStartEvent)
+      {
+      this->LayoutChanging = true;
+      }
+    else if (event == vtkMRMLLayoutNode::LayoutChangeEndEvent)
+      {
+      this->LayoutChanging = false;
+      this->Helper->RenderAllWidgets();
+      }
+    }
   else
     {
     this->Superclass::ProcessMRMLNodesEvents(caller, event, callData);
@@ -540,10 +617,21 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
     {
     return;
     }
+  // if the layout node is in the midst of changing...
+  if (this->LayoutChanging)
+    {
+    std::cout << "OnMRMLSceneNodeAddedEvent: layout is changing." << std::endl;
+    }
 
   if (node->IsA("vtkMRMLInteractionNode"))
     {
     this->AddObserversToInteractionNode();
+    return;
+    }
+
+  if (node->IsA("vtkMRMLLayoutNode"))
+    {
+    this->AddObserversToLayoutNode();
     return;
     }
 

@@ -944,6 +944,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
 /// Propagate properties of MRML node to widget.
 void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMarkupsNode* node, vtkAbstractWidget * widget)
 {
+  if (this->GetLayoutChanging())
+    {
+    return;
+    }
   if (!widget)
     {
     vtkErrorMacro("PropagateMRMLToWidget: Widget was null!")
