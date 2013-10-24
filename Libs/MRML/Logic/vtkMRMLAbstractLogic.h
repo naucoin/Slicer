@@ -102,6 +102,12 @@ class vtkMRMLApplicationLogic;
 };
 #endif
 
+#ifndef vtkObserveMRMLNodeEventsPrioritiesMacro
+#define vtkObserveMRMLNodeEventsPrioritiesMacro(node, events, priorities)     \
+{                                                                             \
+  this->GetMRMLNodesObserverManager()->AddObjectEvents ( (node), (events), (priorities)); \
+};
+#endif
 
 #ifndef vtkObserveMRMLNodeEventsMacro
 #define vtkObserveMRMLNodeEventsMacro(node, events)                           \
