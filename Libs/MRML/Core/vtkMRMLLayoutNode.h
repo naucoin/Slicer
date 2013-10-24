@@ -145,6 +145,13 @@ public:
   // You are responsible to delete the returned dataElement.
   static vtkXMLDataElement* ParseLayout(const char* description);
 
+  /// Events
+  enum
+  {
+    LayoutChangeStartEvent = 19001,
+    LayoutChangeEndEvent,
+  };
+
 protected:
   void UpdateCurrentLayoutDescription();
   void SetAndParseCurrentLayoutDescription(const char* description);
