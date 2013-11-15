@@ -986,6 +986,13 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
     return 0;
     }
 
+  // allow annotations to appear only in designated viewers
+  vtkMRMLDisplayNode *displayNode = node->GetDisplayNode();
+  if (displayNode && !displayNode->IsDisplayableInView(sliceNode->GetID()))
+    {
+    return 0;
+    }
+
   bool showWidget = true;
   bool inViewport = true;
 
