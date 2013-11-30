@@ -456,7 +456,7 @@ void vtkMRMLMarkupsDisplayableManager2D::UpdateFromMRML()
       else
         {
         // update the widget?
-        // this->PropagateMRMLToWidget(markupsNode, this->GetWidget(markupsNode));
+        this->PropagateMRMLToWidget(markupsNode, this->GetWidget(markupsNode));
         }
       }
     node = this->GetMRMLScene()->GetNextNodeByClass(this->Focus);

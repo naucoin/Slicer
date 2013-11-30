@@ -679,7 +679,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
         }
       else
         {
-        vtkErrorMacro("Unable to get seed " << n);
+        vtkErrorMacro("SetNthSeed: Unable to get seed " << n);
         }
       // if the fiducial is visible, turn off projection
       vtkSeedWidget* fiducialSeed = vtkSeedWidget::SafeDownCast(this->Helper->GetPointProjectionWidget(fiducialNode->GetNthMarkupID(n)));
@@ -1058,7 +1058,8 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
   vtkPointHandleRepresentation2D *pointHandleRep =
     vtkPointHandleRepresentation2D::SafeDownCast(seedRepresentation->GetHandleRepresentation());
   // double check that if switch in and out of light box mode, the handle rep
-  // is updated
+  // is updated. This just ensures that new seeds use the new representation, still
+  // have to reset the current ones
   bool updateHandleType = false;
   if (this->IsInLightboxMode())
     {
@@ -1095,8 +1096,13 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::PropagateMRMLToWidget(vtkMRMLMa
     }
   if (updateHandleType)
     {
-    vtkDebugMacro("WARNING: updated the handle type");
+    vtkDebugMacro("WARNING: updated the handle type, removing handles");
     seedWidget->CreateDefaultRepresentation();
+    int numberOfSeeds = seedRepresentation->GetNumberOfSeeds(); // seedWidget->GetNumberOfHandles();
+    for (int i = numberOfSeeds - 1; i >= 0; --i)
+      {
+      seedWidget->DeleteSeed(i);
+      }
     }
 
   // iterate over the fiducials in this markup
