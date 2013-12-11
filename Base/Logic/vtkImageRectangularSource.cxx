@@ -1,6 +1,5 @@
 #include "vtkImageRectangularSource.h"
 #include "vtkObjectFactory.h"
-#include "assert.h"
 #include "vtkImageData.h"
 
 //----------------------------------------------------------------------------
@@ -113,23 +112,23 @@ void vtkImageRectangularSource::ExecuteInformation()
 void vtkImageRectangularSource::SetCorners(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
   // Check if it is of dimension 4x2
   // Only set it once
- 
-  assert(!this->Corners);
-  this->Corners = new int*[4]; 
-  for (int i = 0; i < 4 ; i++) this->Corners[i] = new int[2];
-  this->Corners[0][0] = x1;
-  this->Corners[0][1] = y1;
+  if (!this->Corners)
+    {
+    this->Corners = new int*[4];
+    for (int i = 0; i < 4 ; i++) this->Corners[i] = new int[2];
+    this->Corners[0][0] = x1;
+    this->Corners[0][1] = y1;
 
-  this->Corners[1][0] = x2;
-  this->Corners[1][1] = y2;
+    this->Corners[1][0] = x2;
+    this->Corners[1][1] = y2;
 
-  this->Corners[2][0] = x3;
-  this->Corners[2][1] = y3;
+    this->Corners[2][0] = x3;
+    this->Corners[2][1] = y3;
 
-  this->Corners[3][0] = x4;
-  this->Corners[3][1] = y4;
-
-} 
+    this->Corners[3][0] = x4;
+    this->Corners[3][1] = y4;
+    }
+}
 
 
 
@@ -225,16 +224,22 @@ void Sort(int x1, int x2, int x3,int &xMin, int &xMean, int &xMax) {
 }
 
 int DefineX(int *c1, int *c2, int y) {
-  assert(c1[1] != c2[1]);
-  if ((Min(c1[1],c2[1]) > y )|| (Max(c1[1],c2[1]) < y )) return -1; 
+  if (c1[1] != c2[1])
+    {
+    if ((Min(c1[1],c2[1]) > y )|| (Max(c1[1],c2[1]) < y )) return -1;
 
-  double lenY = c2[1] - c1[1];
-  int lenX    = c2[0] - c1[0];  
-  double Scale =  double(lenX)/double(lenY);
+    double lenY = c2[1] - c1[1];
+    int lenX    = c2[0] - c1[0];
+    double Scale =  double(lenX)/double(lenY);
 
-  return int(c1[0] + double(y - c1[1])*Scale);
-} 
- 
+    return int(c1[0] + double(y - c1[1])*Scale);
+    }
+  else
+    {
+    return 0;
+    }
+}
+
 template <class T> T CalculateGraySlope(int length, double center, int pos, T inVal, T outVal) {
   double grad = (2.0*fabs(float(pos - center))) / double(length);
   return  T((1.0 - grad)*double(inVal)) + T(grad*double(outVal)); 
@@ -271,7 +276,10 @@ void DefineLine(int MinInX, int MaxInX,int LineLength, T inVal, T outVal, int In
 
   void DefineXMinMaxInTriangleNormal(int *c1, int *c2, int *c3, int y, int &MinX, int &MaxX) {
     // Otherwise does not define a triangle;
-    assert((c1[1] != c2[1]) || (c2[1] != c3[1]));
+    if (!((c1[1] != c2[1]) || (c2[1] != c3[1])))
+      {
+      return;
+      }
     // It is not part of the triangle
     if ((Min(c1[1],c2[1],c3[1]) > y ) || (Max(c1[1],c2[1],c3[1]) < y)) {
       MaxX = -1;
@@ -389,7 +397,11 @@ template <class T>
 void vtkImageRectangularSource_GeneralExecute(vtkImageRectangularSource *self, vtkImageData *data, int ext[6], int** Corners, T *ptr)
 {
   // Currently only defined in 2D 
-  assert(!(ext[5] - ext[4]));
+  if (ext[5] - ext[4] != 0)
+    {
+    std::cerr << "Currently only defined in 2D" << std::endl;
+    return;
+    }
 
   vtkIdType inc0, inc1, inc2;
 

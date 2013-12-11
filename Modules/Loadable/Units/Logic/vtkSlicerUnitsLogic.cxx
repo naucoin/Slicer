@@ -33,7 +33,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerUnitsLogic);
@@ -205,7 +204,11 @@ void vtkSlicerUnitsLogic::RegisterNodes()
 //-----------------------------------------------------------------------------
 void vtkSlicerUnitsLogic::RegisterNodesInternal(vtkMRMLScene* scene)
 {
-  assert(scene != 0);
+  if (scene == 0)
+    {
+    vtkErrorMacro("RegisterNodesInternal: scene is null");
+    return;
+    }
 
   vtkNew<vtkMRMLUnitNode> unitNode;
   scene->RegisterNodeClass(unitNode.GetPointer());
@@ -243,8 +246,14 @@ void vtkSlicerUnitsLogic::SaveDefaultUnits()
   for ( it = units.begin(); it != units.end(); ++it)
     {
     vtkMRMLUnitNode* unit = (*it);
-    assert(unit);
-    this->CachedDefaultUnits[unit->GetQuantity()] = unit->GetID();
+    if (unit)
+      {
+      this->CachedDefaultUnits[unit->GetQuantity()] = unit->GetID();
+      }
+    else
+      {
+      vtkErrorMacro("SaveDefaultUnits: unit is null");
+      }
     }
 }
 

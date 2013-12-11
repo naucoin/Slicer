@@ -44,7 +44,6 @@
 #include <vtkStringArray.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerMarkupsLogic);
@@ -170,7 +169,11 @@ void vtkSlicerMarkupsLogic::ObserveMRMLScene()
 //-----------------------------------------------------------------------------
 void vtkSlicerMarkupsLogic::RegisterNodes()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("RegisterNodes: MRML scene is not defined");
+    return;
+    }
 
   // Nodes
   vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::New();
@@ -199,7 +202,11 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
 //---------------------------------------------------------------------------
 void vtkSlicerMarkupsLogic::UpdateFromMRMLScene()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("UpdateFromMRMLScene: MRML scene is not defined");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

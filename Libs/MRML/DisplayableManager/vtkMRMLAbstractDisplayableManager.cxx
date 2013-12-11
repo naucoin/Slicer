@@ -43,7 +43,6 @@
 #include <vtkWeakPointer.h>
 
 // STD includes
-#include <cassert>
 #include <algorithm>
 
 #if (_MSC_VER >= 1700 && _MSC_VER < 1800)
@@ -210,8 +209,17 @@ void vtkMRMLAbstractDisplayableManager::vtkInternal::DoDeleteCallback(vtkObject*
 {
   vtkMRMLAbstractDisplayableManager* self =
       vtkMRMLAbstractDisplayableManager::SafeDownCast(vtk_obj);
-  assert(self);
-  assert(event == vtkCommand::DeleteEvent);
+  if (!self)
+    {
+    std::cerr << "DoDeleteCallback: self is undefined!" << std::endl;
+    return;
+    }
+  if (event != vtkCommand::DeleteEvent)
+    {
+    std::cerr << "DoDeleteCallback: event " << event << " != DeleteEvent "
+              << vtkCommand::DeleteEvent << std::endl;
+    return;
+    }
 #ifndef _DEBUG
   (void)event;
 #endif
@@ -257,20 +265,35 @@ void vtkMRMLAbstractDisplayableManager::vtkInternal::DoMRMLInteractionNodeCallba
   //std::cout << "DoMRMLInteractionNodeCallback " << event << std::endl;
 
   // InteractionModeChangedEvent is expected
-  assert(event == vtkMRMLInteractionNode::InteractionModeChangedEvent);
+  if (event != vtkMRMLInteractionNode::InteractionModeChangedEvent)
+    {
+    std::cerr << "DoMRMLInteractionNodeCallback: event " << event
+              << " != InteractionmodeChangedEvent" << std::endl;
+    return;
+    }
 #ifndef _DEBUG
   (void)event;
 #endif
 
   // vtkMRMLInteractionNode is expected to be source of the ModifiedEvent
-  assert(vtkMRMLInteractionNode::SafeDownCast(vtk_obj));
+  if (!vtkMRMLInteractionNode::SafeDownCast(vtk_obj))
+    {
+    std::cerr << "DoMRMLInteractionNodeCallback: not an interaction node"
+              << std::endl;
+    return;
+    }
 #ifndef _DEBUG
   (void)vtk_obj;
 #endif
 
   vtkMRMLAbstractDisplayableManager* self =
       reinterpret_cast<vtkMRMLAbstractDisplayableManager*>(client_data);
-  assert(self);
+  if (!self)
+    {
+    std::cerr << "DoMRMLInteractionNodeCallback: self is indefined"
+              << std::endl;
+    return;
+    }
 
   self->Internal->UpdateInteractorStyle();
 }
@@ -342,14 +365,23 @@ void vtkMRMLAbstractDisplayableManager::vtkInternal::DoInteractorCallback(
     vtkObject* vtk_obj, unsigned long event, void* client_data, void* vtkNotUsed(call_data))
 {
   // vtkInteractor is expected to be source of the event
-  assert(vtkRenderWindowInteractor::SafeDownCast(vtk_obj));
+  if (!vtkRenderWindowInteractor::SafeDownCast(vtk_obj))
+    {
+    std::cerr << "DoInteractorCallback: not a render window interactor"
+              << std::endl;
+    return;
+    }
 #ifndef _DEBUG
   (void)vtk_obj;
 #endif
 
   vtkMRMLAbstractDisplayableManager* self =
       reinterpret_cast<vtkMRMLAbstractDisplayableManager*>(client_data);
-  assert(self);
+  if (!self)
+    {
+    std::cerr << "DoInteractorCallback: self is undefined." << std::endl;
+    return;
+    }
 
   self->OnInteractorEvent(event);
 }
@@ -359,14 +391,24 @@ void vtkMRMLAbstractDisplayableManager::vtkInternal::DoInteractorStyleCallback(
     vtkObject* vtk_obj, unsigned long event, void* client_data, void* vtkNotUsed(call_data))
 {
   // vtkInteractorStyle is expected to be source of the event
-  assert(vtkInteractorStyle::SafeDownCast(vtk_obj));
+  if (!vtkInteractorStyle::SafeDownCast(vtk_obj))
+    {
+    std::cerr << "DoInteractorStyleCallback: not an interactor style"
+              << std::endl;
+    return;
+    }
 #ifndef _DEBUG
   (void)vtk_obj;
 #endif
 
   vtkMRMLAbstractDisplayableManager* self =
       reinterpret_cast<vtkMRMLAbstractDisplayableManager*>(client_data);
-  assert(self);
+  if (!self)
+    {
+    std::cerr << "DoInteractorStyleCallback: self is undefined."
+              << std::endl;
+    return;
+    }
 
   self->OnInteractorStyleEvent(event);
 }
@@ -398,13 +440,17 @@ void vtkMRMLAbstractDisplayableManager::vtkInternal::UpdateInteractorStyle(int e
     {
     if (eventIdToObserve != vtkCommand::NoEvent)
       {
-      assert(!this->InteractorStyle->HasObserver(eventIdToObserve, this->InteractorStyleCallBackCommand));
-      this->InteractorStyle->AddObserver(eventIdToObserve, this->InteractorStyleCallBackCommand, priority);
+      if (!this->InteractorStyle->HasObserver(eventIdToObserve, this->InteractorStyleCallBackCommand))
+        {
+        this->InteractorStyle->AddObserver(eventIdToObserve, this->InteractorStyleCallBackCommand, priority);
+        }
       }
     if (eventIdToUnObserve != vtkCommand::NoEvent)
       {
-      assert(this->InteractorStyle->HasObserver(eventIdToUnObserve, this->InteractorStyleCallBackCommand));
-      this->InteractorStyle->RemoveObservers(eventIdToUnObserve, this->InteractorStyleCallBackCommand);
+      if (this->InteractorStyle->HasObserver(eventIdToUnObserve, this->InteractorStyleCallBackCommand))
+        {
+        this->InteractorStyle->RemoveObservers(eventIdToUnObserve, this->InteractorStyleCallBackCommand);
+        }
       }
     }
 
@@ -473,13 +519,17 @@ void vtkMRMLAbstractDisplayableManager::vtkInternal::UpdateInteractor(int eventI
     {
     if (eventIdToObserve != vtkCommand::NoEvent)
       {
-      assert(!this->Interactor->HasObserver(eventIdToObserve, this->InteractorCallBackCommand));
-      this->Interactor->AddObserver(eventIdToObserve, this->InteractorCallBackCommand, priority);
+      if (!this->Interactor->HasObserver(eventIdToObserve, this->InteractorCallBackCommand))
+        {
+        this->Interactor->AddObserver(eventIdToObserve, this->InteractorCallBackCommand, priority);
+        }
       }
     if (eventIdToUnObserve != vtkCommand::NoEvent)
       {
-      assert(this->Interactor->HasObserver(eventIdToUnObserve, this->InteractorCallBackCommand));
-      this->Interactor->RemoveObservers(eventIdToUnObserve, this->InteractorCallBackCommand);
+      if (this->Interactor->HasObserver(eventIdToUnObserve, this->InteractorCallBackCommand))
+        {
+        this->Interactor->RemoveObservers(eventIdToUnObserve, this->InteractorCallBackCommand);
+        }
       }
     }
 
@@ -570,13 +620,17 @@ void vtkMRMLAbstractDisplayableManager::CreateIfPossible()
 {
   if (!this->GetMRMLDisplayableNode())
     {
+    // don't print out anything here, this check catches cases when it's called
+    // without a displayable node being set, just return
+    return;
+    }
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("CreateIfPossible: no mrml scene defined");
     return;
     }
   if (!this->IsCreated())
     {
-    assert(this->GetMRMLScene());
-    assert(this->GetMRMLDisplayableNode());
-
     // Look for InteractionNode
     this->Internal->MRMLInteractionNode = vtkMRMLInteractionNode::SafeDownCast(
         this->GetMRMLScene()->GetNthNodeByClass(0, "vtkMRMLInteractionNode"));
@@ -742,8 +796,14 @@ void vtkMRMLAbstractDisplayableManager::WidgetsCallback(vtkObject *caller,
 {
   vtkMRMLAbstractDisplayableManager* self =
     reinterpret_cast<vtkMRMLAbstractDisplayableManager *>(clientData);
-  assert(!caller->IsA("vtkMRMLNode"));
-  self->ProcessWidgetsEvents(caller, eid, callData);
+  if (!caller->IsA("vtkMRMLNode"))
+    {
+    self->ProcessWidgetsEvents(caller, eid, callData);
+    }
+  else
+    {
+    std::cerr << "WidgetsCallback: caller is a mrml node" << std::endl;
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -761,7 +821,11 @@ vtkObserverManager* vtkMRMLAbstractDisplayableManager::GetWidgetsObserverManager
 //---------------------------------------------------------------------------
 void vtkMRMLAbstractDisplayableManager::SetMRMLSceneInternal(vtkMRMLScene* newScene)
 {
-  assert(newScene != this->GetMRMLScene());
+  if (newScene == this->GetMRMLScene())
+    {
+    vtkErrorMacro("SetMRMLSceneInternal: new scene is same as the old");
+    return;
+    }
 
   vtkNew<vtkIntArray> sceneEvents;
   sceneEvents->InsertNextValue(vtkMRMLScene::StartBatchProcessEvent);

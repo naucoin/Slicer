@@ -1022,7 +1022,6 @@ DCMTKFileReader
   case 0:
   default:
     break;
-    //assert(0);
     }
 
   return type;

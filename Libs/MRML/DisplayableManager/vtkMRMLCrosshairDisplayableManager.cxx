@@ -53,7 +53,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLCrosshairDisplayableManager );
@@ -153,8 +152,14 @@ vtkMRMLCrosshairDisplayableManager::vtkInternal::~vtkInternal()
   this->LightBoxRenderer = 0;
   this->CrosshairNodeCache = 0;
   // everything should be empty
-  assert(this->SliceCompositeNode == 0);
-  assert(this->CrosshairNode == 0);
+  if (this->SliceCompositeNode != 0)
+    {
+    std::cerr << "Unable to set slice composite node to null" << std::endl;
+    }
+  if (this->CrosshairNode != 0)
+    {
+    std::cerr << "Unable to set crosshair node to null" << std::endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -227,7 +232,11 @@ vtkMRMLSliceNode* vtkMRMLCrosshairDisplayableManager::vtkInternal
 //---------------------------------------------------------------------------
 void vtkMRMLCrosshairDisplayableManager::vtkInternal::UpdateSliceNode()
 {
-  assert(!this->GetSliceNode() || this->GetSliceNode()->GetLayoutName());
+  if (!(!this->GetSliceNode() || this->GetSliceNode()->GetLayoutName()))
+    {
+    std::cerr << "UpdateSliceNode: ERROR: error updating slice node" << std::endl;
+    return;
+    }
   // search the scene for a matching slice composite node
   if (!this->SliceCompositeNode.GetPointer() || // the slice composite has been deleted
       !this->SliceCompositeNode->GetLayoutName() || // the slice composite points to a diff slice node
@@ -330,7 +339,6 @@ vtkMRMLCrosshairNode* vtkMRMLCrosshairDisplayableManager::vtkInternal
       }
     }
   // no matching crosshair node is found
-  //assert(0);
   return 0;
 }
 

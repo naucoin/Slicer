@@ -43,7 +43,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerMultiVolumeRenderingLogic);
@@ -77,13 +76,21 @@ void vtkSlicerMultiVolumeRenderingLogic::SetMRMLSceneInternal(vtkMRMLScene * new
 //-----------------------------------------------------------------------------
 void vtkSlicerMultiVolumeRenderingLogic::RegisterNodes()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("RegisterNodes: MRML scene is not defined");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------
 void vtkSlicerMultiVolumeRenderingLogic::UpdateFromMRMLScene()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("UpdateFromMRMLScene: MRML scene is not defined");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

@@ -179,7 +179,11 @@ void vtkSlicerScriptedLoadableModuleLogic::PrintSelf(ostream& os, vtkIndent inde
 //---------------------------------------------------------------------------
 bool vtkSlicerScriptedLoadableModuleLogic::SetPythonSource(const std::string& pythonSource)
 {
-  assert(pythonSource.find(".py") != std::string::npos);
+  if (pythonSource.find(".py") == std::string::npos)
+    {
+    vtkErrorMacro("SetPythonSource: .py extension not present in python source: " << pythonSource);
+    return false;
+    }
 
   // Extract filename - It should match the associated python class
   std::string className = vtksys::SystemTools::GetFilenameWithoutExtension(pythonSource);
@@ -230,10 +234,12 @@ bool vtkSlicerScriptedLoadableModuleLogic::SetPythonSource(const std::string& py
 //  // Retrieve API methods
 //  for (int i = 0; i < vtkInternal::APIMethodCount; ++i)
 //    {
-//    assert(vtkInternal::APIMethodNames[i]);
-//    PyObject * method = PyObject_GetAttrString(self, vtkInternal::APIMethodNames[i]);
-//    //std::cout << "method:" << method << std::endl;
-//    this->Internal->PythonAPIMethods[i] = method;
+//    if (vtkInternal::APIMethodNames[i])
+//      {
+//      PyObject * method = PyObject_GetAttrString(self, vtkInternal::APIMethodNames[i]);
+//      //std::cout << "method:" << method << std::endl;
+//      this->Internal->PythonAPIMethods[i] = method;
+//      }
 //    }
 
   //std::cout << "self (" << className << ", instance:" << self << ")" << std::endl;

@@ -141,7 +141,11 @@ void vtkMRMLViewDisplayableManager::vtkInternal::CreateAxis()
 //---------------------------------------------------------------------------
 void vtkMRMLViewDisplayableManager::vtkInternal::AddAxis(vtkRenderer * renderer)
 {
-  assert(renderer);
+  if (!renderer)
+    {
+    std::cerr << "AddAxis: no renderer, returning" << std::endl;
+    return;
+    }
 
   renderer->AddViewProp(this->BoxAxisActor);
 
@@ -444,7 +448,12 @@ void vtkMRMLViewDisplayableManager::vtkInternal::UpdateRenderMode()
   vtkDebugWithObjectMacro(this->External, << "UpdateRenderMode:" <<
                 this->External->GetMRMLViewNode()->GetRenderMode());
 
-  assert(this->External->GetRenderer()->IsActiveCameraCreated());
+  if (!this->External->GetRenderer()->IsActiveCameraCreated())
+    {
+    std::cerr << "UpdateRenderMode: active camera not created on renderer"
+              << std::endl;
+    return;
+    }
 
   vtkCamera *cam = this->External->GetRenderer()->GetActiveCamera();
   if (this->External->GetMRMLViewNode()->GetRenderMode() == vtkMRMLViewNode::Perspective)
@@ -554,8 +563,16 @@ void vtkMRMLViewDisplayableManager::Create()
 {
   this->Superclass::Create();
 
-  assert(this->GetRenderer());
-  assert(this->GetMRMLViewNode());
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("Create: no renderer");
+    return;
+    }
+  if (!this->GetMRMLViewNode())
+    {
+    vtkErrorMacro("Create: no view node");
+    return;
+    }
 
   this->Internal->AddAxis(this->GetRenderer());
 
@@ -564,7 +581,11 @@ void vtkMRMLViewDisplayableManager::Create()
       vtkMRMLCameraDisplayableManager::SafeDownCast(
           this->GetMRMLDisplayableManagerGroup()->GetDisplayableManagerByClassName(
               "vtkMRMLCameraDisplayableManager"));
-  assert(cameraDisplayableManager);
+  if (!cameraDisplayableManager)
+    {
+    vtkErrorMacro("Create: unable to get camera displayable manager");
+    return;
+    }
 
   // Listen for ActiveCameraChangedEvent
   // \tbd active camera should be set to view node instead and only observing

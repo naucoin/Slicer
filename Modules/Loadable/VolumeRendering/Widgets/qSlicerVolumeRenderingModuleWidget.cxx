@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QSettings>
 
 // CTK includes
@@ -53,7 +54,6 @@
 #include <vtkWeakPointer.h>
 
 // STD includes
-#include <cassert>
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_VolumeRendering
@@ -519,8 +519,16 @@ void qSlicerVolumeRenderingModuleWidget
   vtkSlicerVolumeRenderingLogic::SafeDownCast(this->logic())
     ->FitROIToVolume(d->DisplayNode);
 
-  Q_ASSERT(d->ROIWidget->mrmlROINode() == this->mrmlROINode());
-  Q_ASSERT(d->ROIWidget->mrmlROINode() == d->DisplayNode->GetROINode());
+  if (d->ROIWidget->mrmlROINode() != this->mrmlROINode())
+    {
+    qWarning() << "fitROIToVolume: the ROI node for the ROI widget doesn't match this ROI node";
+    return;
+    }
+  if (d->ROIWidget->mrmlROINode() != d->DisplayNode->GetROINode())
+    {
+    qWarning() << "fitROIToVolume: the ROI node for the ROI widget doesn't match the display node's ROI node.";
+    return;
+    }
 
   if (d->ROIWidget->mrmlROINode())
     {
@@ -641,8 +649,15 @@ void qSlicerVolumeRenderingModuleWidget::onCurrentMemorySizeChanged(int index)
     return;
     }
   int gpuMemorySize = d->MemorySizeComboBox->itemData(index).toInt();
-  Q_ASSERT(gpuMemorySize >= 0 && gpuMemorySize < 10000);
-  d->DisplayNode->SetGPUMemorySize(gpuMemorySize);
+  if (gpuMemorySize >= 0 && gpuMemorySize < 10000)
+    {
+    d->DisplayNode->SetGPUMemorySize(gpuMemorySize);
+    }
+  else
+    {
+    qWarning() << "onCurrentMemorySizeChanged: gpuMemorySize "
+               << gpuMemorySize << " out of bounds of 0-10000";
+    }
 }
 
 // --------------------------------------------------------------------------
@@ -680,10 +695,22 @@ void qSlicerVolumeRenderingModuleWidget::applyPreset(vtkMRMLNode* node)
     {
     return;
     }
-  assert(presetNode->GetVolumeProperty());
-  assert(presetNode->GetVolumeProperty()->GetRGBTransferFunction());
-  assert(presetNode->GetVolumeProperty()->GetRGBTransferFunction()->GetRange()[1] >
-         presetNode->GetVolumeProperty()->GetRGBTransferFunction()->GetRange()[0]);
+  if (!presetNode->GetVolumeProperty())
+    {
+    qWarning() << "applyPreset: Preset node has no volume property defined.";
+    return;
+    }
+  if (!presetNode->GetVolumeProperty()->GetRGBTransferFunction())
+    {
+    qWarning() << "applyPreset: Preset node voluem property  has no RGB transfer function/";
+    return;
+    }
+  if (!(presetNode->GetVolumeProperty()->GetRGBTransferFunction()->GetRange()[1] >
+        presetNode->GetVolumeProperty()->GetRGBTransferFunction()->GetRange()[0]))
+    {
+    qWarning() << "applyPreset: RGB transfer function range fails check";
+    return;
+    }
   volumePropertyNode->Copy(presetNode);
 }
 

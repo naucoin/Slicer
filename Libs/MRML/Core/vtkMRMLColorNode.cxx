@@ -23,7 +23,6 @@ Version:   $Revision: 1.0 $
 #include <vtkSmartPointer.h>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 #include <algorithm>
 
@@ -291,7 +290,12 @@ void vtkMRMLColorNode::SetNamesFromColors()
       this->SetNameFromColor(i);
     // There is no reason why SetNameFromColor would fail because we control
     // the array size.
-    assert(res);
+#ifndef NDEBUG
+    if (!res)
+      {
+      vtkErrorMacro("SetNamesFromColors: failed to set name from color at point " << i);
+      }
+#endif
     }
   this->NamesInitialisedOn();
 }

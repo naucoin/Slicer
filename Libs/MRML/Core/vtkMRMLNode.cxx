@@ -24,7 +24,6 @@ Version:   $Revision: 1.11 $
 #include <vtksys/SystemTools.hxx>
 
 // STD includes
-#include <cassert>
 #include <iostream>
 #include <sstream>
 
@@ -726,7 +725,12 @@ bool vtkMRMLNode::IsReferenceRoleGeneric(const char* refRole)
 //----------------------------------------------------------------------------
 void vtkMRMLNode::SetSceneReferences()
 {
-  assert(this->Scene); // must always have a valid scene when called.
+  // must always have a valid scene when called.
+  if (!this->Scene)
+    {
+    vtkErrorMacro("SetSceneReference: no scene defined");
+    return;
+    }
 
   NodeReferencesType::iterator it;
   for (it = this->NodeReferences.begin(); it != this->NodeReferences.end(); it++)
@@ -784,7 +788,11 @@ void vtkMRMLNode::SetAttribute(const char* name, const char* value)
 //----------------------------------------------------------------------------
 void vtkMRMLNode::RemoveAttribute(const char* name)
 {
-  assert(name != 0);
+  if (name == NULL)
+    {
+    vtkErrorMacro("RemoveAttribute: unable to remove null attribute");
+    return;
+    }
   this->SetAttribute(name, 0);
 }
 
@@ -1136,9 +1144,14 @@ void vtkMRMLNode::UpdateNthNodeReference(const char* referenceRole, int n)
 
   std::vector< vtkMRMLNodeReference *> &references = this->NodeReferences[std::string(referenceRole)];
 
-  assert( references.size() > (unsigned int)(n));
-
-  this->UpdateNthNodeReference(references[n], n);
+  if ( references.size() > (unsigned int)(n))
+    {
+    this->UpdateNthNodeReference(references[n], n);
+    }
+  else
+    {
+    vtkErrorMacro("UpdateNthNodeReference: n = " << (unsigned int)(n) << " out of bounds of references array, size = " << references.size());
+    }
 }
 
 
@@ -1170,7 +1183,11 @@ void vtkMRMLNode::UpdateNthNodeReference(const char* referenceRole, int n)
   if (n >= static_cast<int>(referencedNodes.size()) &&
       referencedNodeID != 0)
     {
-    assert(n == static_cast<int>(referencedNodes.size()));
+    if (n != static_cast<int>(referencedNodes.size()))
+      {
+      vtkErrorMacro("SetNthNodeReferenceID: n " << n << " !=  size of referencedNodes array " << referencedNodes.size());
+      return 0;
+      }
     vtkMRMLNodeReference *referencedNode = vtkMRMLNodeReference::New();
     referencedNode->ReferencingNode = this;
     referencedNode->ReferencedNode = 0;
@@ -1290,7 +1307,12 @@ void vtkMRMLNode::UpdateNthNodeReference(const char* referenceRole, int n)
   if (n >= static_cast<int>(referencedNodes.size()) &&
       referencedNodeID != 0)
     {
-    assert(n == static_cast<int>(referencedNodes.size()));
+    if (n != static_cast<int>(referencedNodes.size()))
+      {
+      vtkErrorMacro("SetAndObserveNthNodeReferenceID: n " << n
+                    << " != referenced nodes array size: " << referencedNodes.size());
+      return 0;
+      }
     vtkMRMLNodeReference *reference = vtkMRMLNodeReference::New();
     reference->ReferencingNode = this;
     reference->ReferencedNode = 0;

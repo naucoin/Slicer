@@ -40,7 +40,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLVolumeGlyphSliceDisplayableManager );
@@ -122,10 +121,30 @@ vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal::~vtkInternal()
 {
   this->SetSliceCompositeNode(0);
   // everything should be empty
-  assert(this->SliceCompositeNode == 0);
-  assert(this->VolumeNodes.size() == 0);
-  assert(this->DisplayNodes.size() == 0);
-  assert(this->Actors.size() == 0);
+  if (this->SliceCompositeNode != 0)
+    {
+    std::cerr << "VolumeGlyphSliceDisplayableManager ~vtkInternal"
+              << " slice composite node not deleted"
+              << std::endl;
+    }
+  if (this->VolumeNodes.size() != 0)
+    {
+    std::cerr << "VolumeGlyphSliceDisplayableManager ~vtkInternal"
+              << " volume nodes not deleted"
+              << std::endl;
+    }
+  if (this->DisplayNodes.size() != 0)
+    {
+    std::cerr << "VolumeGlyphSliceDisplayableManager ~vtkInternal"
+              << " display nodes not deleted"
+              << std::endl;
+    }
+  if (this->Actors.size() != 0)
+    {
+    std::cerr << "VolumeGlyphSliceDisplayableManager ~vtkInternal"
+              << " Actors not deleted"
+              << std::endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -150,7 +169,11 @@ vtkMRMLSliceNode* vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal
 //---------------------------------------------------------------------------
 void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal::UpdateSliceNode()
 {
-  assert(!this->GetSliceNode() || this->GetSliceNode()->GetLayoutName());
+  if (!(!this->GetSliceNode() || this->GetSliceNode()->GetLayoutName()))
+    {
+    std::cerr << "UpdateSliceNode: error updating slice node" << std::endl;
+    return;
+    }
   // search the scene for a matching slice composite node
   if (!this->SliceCompositeNode.GetPointer() || // the slice composite has been deleted
       !this->SliceCompositeNode->GetLayoutName() || // the slice composite points to a diff slice node
@@ -189,7 +212,8 @@ vtkMRMLSliceCompositeNode* vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInterna
       }
     }
   // no matching slice composite node is found
-  assert(0);
+  std::cerr << "FindSliceCompositeNode: no matching slice composite node is found"
+            << std::endl;
   return 0;
 }
 
@@ -210,7 +234,12 @@ void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal
 void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal
 ::UpdateSliceCompositeNode(vtkMRMLSliceCompositeNode* compositeNode)
 {
-  assert(compositeNode == this->SliceCompositeNode);
+  if (compositeNode != this->SliceCompositeNode)
+    {
+    std::cerr << "UpdateSliceCompositeNode: composite node doesn't match"
+              << std::endl;
+    return;
+    }
   this->SetVolumeNodes(this->GetVolumeNodes(compositeNode));
 }
 
@@ -320,7 +349,11 @@ void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal
 ::UpdateVolume(vtkMRMLDisplayableNode* volume)
 {
   // Sanity check: make sure the volume exists in the list
-  assert(std::find(this->VolumeNodes.begin(), this->VolumeNodes.end(), volume) != this->VolumeNodes.end());
+  if (std::find(this->VolumeNodes.begin(), this->VolumeNodes.end(), volume) == this->VolumeNodes.end())
+    {
+    std::cerr << "UpdateVolume: volume isn't in the list!" << std::endl;
+    return;
+    }
   // The volume has just been added to the volume list or has been modified,
   // update its display node list.
   int nnodes = volume->GetNumberOfDisplayNodes();
@@ -367,7 +400,12 @@ void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal
     {
     this->DisplayNodes[volume] = std::vector<vtkMRMLDisplayNode*>();
     displayNodesIt = this->DisplayNodes.find(volume);
-    assert(displayNodesIt != this->DisplayNodes.end());
+    if (displayNodesIt == this->DisplayNodes.end())
+      {
+      std::cerr << "SetVolumeDisplayNodes: failed to add display node"
+                << std::endl;
+      return;
+      }
     }
   // Add the display nodes that are not added yet
   for (unsigned int i = 0; i < newDisplayNodes.size(); ++i)
@@ -375,8 +413,14 @@ void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal
     this->AddVolumeDisplayNode(displayNodesIt, newDisplayNodes[i]);
     }
   // Make sure there is no more display nodes than the volume has
-  assert( displayNodesIt->second.size() <=
-          (unsigned int) displayNodesIt->first->GetNumberOfDisplayNodes());
+  if (!( displayNodesIt->second.size() <=
+         (unsigned int) displayNodesIt->first->GetNumberOfDisplayNodes()))
+    {
+    std::cerr << "SetVolumeDisplayNodes: failed check on number of display nodes"
+              << displayNodesIt->second.size() << " > "
+              << (unsigned int) displayNodesIt->first->GetNumberOfDisplayNodes()
+              << std::endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -414,7 +458,13 @@ void vtkMRMLVolumeGlyphSliceDisplayableManager::vtkInternal::RemoveVolumeDisplay
     {
     it = this->RemoveVolumeDisplayNode(displayNodesIt->second, it);
     }
-  assert(displayNodesIt->second.size() == 0);
+  if (displayNodesIt->second.size() != 0)
+    {
+    std::cerr << "RemoveVolumeDisplayNodes: failed to remove, size = "
+              << displayNodesIt->second.size()
+              << std::endl;
+    return;
+    }
   this->DisplayNodes.erase(displayNodesIt);
   return;
 }

@@ -904,7 +904,11 @@ void vtkMRMLMarkupsDisplayableManager3D::GetDisplayToWorldCoordinates(double x, 
       vtkMRMLModelDisplayableManager::SafeDownCast(
         this->GetMRMLDisplayableManagerGroup()->GetDisplayableManagerByClassName(
           "vtkMRMLModelDisplayableManager"));
-  assert(modelDisplayableManager);
+  if (!modelDisplayableManager)
+    {
+    vtkErrorMacro("GetDisplayToWorldCoordinates: unable to get the model displayable manager, can't resolve the pick");
+    return;
+    }
 
   double windowHeight = this->GetInteractor()->GetRenderWindow()->GetSize()[1];
 

@@ -36,7 +36,6 @@
 #include <vtkRenderWindowInteractor.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLCameraDisplayableManager );
@@ -123,7 +122,6 @@ void vtkMRMLCameraDisplayableManager::OnMRMLSceneEndImport()
 //---------------------------------------------------------------------------
 void vtkMRMLCameraDisplayableManager::OnMRMLSceneEndRestore()
 {
-  assert(this->GetMRMLViewNode());
   if (!this->GetMRMLViewNode())
     {
     return;
@@ -201,9 +199,16 @@ void vtkMRMLCameraDisplayableManager::ProcessMRMLNodesEvents(vtkObject *caller,
     // Maybe something external removed the view/camera link, make sure the
     // view observes a camera node, create a new camera node if needed
     case vtkMRMLCameraNode::ActiveTagModifiedEvent:
-      assert(vtkMRMLCameraNode::SafeDownCast(caller));
-      this->UpdateCameraNode();
-      vtkDebugMacro("ProcessingMRML: got a camera node modified event");
+      if (vtkMRMLCameraNode::SafeDownCast(caller))
+        {
+        this->UpdateCameraNode();
+        vtkDebugMacro("ProcessingMRML: got a camera node modified event");
+        }
+      else
+        {
+        vtkErrorMacro("ProcessMRMLNodesEvents: caller is not a camera node:"
+                      << caller->GetClassName());
+        }
       break;
     default:
       this->Superclass::ProcessMRMLNodesEvents(caller, event, callData);
@@ -223,7 +228,14 @@ void vtkMRMLCameraDisplayableManager::OnMRMLNodeModified(
   // pan, zoom, rotation...)
   // The observation is setup here: vtkSetAndObserveMRMLNodeMacro(
   // this->Internal->CameraNode, newCameraNode);
-  assert(vtkMRMLCameraNode::SafeDownCast(node));
+#ifndef NDEBUG
+  if (!vtkMRMLCameraNode::SafeDownCast(node))
+    {
+    vtkErrorMacro("OnMRMLNodeModified: node is not a camera node: "
+                  << node->GetClassName());
+    return;
+    }
+#endif
   vtkInteractorStyle* interactorStyle = vtkInteractorStyle::SafeDownCast(
     this->GetInteractor()->GetInteractorStyle());
   if (interactorStyle &&
@@ -490,7 +502,11 @@ void vtkMRMLCameraDisplayableManager::UpdateCameraNode()
 //---------------------------------------------------------------------------
 void vtkMRMLCameraDisplayableManager::AdditionalInitializeStep()
 {
-  assert(this->GetRenderer());
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("AdditionalInitializeStep: no renderer");
+    return;
+    }
   this->SetCameraToRenderer();
 }
 
@@ -538,7 +554,11 @@ void vtkMRMLCameraDisplayableManager::SetCameraToInteractor()
 //void vtkMRMLCameraDisplayableManager::AddCameraObservers()
 //{
 //  //!this->GetMRMLScene || this->SceneClosing
-//  assert(this->Internal->CameraNode);
+//  if (!this->Internal->CameraNode)
+//    {
+//    vtkErrorMacro("AddCameraObservers: no internal camera node");
+//    return;
+//    }
 //
 //  vtkEventBroker *broker = vtkEventBroker::GetInstance();
 //
@@ -546,8 +566,10 @@ void vtkMRMLCameraDisplayableManager::SetCameraToInteractor()
 //      this->Internal->CameraNode, vtkMRMLCameraNode::ActiveTagModifiedEvent,
 //      this, this->GetMRMLCallbackCommand());
 //
-//  assert(observations.size() == 0);
-//
+//  if (observations.size() != 0)
+//    {
+//    return;
+//    }
 //  broker->AddObservation(this->Internal->CameraNode, vtkMRMLCameraNode::ActiveTagModifiedEvent,
 //                         this, this->GetMRMLCallbackCommand());
 //}
@@ -555,7 +577,11 @@ void vtkMRMLCameraDisplayableManager::SetCameraToInteractor()
 ////---------------------------------------------------------------------------
 //void vtkMRMLCameraDisplayableManager::RemoveCameraObservers()
 //{
-//  assert(this->Internal->CameraNode);
+//  if (!this->Internal->CameraNode)
+//    {
+//    vtkErrorMacro("RemoveCameraObservers: no internal camera node");
+//    return;
+//    }
 //
 //  vtkEventBroker *broker = vtkEventBroker::GetInstance();
 //
@@ -563,7 +589,10 @@ void vtkMRMLCameraDisplayableManager::SetCameraToInteractor()
 //      this->Internal->CameraNode, vtkMRMLCameraNode::ActiveTagModifiedEvent,
 //      this, this->GetMRMLCallbackCommand());
 //
-//  assert(observations.size() == 1);
+//  if (observations.size() != 1)
+//    {
+//    return;
+//    }
 //
 //  broker->RemoveObservations(observations);
 //}

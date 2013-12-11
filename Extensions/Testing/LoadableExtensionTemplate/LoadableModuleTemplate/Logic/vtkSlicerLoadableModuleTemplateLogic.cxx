@@ -24,7 +24,6 @@
 #include <vtkNew.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerLoadableModuleTemplateLogic);
@@ -58,13 +57,21 @@ void vtkSlicerLoadableModuleTemplateLogic::SetMRMLSceneInternal(vtkMRMLScene * n
 //-----------------------------------------------------------------------------
 void vtkSlicerLoadableModuleTemplateLogic::RegisterNodes()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("ReigsterNodes: mrml scene is NULL!");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------
 void vtkSlicerLoadableModuleTemplateLogic::UpdateFromMRMLScene()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("UpdateFromMRMLScene: mrml scene is NULL!");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

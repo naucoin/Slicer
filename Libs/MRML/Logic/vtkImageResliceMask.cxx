@@ -34,7 +34,6 @@
 # define VTK_USE_UINT64 0
 
 // STD includes
-#include <cassert>
 
 vtkCxxRevisionMacro(vtkImageResliceMask, "$Revision$");
 vtkStandardNewMacro(vtkImageResliceMask);
@@ -3408,12 +3407,20 @@ void vtkImageResliceMask::ThreadedRequestData(
   int wholeExtent1[6];
   outData[1]->GetWholeExtent(wholeExtent1);
 
-  assert( wholeExtent0[0] <= outExt[0] && wholeExtent0[1] >= outExt[1] &&
-          wholeExtent0[2] <= outExt[2] && wholeExtent0[3] >= outExt[3] &&
-          wholeExtent0[4] <= outExt[4] && wholeExtent0[5] >= outExt[5] );
-  assert( wholeExtent1[0] <= outExt[0] && wholeExtent1[1] >= outExt[1] &&
-          wholeExtent1[2] <= outExt[2] && wholeExtent1[3] >= outExt[3] &&
-          wholeExtent1[4] <= outExt[4] && wholeExtent1[5] >= outExt[5] );        
+  if (!( wholeExtent0[0] <= outExt[0] && wholeExtent0[1] >= outExt[1] &&
+         wholeExtent0[2] <= outExt[2] && wholeExtent0[3] >= outExt[3] &&
+         wholeExtent0[4] <= outExt[4] && wholeExtent0[5] >= outExt[5] ))
+    {
+    vtkErrorMacro("ThreadedRequestData: error in wholeExtent");
+    return;
+    }
+  if (!( wholeExtent1[0] <= outExt[0] && wholeExtent1[1] >= outExt[1] &&
+         wholeExtent1[2] <= outExt[2] && wholeExtent1[3] >= outExt[3] &&
+         wholeExtent1[4] <= outExt[4] && wholeExtent1[5] >= outExt[5] ))
+    {
+    vtkErrorMacro("ThreadedRequestData: error in wholeExtent1");
+    return;
+    }
 
   if (this->HitInputExtent == 0)
     {

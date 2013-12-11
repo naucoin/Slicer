@@ -30,7 +30,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLTestCustomDisplayableManager );
@@ -100,8 +99,16 @@ void vtkMRMLTestCustomDisplayableManager::OnInteractorStyleEvent(int eventid)
 //---------------------------------------------------------------------------
 void vtkMRMLTestCustomDisplayableManager::Create()
 {
-  assert(this->GetRenderer());
-  assert(this->GetMRMLDisplayableNode());
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("Create: no renderer");
+    return;
+    }
+  if (!this->GetMRMLDisplayableNode())
+    {
+    vtkErrorMacro("Create: no displayable node");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

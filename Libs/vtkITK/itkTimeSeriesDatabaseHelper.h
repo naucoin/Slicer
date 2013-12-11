@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 #include <cstdarg>
-#include <cassert>
 
 namespace itk {
   namespace TimeSeriesDatabaseHelper {
@@ -256,9 +255,14 @@ namespace itk {
             ostr << "Key: " << *i << endl;
 
             table_iter ti = table.find(*i);
-            assert(ti != table.end());
-
-            ostr << "Value: " << ti->second.value << "\n|\n";
+            if (ti != table.end())
+              {
+              ostr << "Value: " << ti->second.value << "\n|\n";
+              }
+            else
+              {
+              ostr << "Value: NOTFOUND\n|\n";
+              }
           }
 
         ostr << endl;

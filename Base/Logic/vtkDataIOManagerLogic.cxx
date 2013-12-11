@@ -20,7 +20,7 @@
 // ITKsys includes
 
 // STD includes
-#include <cassert>
+
 
 #ifdef linux 
 #include "unistd.h"
@@ -99,8 +99,14 @@ void vtkDataIOManagerLogic::DataIOManagerCallback(
   vtkObject* caller, unsigned long eid, void* clientData, void* callData)
 {
   vtkDataIOManagerLogic *self = reinterpret_cast<vtkDataIOManagerLogic *>(clientData);
-  assert(vtkDataIOManager::SafeDownCast(caller));
-  self->ProcessDataIOManagerEvents(caller, eid, callData);
+  if (vtkDataIOManager::SafeDownCast(caller))
+    {
+    self->ProcessDataIOManagerEvents(caller, eid, callData);
+    }
+  else
+    {
+    std::cerr << "Caller is not a vtkDataIOManager: caller = " << (caller == NULL ? "NULL" : caller->GetClassName()) << std::endl;
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -112,7 +118,11 @@ void vtkDataIOManagerLogic::ProcessDataIOManagerEvents(
 #endif
   unsigned long event, void *callData)
 {
-  assert(vtkDataIOManager::SafeDownCast( caller ));
+  if (vtkDataIOManager::SafeDownCast( caller ) == NULL)
+    {
+    vtkErrorMacro("Caller is not a vtkDataIoManager: caller = " << (caller == NULL ? "NULL" : caller->GetClassName()));
+    return;
+    }
   vtkMRMLNode *node = reinterpret_cast <vtkMRMLNode *> (callData);
   // ignore node events that aren't volumes or slice nodes
   if ( (node != NULL) && (event == vtkDataIOManager::RemoteReadEvent ) )
@@ -120,7 +130,7 @@ void vtkDataIOManagerLogic::ProcessDataIOManagerEvents(
     vtkDebugMacro("ProcessMRMLEvents: calling queue read on the node " << node->GetID());
     this->QueueRead ( node );
     node->InvokeEvent ( vtkDataIOManager::RefreshDisplayEvent );
-    }  
+    }
   else if ( (node != NULL) && (event == vtkDataIOManager::RemoteWriteEvent ) )
     {
     vtkDebugMacro("ProcessMRMLEvents: calling queue write on teh node " << node->GetID());

@@ -30,7 +30,6 @@
 #include <vtkRenderWindowInteractor.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLAbstractThreeDViewDisplayableManager);
@@ -59,7 +58,12 @@ void vtkMRMLAbstractThreeDViewDisplayableManager::PrintSelf(ostream& os, vtkInde
 void vtkMRMLAbstractThreeDViewDisplayableManager::OnMRMLDisplayableNodeModifiedEvent(
     vtkObject* caller)
 {
-  assert(vtkMRMLViewNode::SafeDownCast(caller));
+  if (!vtkMRMLViewNode::SafeDownCast(caller))
+    {
+    vtkErrorMacro("OnMRMLDisplayableNodeModifiedEvent: caller is not a view node: "
+                  << caller->GetClassName());
+    return;
+    }
 #ifndef _DEBUG
   (void)caller;
 #endif

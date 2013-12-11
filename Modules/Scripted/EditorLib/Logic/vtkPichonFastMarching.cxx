@@ -95,7 +95,6 @@ float vtkPichonFastMarching::speed( int index )
 
 void vtkPichonFastMarching::setSeed( int index )
 {
-  //assert( (index>=(1+dimX+dimXY)) && (index<(dimXYZ-1-dimX-dimXY)) );
   if(!( (index>=(1+dimX+dimXY)) && (index<(dimXYZ-1-dimX-dimXY)) ))
     {
       vtkErrorMacro("Error in vtkPichonFastMarching::setSeed(...): !( (index>=(1+dimX+dimXY)) && (index<(dimXYZ-1-dimX-dimXY)) )");
@@ -131,7 +130,11 @@ void vtkPichonFastMarching::setSeed( int index )
 
 inline void vtkPichonFastMarching::getMedianInhomo( int index, int &med, int &inh )
 {
-  // assert( (index>=(1+dimX+dimXY)) && (index<(dimXYZ-1-dimX-dimXY)) );
+  if (!((index>=(1+dimX+dimXY)) && (index<(dimXYZ-1-dimX-dimXY)) ))
+    {
+    vtkErrorMacro("Error in vtkPichonFastMarching::getMedianInhomo(...): !((index>=(1+dimX+dimXY)) && (index<(dimXYZ-1-dimX-dimXY)))");
+    return;
+    }
 
   inh = inhomo[index];
   if( inh != (-1) )
@@ -319,7 +322,6 @@ void vtkPichonFastMarchingExecute(vtkPichonFastMarching *self,
     self->firstCall=false;
 
 
-    //assert(self->seedPoints.size()>0);
     if(!(self->seedPoints.size()>0))
       {
       self->vtkErrorWrapper( "Error in vtkPichonFastMarchingExecute: !(self->seedPoints.size()>0)" );
@@ -452,7 +454,6 @@ void vtkPichonFastMarching::show(float r)
   if(somethingReallyWrong)
     return;
 
-  //assert( (r>=0) && (r<=1.0) );
   if(!( (r>=0) && (r<=1.0) ))
     {
       vtkErrorMacro("Error in vtkPichonFastMarching::show(...): !( (r>=0) && (r<=1.0) )");
@@ -817,7 +818,6 @@ void vtkPichonFastMarching::init(int _dimX, int _dimY, int _dimZ, double _depth,
   this->depth = (int) _depth;
 
   node = new FMnode[ dimX*dimY*dimZ ];
-  // assert( node!=NULL );
   if(!(node!=NULL))
     {
       vtkErrorMacro("Error in void vtkPichonFastMarching::init(), not enough memory for allocation of 'node'");
@@ -825,7 +825,6 @@ void vtkPichonFastMarching::init(int _dimX, int _dimY, int _dimZ, double _depth,
     }
 
   inhomo = new int[ dimX*dimY*dimZ ];
-  //  assert( inhomo!=NULL );
   if(!(inhomo!=NULL))
     {
       vtkErrorMacro("Error in void vtkPichonFastMarching::init(), not enough memory for allocation of 'inhomo'");
@@ -833,7 +832,6 @@ void vtkPichonFastMarching::init(int _dimX, int _dimY, int _dimZ, double _depth,
     }
   
   median = new int[ dimX*dimY*dimZ ];
-  //  assert( median!=NULL );
   if(!(median!=NULL))
     {
       vtkErrorMacro("Error in void vtkPichonFastMarching::init(), not enough memory for allocation of 'median'");
@@ -879,18 +877,38 @@ vtkPichonFastMarching::~vtkPichonFastMarching()
 
 inline int vtkPichonFastMarching::shiftNeighbor(int n)
 {
-  //assert(initialized);
-  //assert(n>=0 && n<=nNeighbors);
-
-  return arrayShiftNeighbor[n];
+  if (initialized &&
+      (n>=0 && n<=nNeighbors))
+    {
+    return arrayShiftNeighbor[n];
+    }
+  else
+    {
+    vtkErrorMacro("Error in vtkPichonFastMarching::shiftNeighbor,"
+                  << " initialized = "
+                  << (initialized ? "true" : "false")
+                  << ", n = " << n << " out of bounds of 0 - "
+                  << nNeighbors << ", returning 0");
+    return 0;
+    }
 }
 
 inline double vtkPichonFastMarching::distanceNeighbor(int n)
 {
-  //assert(initialized);
-  //assert(n>=0 && n<=nNeighbors);
-
-  return arrayDistanceNeighbor[n];
+  if (initialized &&
+      (n>=0 && n<=nNeighbors))
+    {
+    return arrayDistanceNeighbor[n];
+    }
+  else
+    {
+    vtkErrorMacro("Error in vtkPichonFastMarching::distanceNeighbor,"
+                  << " initialized = "
+                  << (initialized ? "true" : "false")
+                  << ", n = " << n << " out of bounds of 0 - "
+                  << nNeighbors << ", returning 0.0");
+    return 0.0;
+    }
 }
 
 int vtkPichonFastMarching::indexFather(int n )
@@ -910,8 +928,10 @@ int vtkPichonFastMarching::indexFather(int n )
     }
   }
 
-  //assert( Tmin < INF );
-  // or else there was no initialized neighbor around ?
+  if (!(Tmin < INF))
+    {
+    vtkErrorMacro("Error in vtkPichonFastMarching::indexFather: !(Tmin < INF)");
+    }
 
   return indexMin;
 }
@@ -1111,7 +1131,6 @@ float vtkPichonFastMarching::computeT(int index )
       }
       }
 
-    //    assert( Tij<INF );
     if(!( Tij<INF ))
       {
     vtkErrorMacro("Error in vtkPichonFastMarching::computeT(...): !( Tij<INF )");
@@ -1261,7 +1280,6 @@ int vtkPichonFastMarching::addSeedsFromImage(vtkImageData* label)
 
 void vtkPichonFastMarching::unInit( void )
 {
-  //assert( initialized );
   if(!initialized)
     {
       vtkErrorMacro("Error in vtkPichonFastMarching::unInit(): !initialized");

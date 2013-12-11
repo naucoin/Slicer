@@ -51,7 +51,6 @@
 
 // STL includes
 #include <algorithm>
-#include <cassert>
 #include <ctime>
 #include <set>
 
@@ -290,8 +289,14 @@ public:
       }
     else
       {
-      assert( it->first < requestUID );
-      it->first = requestUID;
+      if ( it->first < requestUID )
+        {
+        it->first = requestUID;
+        }
+      else
+        {
+        std::cerr << "SetLastRequest: requestUID " << requestUID << " is less than current id " << it->first << ", not using it" << std::endl;
+        }
       }
   }
   int GetLastRequest(vtkMRMLCommandLineModuleNode* node)
@@ -2600,14 +2605,22 @@ void vtkSlicerCLIModuleLogic::ProcessMRMLLogicsEvents(vtkObject* caller,
       vtkMRMLCommandLineModuleNode* node = it->second;
       // If the status is not Completing, then there should be no request made
       // on the application logic.
-      assert(node->GetStatus() == vtkMRMLCommandLineModuleNode::Completing);
-      node->SetStatus(vtkMRMLCommandLineModuleNode::Completed);
-      this->Internal->LastRequests.erase(it);
-      // we are not interested in any request anymore because the cli node is
-      // Completed.
-      vtkEventBroker::GetInstance()->RemoveObservations(
-        this->GetApplicationLogic(), vtkSlicerApplicationLogic::RequestProcessedEvent,
-        this, this->GetMRMLLogicsCallbackCommand());
+      if (node->GetStatus() == vtkMRMLCommandLineModuleNode::Completing)
+        {
+        node->SetStatus(vtkMRMLCommandLineModuleNode::Completed);
+        this->Internal->LastRequests.erase(it);
+        // we are not interested in any request anymore because the cli node is
+        // Completed.
+        vtkEventBroker::GetInstance()->RemoveObservations(
+          this->GetApplicationLogic(), vtkSlicerApplicationLogic::RequestProcessedEvent,
+          this, this->GetMRMLLogicsCallbackCommand());
+        }
+      else
+        {
+        vtkWarningMacro("Cannot set status to Completed because the status was "
+                        << " not Completing: " << node->GetStatus() << " != "
+                        << vtkMRMLCommandLineModuleNode::Completing);
+        }
       }
     }
 }
@@ -2618,7 +2631,11 @@ void vtkSlicerCLIModuleLogic
                          void *callData)
 {
   vtkMRMLNode* node = vtkMRMLNode::SafeDownCast(caller);
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("Empty node, cannot process mrml nodes events");
+    return;
+    }
   // Observe only the CLI of the logic.
   vtkMRMLCommandLineModuleNode* cliNode =
     vtkMRMLCommandLineModuleNode::SafeDownCast(node);

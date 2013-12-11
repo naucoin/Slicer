@@ -28,7 +28,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLTestSliceViewDisplayableManager );
@@ -90,8 +89,16 @@ void vtkMRMLTestSliceViewDisplayableManager::AdditionnalInitializeStep()
 //---------------------------------------------------------------------------
 void vtkMRMLTestSliceViewDisplayableManager::Create()
 {
-  assert(this->GetRenderer());
-  assert(this->GetMRMLSliceNode());
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("Create: no renderer");
+    return;
+    }
+  if (!this->GetMRMLSliceNode())
+    {
+    vtkErrorMacro("Create: no slice node");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

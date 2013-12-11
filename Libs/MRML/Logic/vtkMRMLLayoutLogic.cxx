@@ -38,7 +38,6 @@
 #include <vtkXMLDataElement.h>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 
 // Standard layouts definitions
@@ -1607,8 +1606,12 @@ vtkCollection* vtkMRMLLayoutLogic::GetViewsFromAttributes(const ViewAttributes& 
         nodes->RemoveAllItems();
         break;
         }
-      assert(nodes->GetNumberOfItems() == 0 ||
-             vtkMRMLNode::SafeDownCast(nodes->GetItemAsObject(0))->GetSingletonTag() == attributeValue);
+      if (!(nodes->GetNumberOfItems() == 0 ||
+            vtkMRMLNode::SafeDownCast(nodes->GetItemAsObject(0))->GetSingletonTag() == attributeValue))
+        {
+          vtkErrorMacro("GetViewsFromAttributes: unable to find the node");
+          return NULL;
+        }
       }
     else if (attributeName == "type")
       {
@@ -1723,7 +1726,12 @@ vtkMRMLLayoutLogic::ViewAttributes vtkMRMLLayoutLogic
 ::GetViewElementAttributes(vtkXMLDataElement* viewElement)const
 {
   ViewAttributes attributes;
-  assert(viewElement->GetName() == std::string("view"));
+  if (viewElement->GetName() != std::string("view"))
+    {
+    std::cerr << "GetViewElementAttributes: view element name '"
+              << viewElement->GetName() << "' != view" << std::endl;
+    return attributes;
+    }
   for (int i = 0; i < viewElement->GetNumberOfAttributes(); ++i)
     {
     attributes[viewElement->GetAttributeName(i)] = viewElement->GetAttributeValue(i);
@@ -1736,8 +1744,12 @@ vtkMRMLLayoutLogic::ViewProperties vtkMRMLLayoutLogic
 ::GetViewElementProperties(vtkXMLDataElement* viewElement)const
 {
   ViewProperties properties;
-  assert(viewElement->GetName() == std::string("view"));
-
+  if (viewElement->GetName() != std::string("view"))
+    {
+    std::cerr << "GetViewElementProperties: view element name '"
+              << viewElement->GetName() << "' != view" << std::endl;
+    return properties;
+    }
   for (int i = 0; i < viewElement->GetNumberOfNestedElements(); ++i)
     {
     properties.push_back(this->GetViewElementProperty(viewElement->GetNestedElement(i)));
@@ -1750,7 +1762,12 @@ vtkMRMLLayoutLogic::ViewProperty vtkMRMLLayoutLogic
 ::GetViewElementProperty(vtkXMLDataElement* viewProperty)const
 {
   ViewProperty property;
-  assert(viewProperty->GetName() == std::string("property"));
+  if (viewProperty->GetName() != std::string("property"))
+    {
+    std::cerr << "GetViewElementProperty: view property name '"
+              << viewProperty->GetName() << "' != property" << std::endl;
+    return property;
+    }
 
   for (int i = 0; i < viewProperty->GetNumberOfAttributes(); ++i)
     {

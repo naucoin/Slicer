@@ -36,7 +36,6 @@ Version:   $Revision: 1.2 $
 #include <vtkImageMathematics.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLScalarVolumeDisplayNode);
@@ -662,8 +661,12 @@ void vtkMRMLScalarVolumeDisplayNode::GetDisplayScalarRange(double range[2])
     // doesn't. It's ok if the display node is not yet in the scene: being
     // loaded (vtkMRMLScene::LoadIntoScene)or stored
     // (vtkMRMLSceneViewNode::StoreScene).
-    assert( !this->GetVolumeNode() || !this->GetVolumeNode()->GetImageData() ||
-            !this->GetScene() || this->GetScene()->GetNodeByID(this->GetID()) != this);
+    if (!( !this->GetVolumeNode() || !this->GetVolumeNode()->GetImageData() ||
+           !this->GetScene() || this->GetScene()->GetNodeByID(this->GetID()) != this))
+      {
+      vtkErrorMacro("GetDisplayScalarRange: the volume node has an image data but the display node doesn't");
+      return;
+      }
     vtkDebugMacro( << "No valid image data, returning default values [0, 255]");
     return;
     }

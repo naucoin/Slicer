@@ -13,7 +13,6 @@
 #include <vtkVolumeProperty.h>
 
 // STD includes
-#include <cassert>
 #include <limits>
 #include <sstream>
 
@@ -395,8 +394,14 @@ double vtkMRMLVolumePropertyNode
     {
     value = vtkMRMLVolumePropertyNode::NextHigher(value);
     }
-  assert (value != previousValue);
-  previousValue = value;
+  if (value != previousValue)
+    {
+    previousValue = value;
+    }
+  else
+    {
+    std::cerr << "HigherAndUnique: value still equal to previousValue!" << std::endl;
+    }
   return value;
 }
 

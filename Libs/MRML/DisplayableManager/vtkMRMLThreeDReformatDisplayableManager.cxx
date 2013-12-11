@@ -398,8 +398,19 @@ void vtkMRMLThreeDReformatDisplayableManager
 void vtkMRMLThreeDReformatDisplayableManager::
 OnMRMLNodeModified(vtkMRMLNode* node)
 {
+  if (!node)
+    {
+    vtkErrorMacro("OnMRMLNodeModified: node is null");
+    return;
+    }
   vtkMRMLSliceNode* sliceNode = vtkMRMLSliceNode::SafeDownCast(node);
-  assert(sliceNode);
+  if (!sliceNode)
+    {
+    vtkErrorMacro("OnMRMLNodeModified: node is not a slice node:"
+                  << node->GetClassName());
+    return;
+    }
+
   vtkImplicitPlaneWidget2* planeWidget = this->Internal->GetWidget(sliceNode);
   this->Internal->UpdateWidget(sliceNode, planeWidget);
   this->RequestRender();

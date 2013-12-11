@@ -34,7 +34,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerDataModuleLogic);
@@ -76,7 +75,11 @@ void vtkSlicerDataModuleLogic::SetMRMLSceneInternal(vtkMRMLScene * newScene)
 //-----------------------------------------------------------------------------
 void vtkSlicerDataModuleLogic::RegisterNodes()
 {
-  assert(this->GetMRMLScene() != 0);
+  if (this->GetMRMLScene() == 0)
+    {
+    vtkErrorMacro("RegisterNodes: MRML scene is null");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

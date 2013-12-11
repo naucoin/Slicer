@@ -276,7 +276,12 @@ void vtkMRMLScriptedDisplayableManager::OnMRMLDisplayableNodeModifiedEvent(vtkOb
 //---------------------------------------------------------------------------
 void vtkMRMLScriptedDisplayableManager::SetPythonSource(const std::string& pythonSource)
 {
-  assert(pythonSource.find(".py") != std::string::npos);
+  if (pythonSource.find(".py") == std::string::npos)
+    {
+    vtkErrorMacro("SetPythonSource: unable to find .py extension in string "
+                  << pythonSource);
+    return;
+    }
 
   // Extract filename - It should match the associated python class
   std::string className = vtksys::SystemTools::GetFilenameWithoutExtension(pythonSource);
@@ -326,14 +331,16 @@ void vtkMRMLScriptedDisplayableManager::SetPythonSource(const std::string& pytho
   // Retrieve API methods
   for (int i = 0; i < vtkInternal::APIMethodCount; ++i)
     {
-    assert(vtkInternal::APIMethodNames[i]);
-    if (!PyObject_HasAttrString(self, vtkInternal::APIMethodNames[i]))
+    if (vtkInternal::APIMethodNames[i])
       {
-      continue;
+      if (!PyObject_HasAttrString(self, vtkInternal::APIMethodNames[i]))
+        {
+        continue;
+        }
+      PyObject * method = PyObject_GetAttrString(self, vtkInternal::APIMethodNames[i]);
+      //std::cout << "method:" << method << std::endl;
+      this->Internal->PythonAPIMethods[i] = method;
       }
-    PyObject * method = PyObject_GetAttrString(self, vtkInternal::APIMethodNames[i]);
-    //std::cout << "method:" << method << std::endl;
-    this->Internal->PythonAPIMethods[i] = method;
     }
 
   //std::cout << "self (" << className << ", instance:" << self << ")" << std::endl;

@@ -44,7 +44,6 @@
 #include <vtkSmartPointer.h>
 
 // STD includes
-#include <cassert>
 #include <iostream>
 
 //----------------------------------------------------------------------------
@@ -313,8 +312,11 @@ int vtkSlicerCropVolumeLogic::Apply(vtkMRMLCropVolumeParametersNode* pnode)
 
       vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
           this->Internal->ResampleLogic->CreateNodeInScene();
-      assert(cmdNode.GetPointer() != 0);
-
+      if (cmdNode.GetPointer() == 0)
+        {
+        std::cerr << "CropVolume: ERROR: unable to make a command line module node" << std::endl;
+        return -3;
+        }
       cmdNode->SetParameterAsString("inputVolume", inputVolume->GetID());
       cmdNode->SetParameterAsString("referenceVolume", refVolume->GetID());
       cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
@@ -560,8 +562,11 @@ bool vtkSlicerCropVolumeLogic::ComputeIJKToRASRotationOnlyMatrix(vtkMRMLVolumeNo
 //----------------------------------------------------------------------------
 bool vtkSlicerCropVolumeLogic::IsVolumeTiltedInRAS( vtkMRMLVolumeNode* inputVolume, vtkMatrix4x4* rotationMatrix)
 {
-  assert(inputVolume);
-
+  if (!inputVolume)
+    {
+    std::cerr << "IsVolumeTiltedInRAS: invalid input volume." << std::endl;
+    return false;
+    }
   vtkNew<vtkMatrix4x4> iJKToRASMat;
   vtkNew<vtkMatrix4x4> directionMat;
 

@@ -12,7 +12,6 @@
 #include "vtkImageData.h"
 
 #include <limits.h>
-#include <assert.h>
 #include <stddef.h>
 
 //----------------------------------------------------------------------------
@@ -83,7 +82,6 @@ int connect(
   register size_t label, *outimagep, *outimage_end, *imagep, *new_imagep, boundary_mask_start, component_mask, axis_mask;
   register ptrdiff_t *stride, stridev;
 
-  //assert(rank >= 0); // Note: Always true !
   if (rank == 0) {
     *outimage = (*inimage != inbackground);
     if (num_components) *num_components = *outimage;
@@ -92,16 +90,26 @@ int connect(
   label = 2*rank;
   num_stride_index_bits = 1;
   while (label >>= 1) num_stride_index_bits++;
-  assert(num_stride_index_bits + 2*rank + 1 <= CHAR_BIT*sizeof(size_t));
+  if (!(num_stride_index_bits + 2*rank + 1 <= CHAR_BIT*sizeof(size_t)))
+    {
+    fprintf(stderr, "Error in connect: !(num_stride_index_bits + 2*rank + 1 <= CHAR_BIT*sizeof(size_t))");
+    return 0;
+    }
   boundary_mask_start = 1<<num_stride_index_bits;
   axis_mask = boundary_mask_start - 1;
   stride = (ptrdiff_t *)malloc((2*rank + 1)*sizeof(ptrdiff_t));
-  assert(stride);
+  if (!stride)
+    {
+    fprintf(stderr, "Error in connect: stride == 0");
+    return 0;
+    }
   data_len = 1;
   for (i=0; i<rank; i++) {
-    assert(axis_len[i] > 1);
-    stride[2*i + 1] = -(stride[2*i] = data_len);
-    data_len *= axis_len[i];
+    if (axis_len[i] > 1)
+      {
+      stride[2*i + 1] = -(stride[2*i] = data_len);
+      data_len *= axis_len[i];
+      }
   }
   stride[2*rank] = 0;
   g_axis_len = axis_len;

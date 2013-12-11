@@ -53,7 +53,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 #include <set>
 #include <map>
 

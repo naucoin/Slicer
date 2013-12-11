@@ -20,6 +20,7 @@
 
 // Qt includes
 #include <QApplication>
+#include <QDebug>
 #include <QDesktopWidget>
 #include <QListView>
 #if QT_VERSION < 0x040700
@@ -44,7 +45,6 @@
 #include <vtkVolumeProperty.h>
 
 // STD includes
-#include <cassert>
 
 //-----------------------------------------------------------------------------
 qSlicerIconComboBox::qSlicerIconComboBox(QWidget* parentWidget)
@@ -207,7 +207,11 @@ void qSlicerPresetComboBox::setIconToPreset(vtkMRMLNode* presetNode)
     int previewSize = this->style()->pixelMetric(QStyle::PM_SmallIconSize);
     vtkScalarsToColors* colors =
       volumePropertyNode->GetVolumeProperty() ? volumePropertyNode->GetVolumeProperty()->GetRGBTransferFunction() : 0;
-    assert(colors && colors->GetRange()[1] > colors->GetRange()[0]);
+    if (!(colors && colors->GetRange()[1] > colors->GetRange()[0]))
+      {
+      qWarning() << "setIconToPreset: invalid colors";
+      return;
+      }
     QImage img = ctk::scalarsToColorsImage(colors, QSize(previewSize, previewSize));
 #if QT_VERSION >= 0x040700
     QString imgSrc = ctk::base64HTMLImageTagSrc(img);

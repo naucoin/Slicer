@@ -39,7 +39,6 @@ Version:   $Revision: 1.3 $
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 #include <math.h>
 #include <vector>
 
@@ -436,8 +435,19 @@ void vtkMRMLFiberBundleNode::SetAndObservePolyData(vtkPolyData* polyData)
 void vtkMRMLFiberBundleNode
 ::SetPolyDataToDisplayNode(vtkMRMLModelDisplayNode* modelDisplayNode)
 {
-  assert(modelDisplayNode->IsA("vtkMRMLFiberBundleDisplayNode"));
-  modelDisplayNode->SetInputPolyData(this->GetFilteredPolyData());
+  if (!modelDisplayNode)
+    {
+    vtkErrorMacro("SetPolyDataToDisplayNode: model display node is null");
+    return;
+    }
+  if (modelDisplayNode->IsA("vtkMRMLFiberBundleDisplayNode"))
+    {
+    modelDisplayNode->SetInputPolyData(this->GetFilteredPolyData());
+    }
+  else
+    {
+    vtkErrorMacro("SetPolyDataToDisplayNode: model display node is not a fiber bundle display node. It's a " << modelDisplayNode->GetClassName());
+    }
 }
 
 //----------------------------------------------------------------------------

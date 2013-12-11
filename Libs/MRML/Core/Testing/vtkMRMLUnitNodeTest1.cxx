@@ -79,7 +79,11 @@ vtkMRMLScene* CreatePopulatedScene()
 //---------------------------------------------------------------------------
 bool TestScenesUnitNodeID(vtkMRMLScene* scene)
 {
-  assert(scene);
+  if (!scene)
+    {
+    std::cerr << "TestScenesUnitNodeID: null scene!" << std::endl;
+    return false;
+    }
 
   std::vector<vtkMRMLNode*> units;
   scene->GetNodesByClass("vtkMRMLUnitNode", units);
@@ -108,7 +112,11 @@ bool TestScenesUnitNodeID(vtkMRMLScene* scene)
 //---------------------------------------------------------------------------
 bool TestUnitNodeAttribute(vtkMRMLScene* scene)
 {
-  assert(scene);
+  if (!scene)
+    {
+    std::cerr << "TestUnitNodeAttribute: invalid scene!" << std::endl;
+    return false;
+    }
   int testedNode = 3;
   vtkMRMLNode* unit = scene->GetNthNodeByClass(testedNode, "vtkMRMLUnitNode");
   if (!unit)

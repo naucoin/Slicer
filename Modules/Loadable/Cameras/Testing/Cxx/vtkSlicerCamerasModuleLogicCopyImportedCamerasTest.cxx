@@ -29,7 +29,6 @@
 #include <vtkNew.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 bool TestCopyImportedCameras(bool clear, bool copy);

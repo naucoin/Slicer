@@ -623,8 +623,11 @@ int main( int argc, char * argv[] )
                              cit.GetIndex() ) );
       }
     }
-  assert(bit.IsAtEnd() );
-
+  if (!bit.IsAtEnd())
+    {
+    std::cerr << "Failed check bit IsAtEnd()" << std::endl;
+    return EXIT_FAILURE;
+    }
   if( pq.size() == 0 )
     {
     std::cerr << "Could not find any candidate starting positions" << std::endl;

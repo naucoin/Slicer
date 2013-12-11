@@ -50,7 +50,6 @@
 #include <vtksys/Glob.hxx>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 
 // For LoadDefaultParameterSets
@@ -234,7 +233,11 @@ void vtkMRMLApplicationLogic::SetMRMLSceneInternal(vtkMRMLScene *newScene)
       {
       selectionNode = newScene->AddNode(vtkNew<vtkMRMLSelectionNode>().GetPointer());
       }
-    assert(vtkMRMLSelectionNode::SafeDownCast(selectionNode));
+    if (!vtkMRMLSelectionNode::SafeDownCast(selectionNode))
+      {
+      vtkErrorMacro("SetMRMLSceneInternal: invalid selection node");
+      return;
+      }
     }
   this->SetSelectionNode(vtkMRMLSelectionNode::SafeDownCast(selectionNode));
 
@@ -247,7 +250,11 @@ void vtkMRMLApplicationLogic::SetMRMLSceneInternal(vtkMRMLScene *newScene)
       {
       interactionNode = newScene->AddNode(vtkNew<vtkMRMLInteractionNode>().GetPointer());
       }
-    assert(vtkMRMLInteractionNode::SafeDownCast(interactionNode));
+    if (!vtkMRMLInteractionNode::SafeDownCast(interactionNode))
+      {
+      vtkErrorMacro("SetMRMLSceneInternal: Invalid interaction node");
+      return;
+      }
     }
   this->SetInteractionNode(vtkMRMLInteractionNode::SafeDownCast(interactionNode));
 

@@ -1722,7 +1722,11 @@ void vtkMRMLAnnotationDisplayableManager::GetDisplayToWorldCoordinates(double x,
       vtkMRMLModelDisplayableManager::SafeDownCast(
         this->GetMRMLDisplayableManagerGroup()->GetDisplayableManagerByClassName(
           "vtkMRMLModelDisplayableManager"));
-    assert(modelDisplayableManager);
+    if (!modelDisplayableManager)
+      {
+      vtkErrorMacro("Error getting the model displayable manager.");
+      return;
+      }
 
     double windowHeight = this->GetInteractor()->GetRenderWindow()->GetSize()[1];
 

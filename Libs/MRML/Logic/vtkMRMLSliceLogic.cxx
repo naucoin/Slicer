@@ -458,7 +458,11 @@ void vtkMRMLSliceLogic::SetupCrosshairNode()
 //----------------------------------------------------------------------------
 void vtkMRMLSliceLogic::OnMRMLNodeModified(vtkMRMLNode* node)
 {
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("OnMRMLNodeModified: null node");
+    return;
+    }
   if (this->GetMRMLScene()->IsBatchProcessing())
     {
     return;
@@ -470,7 +474,7 @@ void vtkMRMLSliceLogic::OnMRMLNodeModified(vtkMRMLNode* node)
   // Update from SliceNode
   if (node == this->SliceNode)
     {
-    // assert (sliceNode == this->SliceNode); not an assert because the node
+    // not an assert because the node
     // might have change in CreateSliceModel() or UpdateSliceNode()
     vtkMRMLDisplayNode* sliceDisplayNode =
       this->SliceModelNode ? this->SliceModelNode->GetModelDisplayNode() : 0;

@@ -38,7 +38,7 @@
 #include <vtkVolumeProperty.h>
 
 // STD includes
-#include <cassert>
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_MultiVolumeRendering
 class qSlicerMultiVolumeRenderingModuleWidgetPrivate: public Ui_qSlicerMultiVolumeRenderingModuleWidget

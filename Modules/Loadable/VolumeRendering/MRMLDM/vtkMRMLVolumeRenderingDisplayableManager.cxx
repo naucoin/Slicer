@@ -74,7 +74,6 @@
 //#include <itksys/Directory.hxx>
 
 // STD includes
-#include <cassert>
 #include <cmath>
 #include <algorithm> // for std::min
 
@@ -1155,7 +1154,12 @@ void vtkMRMLVolumeRenderingDisplayableManager::Create()
 void vtkMRMLVolumeRenderingDisplayableManager::OnCreate()
 {
   vtkMRMLViewNode* viewNode = this->GetMRMLViewNode();
-  assert(viewNode);
+
+  if (!viewNode)
+    {
+    vtkErrorMacro("OnCreate: view node node defined!");
+    return;
+    }
   if (viewNode && !vtkIsObservedMRMLNodeEventMacro(
         viewNode, vtkMRMLViewNode::GraphicalResourcesCreatedEvent))
     {
@@ -1291,9 +1295,8 @@ void vtkMRMLVolumeRenderingDisplayableManager
   else if (event == vtkMRMLVolumeNode::DisplayModifiedEvent)
     {
     // who calls that ?
-    assert(false);
-    //vtkMRMLVolumeRenderingDisplayNode* vspNode = this->GetDisplayNode();
-    //this->VolumeRenderingLogic->UpdateVolumePropertyFromDisplayNode(vspNode);
+    vtkErrorMacro("ProcessMRMLNodesEvents: unexpected event: "
+                  << "vtkMRMLVolumeNode::DisplayModifiedEvent");
     }
   else if (event == vtkMRMLViewNode::GraphicalResourcesCreatedEvent)
     {
@@ -1549,7 +1552,11 @@ void vtkMRMLVolumeRenderingDisplayableManager::OnMRMLSceneNodeAdded(vtkMRMLNode*
 //---------------------------------------------------------------------------
 void vtkMRMLVolumeRenderingDisplayableManager::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
 {
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("OnMRMLSceneNodeRemoved: invalid node!");
+    return;
+    }
 
   if (!node->IsA("vtkMRMLVolumeNode") &&
       !node->IsA("vtkMRMLVolumeRenderingDisplayNode") &&

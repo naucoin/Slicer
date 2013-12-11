@@ -42,7 +42,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 #include <vector>
 
 //----------------------------------------------------------------------------
@@ -412,12 +411,28 @@ void vtkMRMLDisplayableManagerGroup::DoCallback(vtkObject* vtk_obj, unsigned lon
   vtkMRMLDisplayableManagerGroup* self =
       reinterpret_cast<vtkMRMLDisplayableManagerGroup*>(client_data);
   char* displayableManagerName = reinterpret_cast<char*>(call_data);
-  assert(self);
-  assert(reinterpret_cast<vtkMRMLDisplayableManagerFactory*>(vtk_obj));
+  if (!self)
+    {
+    std::cerr << "vtkMRMLDisplayableManagerGroup::DoCallback: Self not defined!"
+              << std::endl;
+    return;
+    }
+  if (!reinterpret_cast<vtkMRMLDisplayableManagerFactory*>(vtk_obj))
+    {
+    std::cerr << "vtkMRMLDisplayableManagerGroup::DoCallback: "
+              << "object is not a displayable manager factory"
+              << std::endl;
+    return;
+    }
 #ifndef _DEBUG
   (void)vtk_obj;
 #endif
-  assert(displayableManagerName);
+  if (!displayableManagerName)
+    {
+    std::cerr << "vtkMRMLDisplayableManagerGroup::DoCallback: "
+              << "displayable manager name is not set" << std::endl;
+    return;
+    }
 
   switch(event)
     {
@@ -434,7 +449,12 @@ void vtkMRMLDisplayableManagerGroup::DoCallback(vtkObject* vtk_obj, unsigned lon
 void vtkMRMLDisplayableManagerGroup::onDisplayableManagerFactoryRegisteredEvent(
     const char* displayableManagerName)
 {
-  assert(displayableManagerName);
+  if (!displayableManagerName)
+    {
+    vtkErrorMacro("onDisplayableManagerFactoryRegisteredEvent: "
+                  << "no displayable manager name");
+    return;
+    }
 
   vtkSmartPointer<vtkMRMLAbstractDisplayableManager> newDisplayableManager;
   newDisplayableManager.TakeReference(
@@ -449,17 +469,32 @@ void vtkMRMLDisplayableManagerGroup::onDisplayableManagerFactoryRegisteredEvent(
 void vtkMRMLDisplayableManagerGroup::onDisplayableManagerFactoryUnRegisteredEvent(
     const char* displayableManagerName)
 {
-  assert(displayableManagerName);
+  if (!displayableManagerName)
+    {
+    vtkErrorMacro("onDisplayableManagerFactoryUnRegisteredEvent: "
+                  << "no displayable manager name");
+    return;
+    }
 
   // Find the associated object
   vtkInternal::NameToDisplayableManagerMapIt it =
       this->Internal->NameToDisplayableManagerMap.find(displayableManagerName);
 
   // The DisplayableManager is expected to be in the map
-  assert(it != this->Internal->NameToDisplayableManagerMap.end());
+  if (it == this->Internal->NameToDisplayableManagerMap.end())
+    {
+    vtkErrorMacro("onDisplayableManagerFactoryUnRegisteredEvent: "
+                  << "no displayable manager name found");
+    return;
+    }
 
   vtkMRMLAbstractDisplayableManager * displayableManager = it->second;
-  assert(displayableManager);
+  if (!displayableManager)
+    {
+    vtkErrorMacro("onDisplayableManagerFactoryUnRegisteredEvent: "
+                  << "no displayable manager found");
+    return;
+    }
 
   // Find DisplayableManager in the vector
   vtkInternal::DisplayableManagersIt it2 = std::find(this->Internal->DisplayableManagers.begin(),
@@ -467,7 +502,12 @@ void vtkMRMLDisplayableManagerGroup::onDisplayableManagerFactoryUnRegisteredEven
                                                      displayableManager);
 
   // The DisplayableManager is expected to be in the vector
-  assert(it2 != this->Internal->DisplayableManagers.end());
+  if (it2 == this->Internal->DisplayableManagers.end())
+    {
+    vtkErrorMacro("onDisplayableManagerFactoryUnRegisteredEvent: "
+                  << "no displayable manager found");
+    return;
+    }
 
   // Remove it from the vector
   this->Internal->DisplayableManagers.erase(it2);

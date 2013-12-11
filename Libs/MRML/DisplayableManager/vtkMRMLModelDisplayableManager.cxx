@@ -61,7 +61,6 @@
 #include <vtkWorldPointPicker.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro (vtkMRMLModelDisplayableManager );
@@ -695,7 +694,11 @@ bool vtkMRMLModelDisplayableManager::IsModelDisplayable(vtkMRMLDisplayNode* node
 bool vtkMRMLModelDisplayableManager::OnMRMLDisplayableModelNodeModifiedEvent(
     vtkMRMLDisplayableNode * modelNode)
 {
-  assert(modelNode);
+  if (!modelNode)
+    {
+    vtkErrorMacro("OnMRMLDisplayableModelNodeModifiedEvent: no model node");
+    return false;
+    }
 
   if (!this->IsModelDisplayable(modelNode))
     {
@@ -709,7 +712,12 @@ bool vtkMRMLModelDisplayableManager::OnMRMLDisplayableModelNodeModifiedEvent(
   for (int i=0; i<ndnodes; i++)
     {
     vtkMRMLDisplayNode *dnode = modelNode->GetNthDisplayNode(i);
-    assert(dnode);
+    if (!dnode)
+      {
+      vtkErrorMacro("OnMRMLDisplayableModelNodeModifiedEvent: "
+                    << "unable to get " << i << "th display node");
+      return false;
+      }
     bool visible = (dnode->GetVisibility() == 1) && this->IsModelDisplayable(dnode);
     bool hasActor =
       this->Internal->DisplayedActors.find(dnode->GetID()) != this->Internal->DisplayedActors.end();

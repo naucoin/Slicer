@@ -33,7 +33,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerCamerasModuleLogic);

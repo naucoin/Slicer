@@ -29,7 +29,6 @@ Version:   $Revision: 1.3 $
 #include <vtkTransform.h>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 
 vtkCxxSetObjectMacro(vtkMRMLCameraNode, Camera, vtkCamera);
@@ -233,11 +232,22 @@ void vtkMRMLCameraNode::ReadXMLAttributes(const char** atts)
 // Does NOT copy: ID, FilePrefix, Name, ID
 void vtkMRMLCameraNode::Copy(vtkMRMLNode *anode)
 {
+  if (!anode)
+    {
+    vtkErrorMacro("Copy: input node is invalid");
+    return;
+    }
+
   int disabledModify = this->StartModify();
 
   Superclass::Copy(anode);
   vtkMRMLCameraNode *node = vtkMRMLCameraNode::SafeDownCast(anode);
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("Copy: input node is not a camera node: "
+                  << anode->GetClassName());
+    return;
+    }
 
   this->SetPosition(node->GetPosition());
   this->SetFocalPoint(node->GetFocalPoint());

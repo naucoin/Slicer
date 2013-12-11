@@ -28,7 +28,6 @@ Version:   $Revision: 1.14 $
 #include <vtkSmartPointer.h>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 #include <stack>
 
@@ -380,7 +379,11 @@ void vtkMRMLSceneViewNode::StoreScene()
       newNode->SetAddToSceneNoModify(0);
 
       // sanity check
-      assert(newNode->GetScene() == this->SnapshotScene);
+      if (newNode->GetScene() != this->SnapshotScene)
+        {
+        vtkErrorMacro("StoreScene: new node " << n
+                      << ": it's scene is not the same as the snapshot scene");
+        }
       }
     }
   this->SnapshotScene->CopyNodeReferences(this->GetScene());
@@ -530,7 +533,11 @@ void vtkMRMLSceneViewNode::RestoreScene()
   for (sceneNodes->InitTraversal(it);
        (node = vtkMRMLNode::SafeDownCast(sceneNodes->GetNextItemAsObject(it))) ;)
     {
-    assert(node->GetScene() == this->Scene);
+    if (node->GetScene() != this->Scene)
+      {
+      vtkErrorMacro("RestoreScene: node " << node->GetID()
+                    << " scene has not been set to this scene");
+      }
     }
 #endif
 }

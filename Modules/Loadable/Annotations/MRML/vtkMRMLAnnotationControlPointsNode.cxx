@@ -11,7 +11,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 #include <sstream>
 
 #define NUMERIC_ZERO 1.0e-6
@@ -514,7 +513,11 @@ int vtkMRMLAnnotationControlPointsNode::SetControlPoint(int id, double newContro
       }
     }
 
-  assert(points);
+  if (!points)
+    {
+    vtkErrorMacro("SetControlPoint: invalid points array");
+    return 0;
+    }
   points->InsertPoint(id, newControl);
   // cout << "New ControlPoints Coord:" << this->GetControlPointCoordinates(id)[0] << " " << this->GetControlPointCoordinates(id)[1] << " " << this->GetControlPointCoordinates(id)[2] << endl;
   //vtkIndent blub;

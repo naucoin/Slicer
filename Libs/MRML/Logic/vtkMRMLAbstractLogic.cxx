@@ -26,7 +26,6 @@
 #include <vtkSmartPointer.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLAbstractLogic);
@@ -154,8 +153,18 @@ void vtkMRMLAbstractLogic::MRMLSceneCallback(vtkObject*caller, unsigned long eid
                                              void* clientData, void* callData)
 {
   vtkMRMLAbstractLogic *self = reinterpret_cast<vtkMRMLAbstractLogic *>(clientData);
-  assert(vtkMRMLScene::SafeDownCast(caller));
-  assert(caller == self->GetMRMLScene());
+  if (!vtkMRMLScene::SafeDownCast(caller))
+    {
+    vtkErrorWithObjectMacro(self,
+      "vtkMRMLAbstractLogic::MRMLSceneCallback: caller is not a mrml scene");
+    return;
+    }
+  if (caller != self->GetMRMLScene())
+    {
+    vtkErrorWithObjectMacro(self,
+      "vtkMRMLAbstractLogic::MRMLSceneCallback: caller is not this mrml scene");
+    return;
+    }
 
   if (self && !self->EnterMRMLSceneCallback())
     {
@@ -184,8 +193,12 @@ void vtkMRMLAbstractLogic::MRMLNodesCallback(vtkObject* caller, unsigned long ei
                                              void* clientData, void* callData)
 {
   vtkMRMLAbstractLogic *self = reinterpret_cast<vtkMRMLAbstractLogic *>(clientData);
-  assert("Observed object is not a node" && vtkMRMLNode::SafeDownCast(caller));
-
+  if (!vtkMRMLNode::SafeDownCast(caller))
+    {
+    vtkErrorWithObjectMacro(self,
+      "vtkMRMLAbstractLogic::MRMLNodesCallback: Observed object is not a node");
+    return;
+    }
   if (self && !self->EnterMRMLNodesCallback())
     {
 #ifdef _DEBUG
@@ -206,8 +219,12 @@ void vtkMRMLAbstractLogic
                      void* clientData, void* callData)
 {
   vtkMRMLAbstractLogic *self = reinterpret_cast<vtkMRMLAbstractLogic *>(clientData);
-  assert("Observed object is not a logic" &&
-         vtkMRMLAbstractLogic::SafeDownCast(caller));
+  if (!vtkMRMLAbstractLogic::SafeDownCast(caller))
+    {
+    vtkErrorWithObjectMacro(self,
+      "vtkMRMLAbstractLogic::MRMLLogicsCallback: Observed object not a logic");
+    return;
+    }
 
   if (self && !self->EnterMRMLLogicsCallback())
     {
@@ -433,8 +450,16 @@ bool vtkMRMLAbstractLogic::EnterMRMLLogicsCallback()const
 void vtkMRMLAbstractLogic
 ::ProcessMRMLSceneEvents(vtkObject *caller, unsigned long event, void *callData)
 {
-  assert(!caller || vtkMRMLScene::SafeDownCast(caller));
-  assert(caller == this->GetMRMLScene());
+  if (!(!caller || vtkMRMLScene::SafeDownCast(caller)))
+    {
+    vtkErrorMacro("ProcessMRMLSceneEvents: invalid caller, not a scene");
+    return;
+    }
+  if (caller != this->GetMRMLScene())
+    {
+    vtkErrorMacro("ProcessMRMLSceneEvents: invalid caller, not this scene");
+    return;
+    }
 #ifndef _NDEBUG
   (void)caller;
 #endif
@@ -472,12 +497,20 @@ void vtkMRMLAbstractLogic
       break;
     case vtkMRMLScene::NodeAddedEvent:
       node = reinterpret_cast<vtkMRMLNode*>(callData);
-      assert(node);
+      if (!node)
+        {
+        vtkErrorMacro("ProcessMRMLSceneEvents: invalid call data, not a node");
+        return;
+        }
       this->OnMRMLSceneNodeAdded(node);
       break;
     case vtkMRMLScene::NodeRemovedEvent:
       node = reinterpret_cast<vtkMRMLNode*>(callData);
-      assert(node);
+      if (!node)
+        {
+        vtkErrorMacro("ProcessMRMLSceneEvents: invalid call data, not a node");
+        return;
+        }
       this->OnMRMLSceneNodeRemoved(node);
       break;
     default:
@@ -512,7 +545,11 @@ void vtkMRMLAbstractLogic
 ::ProcessMRMLNodesEvents(vtkObject *caller, unsigned long event, void *vtkNotUsed(callData))
 {
   vtkMRMLNode * node = vtkMRMLNode::SafeDownCast(caller);
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("ProcessMRMLNodesEvents: caller is not a node");
+    return;
+    }
   switch(event)
     {
     case vtkCommand::ModifiedEvent:
@@ -533,7 +570,11 @@ void vtkMRMLAbstractLogic
   (void)caller;
 #else
   vtkMRMLAbstractLogic* logic = vtkMRMLAbstractLogic::SafeDownCast(caller);
-  assert(logic);
+  if (!logic)
+    {
+    vtkErrorMacro("ProcessMRMLLogicsEvents: caller is not an abstract logic");
+    return;
+    }
 #endif
 }
 

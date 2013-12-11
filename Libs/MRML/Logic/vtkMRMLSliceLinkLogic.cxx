@@ -34,7 +34,6 @@
 #include <vtkTransform.h>
 
 // STD includes
-#include <cassert>
 
 
 //----------------------------------------------------------------------------

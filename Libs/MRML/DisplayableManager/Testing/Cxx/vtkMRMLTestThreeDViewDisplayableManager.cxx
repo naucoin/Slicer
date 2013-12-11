@@ -28,7 +28,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLTestThreeDViewDisplayableManager );
@@ -90,8 +89,16 @@ void vtkMRMLTestThreeDViewDisplayableManager::AdditionnalInitializeStep()
 //---------------------------------------------------------------------------
 void vtkMRMLTestThreeDViewDisplayableManager::Create()
 {
-  assert(this->GetRenderer());
-  assert(this->GetMRMLViewNode());
+  if (!this->GetRenderer())
+    {
+    vtkErrorMacro("Create: no renderer");
+    return;
+    }
+  if (!this->GetMRMLViewNode())
+    {
+    vtkErrorMacro("Create: no view node");
+    return;
+    }
 }
 
 //---------------------------------------------------------------------------

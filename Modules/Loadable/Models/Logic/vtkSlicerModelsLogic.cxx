@@ -35,7 +35,6 @@
 #include <itksys/SystemTools.hxx>
 
 /// STD includes
-#include <cassert>
 
 vtkCxxRevisionMacro(vtkSlicerModelsLogic, "$Revision$");
 vtkStandardNewMacro(vtkSlicerModelsLogic);

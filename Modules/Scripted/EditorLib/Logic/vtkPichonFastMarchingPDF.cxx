@@ -16,7 +16,6 @@ vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF( int _realizationMax )
   this->realizationMax=_realizationMax;
 
   bins = new int [realizationMax+1];
-  //  assert( bins!=NULL );
   if(!(bins!=NULL))
     {
       vtkErrorMacro("Error in vtkFastMarching, vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF(...), not enough memory for allocation of 'bins'");
@@ -24,7 +23,6 @@ vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF( int _realizationMax )
     }
 
   smoothedBins = new double [realizationMax+1];
-  //  assert( smoothedBins!=NULL );
   if(!(smoothedBins!=NULL))
     {
       vtkErrorMacro("Error in vtkFastMarching, vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF(...), not enough memory for allocation of 'smoothedBins'");
@@ -32,10 +30,9 @@ vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF( int _realizationMax )
     }
 
   coefGauss = new double[realizationMax+1];
-  //  assert( coefGauss!=NULL );
-  if(!(bins!=NULL))
+  if(coefGauss == NULL)
     {
-      vtkErrorMacro("Error in vtkFastMarching, vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF(...), not enough memory for allocation of 'bins'");
+      vtkErrorMacro("Error in vtkFastMarching, vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF(...), not enough memory for allocation of 'coefGauss'");
       return;
     }
   
@@ -144,7 +141,6 @@ void vtkPichonFastMarchingPDF::update( void )
 
   nRealInBins=(signed)inBins.size();
 
-  //assert( nRealInBins>0 );
   if(!( nRealInBins>0 ))
     {
       vtkErrorMacro("Error in vtkFastMarching, vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF(...), !nRealInBins>0");
@@ -189,7 +185,6 @@ void vtkPichonFastMarchingPDF::update( void )
 
 void vtkPichonFastMarchingPDF::addRealization( int k )
 {
-  //assert(finite(k)!=0);
   if(!(finite(k)!=0))
     {
       vtkErrorMacro("Error in vtkFastMarching, vtkPichonFastMarchingPDF::vtkPichonFastMarchingPDF(...), !(finite(k)!=0)");

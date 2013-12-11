@@ -36,7 +36,6 @@ Version:   $Revision: 1.3 $
 #include <vtkTrivialProducer.h>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 
 //----------------------------------------------------------------------------
@@ -634,8 +633,14 @@ void vtkMRMLModelNode
 void vtkMRMLModelNode
 ::SetPolyDataToDisplayNode(vtkMRMLModelDisplayNode* modelDisplayNode)
 {
-  assert(modelDisplayNode);
-  modelDisplayNode->SetInputPolyData(this->PolyData);
+  if (modelDisplayNode)
+    {
+    modelDisplayNode->SetInputPolyData(this->PolyData);
+    }
+  else
+    {
+    vtkErrorMacro("SetPolyDataToDisplayNode: invalid input model display node, not set.");
+    }
 }
 
 //---------------------------------------------------------------------------

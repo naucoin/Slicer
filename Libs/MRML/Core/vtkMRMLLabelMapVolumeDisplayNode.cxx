@@ -23,7 +23,6 @@ Version:   $Revision: 1.2 $
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLLabelMapVolumeDisplayNode);
@@ -79,10 +78,17 @@ vtkImageData* vtkMRMLLabelMapVolumeDisplayNode::GetInputImageData()
 //---------------------------------------------------------------------------
 vtkImageData* vtkMRMLLabelMapVolumeDisplayNode::GetOutputImageData()
 {
-  assert(!this->MapToColors->GetLookupTable() ||
-         !this->MapToColors->GetLookupTable()->IsA("vtkLookupTable") ||
-         vtkLookupTable::SafeDownCast(this->MapToColors->GetLookupTable())->GetNumberOfTableValues());
-  return this->MapToColors->GetOutput();
+  if (!this->MapToColors->GetLookupTable() ||
+      !this->MapToColors->GetLookupTable()->IsA("vtkLookupTable") ||
+      vtkLookupTable::SafeDownCast(this->MapToColors->GetLookupTable())->GetNumberOfTableValues())
+    {
+    return this->MapToColors->GetOutput();
+    }
+  else
+    {
+    vtkErrorMacro("GetOutputImageData: invalid look up table, can't get output of mapping to colors, returning NULL");
+    return NULL;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -114,6 +120,9 @@ void vtkMRMLLabelMapVolumeDisplayNode::UpdateImageDataPipeline()
     }
   this->MapToColors->SetLookupTable(lookupTable);
   // if there is no point, the mapping will fail (not sure)
-  assert(!lookupTable || !vtkLookupTable::SafeDownCast(lookupTable) ||
-         vtkLookupTable::SafeDownCast(lookupTable)->GetNumberOfTableValues());
+  if (!(!lookupTable || !vtkLookupTable::SafeDownCast(lookupTable) ||
+        vtkLookupTable::SafeDownCast(lookupTable)->GetNumberOfTableValues()))
+    {
+    vtkErrorMacro("UpdateImageDataPipeline: failed to set look up table");
+    }
 }

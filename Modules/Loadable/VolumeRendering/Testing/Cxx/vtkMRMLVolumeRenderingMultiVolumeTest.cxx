@@ -49,7 +49,6 @@
 #include <vtkWindowToImageFilter.h>
 
 // STD includes
-#include <cassert>
 
 //----------------------------------------------------------------------------
 void SetupRenderer(vtkRenderWindow* renderWindow, vtkRenderer* renderer)
@@ -185,7 +184,11 @@ void vtkChangeImageCallback::Execute(vtkObject* caller, unsigned long , void* )
       }
     return;
     }
-  assert(vtkRenderWindowInteractor::SafeDownCast(caller));
+  if (!(vtkRenderWindowInteractor::SafeDownCast(caller)))
+    {
+    std::cerr << "Execute: caller is not a vtkRenderWindowInteractor" << std::endl;
+    return;
+    }
   this->CurrentImageData = (this->CurrentImageData + 1)
     % this->ImageDataCollection->GetNumberOfItems();
   vtkImageData* newImageData = vtkImageData::SafeDownCast(

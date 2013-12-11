@@ -54,7 +54,6 @@
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 
 //----------------------------------------------------------------------------
 vtkCxxRevisionMacro(vtkSlicerVolumeRenderingLogic, "$Revision: 1.9.12.1 $");
@@ -114,7 +113,11 @@ void vtkSlicerVolumeRenderingLogic::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkSlicerVolumeRenderingLogic::RegisterNodes()
 {
-  assert(this->GetMRMLScene());
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("RegisterNodes: no scene defined");
+    return;
+    }
 
   vtkNew<vtkMRMLVolumePropertyNode> vpn;
   this->GetMRMLScene()->RegisterNodeClass( vpn.GetPointer() );
@@ -229,9 +232,14 @@ void vtkSlicerVolumeRenderingLogic
 void vtkSlicerVolumeRenderingLogic
 ::UpdateVolumeRenderingDisplayNode(vtkMRMLVolumeRenderingDisplayNode* node)
 {
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("UpdateVolumeRenderingDisplayNode: no input node");
+    return;
+    }
   if (!node->GetVolumeNode())
     {
+    vtkErrorMacro("UpdateVolumeRenderingDisplayNode: input node doesn't have a volume node");
     return;
     }
   vtkMRMLVolumeDisplayNode* displayNode =
@@ -387,7 +395,16 @@ void vtkSlicerVolumeRenderingLogic
                            bool linearRamp,
                            bool stayUpAtUpperLimit)
 {
-  assert(scalarRange && threshold && volumeProp);
+  if (!(scalarRange && threshold))
+    {
+    vtkErrorMacro("SetThresholdToVolumeProp: invalid scalar range or threshold array");
+    return;
+    }
+  if (!volumeProp)
+    {
+    vtkErrorMacro("SetThresholdToVolumeProp: invalid volume property!");
+    return;
+    }
   // Sanity check
   threshold[0] = std::max(std::min(threshold[0], scalarRange[1]), scalarRange[0]);
   threshold[1] = std::min(std::max(threshold[1], scalarRange[0]), scalarRange[1]);
@@ -425,7 +442,16 @@ void vtkSlicerVolumeRenderingLogic
                              vtkLookupTable* lut,
                              vtkVolumeProperty* volumeProp)
 {
-  assert(scalarRange && windowLevel && volumeProp);
+  if (!(scalarRange && windowLevel))
+    {
+    vtkErrorMacro("SetWindowLevelToVolumeProp: invalid scalar range or window level array");
+    return;
+    }
+  if (!volumeProp)
+    {
+    vtkErrorMacro("SetWindowLevelToVolumeProp: invalid volume property!");
+    return;
+    }
 
   double windowLevelMinMax[2];
   windowLevelMinMax[0] = windowLevel[1] - 0.5 * windowLevel[0];
@@ -507,7 +533,16 @@ void vtkSlicerVolumeRenderingLogic
 ::SetGradientOpacityToVolumeProp(double scalarRange[2],
                                  vtkVolumeProperty* volumeProp)
 {
-  assert(scalarRange && volumeProp);
+  if (!scalarRange)
+    {
+    vtkErrorMacro("SetGradientOpacityToVolumeProp: invalid scalar range");
+    return;
+    }
+  if (!volumeProp)
+    {
+    vtkErrorMacro("SetGradientOpacityToVolumeProp: invalid volume property!");
+    return;
+    }
 
   double previous = VTK_DOUBLE_MIN;
   vtkNew<vtkPiecewiseFunction> opacity;
@@ -527,8 +562,16 @@ void vtkSlicerVolumeRenderingLogic
 ::SetLabelMapToVolumeProp(vtkScalarsToColors* colors,
                           vtkVolumeProperty* volumeProp)
 {
-  assert(colors && volumeProp);
-
+  if (!colors)
+    {
+    vtkErrorMacro("SetLabelMapToVolumeProp: invalid scalars to colors");
+    return;
+    }
+  if (!volumeProp)
+    {
+    vtkErrorMacro("SetLabelMapToVolumeProp: invalid volume property!");
+    return;
+    }
   vtkNew<vtkPiecewiseFunction> opacity;
   vtkNew<vtkColorTransferFunction> colorTransfer;
 
@@ -580,7 +623,11 @@ void vtkSlicerVolumeRenderingLogic
   vtkMRMLVolumeRenderingDisplayNode* vspNode,
   vtkMRMLVolumeDisplayNode* displayNode)
 {
-  assert(vspNode);
+  if (!vspNode)
+    {
+    vtkErrorMacro("CopyDisplayToVolumeRenderingDisplayNode: invalid volume rendering dispaly node");
+    return;
+    }
   if (!displayNode)
     {
     vtkMRMLVolumeNode* volumeNode = vspNode->GetVolumeNode();
@@ -616,15 +663,27 @@ void vtkSlicerVolumeRenderingLogic
   vtkMRMLVolumeRenderingDisplayNode* vspNode,
   vtkMRMLScalarVolumeDisplayNode* vpNode)
 {
-  assert(vspNode);
-  assert(vspNode->GetVolumePropertyNode());
+  if (!vspNode)
+    {
+    vtkErrorMacro("CopyScalarDisplayToVolumeRenderingDisplayNode: invalid volume rendering dispaly node");
+    return;
+    }
+  if (!vspNode->GetVolumePropertyNode())
+    {
+    vtkErrorMacro("CopyScalarDisplayToVolumeRenderingDisplayNode: volume rendering dispaly node doesn't have a volume property node");
+    return;
+    }
 
   if (!vpNode)
     {
     vpNode = vtkMRMLScalarVolumeDisplayNode::SafeDownCast(
       vspNode->GetVolumeNode()->GetDisplayNode());
     }
-  assert(vpNode);
+  if (!vpNode)
+    {
+    vtkErrorMacro("CopyScalarDisplayToVolumeRenderingDisplayNode: invalid scalar volume dispaly node");
+    return;
+    }
 
   bool ignoreVolumeDisplayNodeThreshold =
     vspNode->GetIgnoreVolumeDisplayNodeThreshold();
@@ -679,15 +738,27 @@ void vtkSlicerVolumeRenderingLogic
   vtkMRMLVolumeRenderingDisplayNode* vspNode,
   vtkMRMLLabelMapVolumeDisplayNode* vpNode)
 {
-  assert(vspNode);
-  assert(vspNode->GetVolumePropertyNode());
+  if (!vspNode)
+    {
+    vtkErrorMacro("CopyLabelMapDisplayToVolumeRenderingDisplayNode: invalid volume rendering dispaly node");
+    return;
+    }
+  if (!vspNode->GetVolumePropertyNode())
+    {
+    vtkErrorMacro("CopyLabelMapDisplayToVolumeRenderingDisplayNode: volume rendering display node doesn't have a volume property node");
+    return;
+    }
 
   if (!vpNode)
     {
     vpNode = vtkMRMLLabelMapVolumeDisplayNode::SafeDownCast(
       vspNode->GetVolumeNode()->GetDisplayNode());
     }
-  assert(vpNode);
+  if (!vpNode)
+    {
+    vtkErrorMacro("CopyLabelMapDisplayToVolumeRenderingDisplayNode: unable to get label map volume display node");
+    return;
+    }
 
   vtkScalarsToColors* colors = vpNode->GetColorNode() ?
     vpNode->GetColorNode()->GetScalarsToColors() : 0;

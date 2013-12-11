@@ -32,7 +32,6 @@
 #include <vtkRenderWindowInteractor.h>
 
 // STD includes
-#include <cassert>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkMRMLAbstractSliceViewDisplayableManager);
@@ -61,7 +60,12 @@ void vtkMRMLAbstractSliceViewDisplayableManager::PrintSelf(ostream& os, vtkInden
 void vtkMRMLAbstractSliceViewDisplayableManager::OnMRMLDisplayableNodeModifiedEvent(
     vtkObject* caller)
 {
-  assert(vtkMRMLSliceNode::SafeDownCast(caller));
+  if (!vtkMRMLSliceNode::SafeDownCast(caller))
+    {
+    vtkErrorMacro("OnMRMLDisplayableNodeModifiedEvent: caller is not a slice node: "
+                  << caller->GetClassName());
+    return;
+    }
 #ifndef _DEBUG
   (void)caller;
 #endif

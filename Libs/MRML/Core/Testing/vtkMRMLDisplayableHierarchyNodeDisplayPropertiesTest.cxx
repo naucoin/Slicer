@@ -31,7 +31,6 @@
 #include <vtkSmartPointer.h>
 
 // STD includes
-#include <cassert>
 #include <sstream>
 
 namespace
@@ -150,7 +149,12 @@ void PopulateScene(vtkMRMLScene* scene, int numberOfLevels)
       }
     parentHierarchy = hierarchyNode.GetPointer();
     }
-  assert(scene->GetNumberOfNodes() == numberOfLevels*5);
+  if (scene->GetNumberOfNodes() != numberOfLevels*5)
+    {
+    std::cerr << "PopulateScene: scene number of nodes "
+              << scene->GetNumberOfNodes() << " != "
+              << numberOfLevels*5 << std::endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -379,7 +383,11 @@ bool TestColors(vtkMRMLScene* scene,
       return false;
       }
     vtkMRMLDisplayableHierarchyNode* hierarchyNode = GetHierarchyNode(scene, level);
-    assert(hierarchyNode != 0);
+    if (hierarchyNode == 0)
+      {
+      std::cerr << "TestColors: Hierarchy node is null" << std::endl;
+      return false;
+      }
     vtkMRMLDisplayNode* hierarchyDisplayNode = hierarchyNode->GetDisplayNode();
     if (hierarchyDisplayNode->GetColor()[0] != hierarchyColors[level][0] ||
         hierarchyDisplayNode->GetColor()[1] != hierarchyColors[level][1] ||
@@ -414,7 +422,11 @@ bool TestVisibility(vtkMRMLScene* scene,
       return false;
       }
     vtkMRMLDisplayableHierarchyNode* hierarchyNode = GetHierarchyNode(scene, level);
-    assert(hierarchyNode != 0);
+    if (hierarchyNode == 0)
+      {
+      std::cerr << "TestVisibility: Null hierarchy node at level " << level << std::endl;
+      return false;
+      }
     vtkMRMLDisplayNode* hierarchyDisplayNode = hierarchyNode->GetDisplayNode();
     if (hierarchyDisplayNode->GetVisibility() != hierarchyVisibility[level])
       {

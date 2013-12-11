@@ -26,7 +26,6 @@ Version:   $Revision: 1.3 $
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 #include <sstream>
 
 const char* vtkMRMLDisplayableNode::DisplayNodeReferenceRole = "display";

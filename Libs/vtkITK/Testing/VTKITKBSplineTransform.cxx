@@ -73,7 +73,14 @@ int main( int, char** )
 
 #ifndef NDEBUG
     const unsigned int numberOfNodes = numberOfParameters / 3;
-    assert( numberOfNodes == 7 * 8 * 7 );
+    if ( numberOfNodes != 7 * 8 * 7 )
+      {
+      std::cerr << "Incorrect number of nodes: "
+                << numberOfNodes << " != "
+                << 7 * 8 * 7
+                << std::endl;
+      return 1;
+      }
 #endif
 
     std::cout << " number of parameters = " << numberOfParameters << std::endl;

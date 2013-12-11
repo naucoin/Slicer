@@ -33,7 +33,6 @@
 #include <vtkObjectFactory.h>
 
 // STD includes
-#include <cassert>
 
 std::string vtkMRMLColorLogic::TempColorNodeID;
 
@@ -308,7 +307,11 @@ const char * vtkMRMLColorLogic::GetdGEMRICColorNodeID(int type)
 //----------------------------------------------------------------------------
 const char *vtkMRMLColorLogic::GetColorNodeID(vtkMRMLColorNode* colorNode)
 {
-  assert(colorNode);
+  if (!colorNode)
+    {
+    std::cerr << "GetColorNodeID: null color node, returning NULL" << std::endl;
+    return NULL;
+    }
   std::string id = std::string(colorNode->GetClassName()) +
                    std::string(colorNode->GetTypeAsString());
   vtkMRMLColorLogic::TempColorNodeID = id;

@@ -81,7 +81,6 @@ Version:   $Revision: 1.18 $
 
 // STD includes
 #include <algorithm>
-#include <cassert>
 #include <numeric>
 
 //#define MRMLSCENE_VERBOSE 1
@@ -579,7 +578,12 @@ void vtkMRMLScene::StartState(unsigned long state, int anticipatedMaxProgress)
 //------------------------------------------------------------------------------
 void vtkMRMLScene::EndState(unsigned long state)
 {
-  assert(this->States.back() == state);
+  if (this->States.back() != state)
+    {
+    vtkErrorMacro("EndState: States.back() " << this->States.back()
+                  << " != state " << state);
+    return;
+    }
   this->States.pop_back();
 
   bool isInState = ((this->GetStates() & state) == state);
@@ -616,9 +620,12 @@ void vtkMRMLScene::ProgressState(unsigned long state, int progress)
 //------------------------------------------------------------------------------
 int vtkMRMLScene::Connect()
 {
-  assert(!this->IsClosing());
-  assert(!this->IsImporting());
-
+  if (this->IsClosing() ||
+      this->IsImporting())
+    {
+    vtkErrorMacro("Connect: cannot connect while the scene is closing or importing!");
+    return 0;
+    }
 #ifdef MRMLSCENE_VERBOSE
   vtkTimerLog* timer = vtkTimerLog::New();
   timer->StartTimer();
@@ -1018,7 +1025,11 @@ vtkMRMLNode*  vtkMRMLScene::AddNodeNoNotify(vtkMRMLNode *n)
     if (sn != NULL)
       {
       // A node can't be added twice into the scene
-      assert(sn != n);
+      if (sn == n)
+        {
+        vtkErrorMacro("AddNodeNoNotify: a node can't be added twice into the scene");
+        return NULL;
+        }
       std::string oldId(sn->GetID());
       std::string newId(n->GetID() ? n->GetID() : sn->GetID());
       sn->CopyWithSceneWithSingleModifiedEvent(n);
@@ -1125,7 +1136,13 @@ vtkMRMLNode*  vtkMRMLScene::AddNode(vtkMRMLNode *n)
     }
   vtkMRMLNode* node = this->AddNodeNoNotify(n);
   // If the node is a singleton, the returned node is the existing singleton
-  assert( add || node != n);
+  if (!( add || node != n))
+    {
+    vtkErrorMacro("AddNode: failed to add node, add flag = "
+                  << (add ? "true" : "false")
+                  << ", or the returned from add node no notify isn't the same as passed");
+    return NULL;
+    }
   if (add)
     {
     this->InvokeEvent(this->NodeAddedEvent, n);
@@ -1357,7 +1374,11 @@ int vtkMRMLScene::IsNodePresent(vtkMRMLNode *n)
 //------------------------------------------------------------------------------
 void vtkMRMLScene::InitTraversal()
 {
-  assert(this);
+  if (!this)
+    {
+    std::cerr << "vtkMRMLScene::InitTraversal: this undefined!" << std::endl;
+    return;
+    }
   this->Nodes->InitTraversal();
 }
 
@@ -1487,9 +1508,16 @@ vtkMRMLNode *vtkMRMLScene::GetNextNodeByClass(const char *className)
 //------------------------------------------------------------------------------
 vtkMRMLNode* vtkMRMLScene::GetSingletonNode(const char* singletonTag, const char* className)
 {
-  assert(singletonTag);
-  assert(className);
-
+  if (!singletonTag)
+    {
+    vtkErrorMacro("GetSingletonNode: singleton tag is null");
+    return NULL;
+    }
+  if (!className)
+    {
+    vtkErrorMacro("GetSingletonNode: class name is null");
+    return NULL;
+    }
   vtkCollectionSimpleIterator it;
   vtkMRMLNode* node = NULL;
   for (this->Nodes->InitTraversal(it);
@@ -1989,7 +2017,11 @@ vtkMRMLNode *vtkMRMLScene::GetNthRegisteredNodeClass(int n)
 //------------------------------------------------------------------------------
 std::string vtkMRMLScene::GenerateUniqueID(vtkMRMLNode* node)
 {
-  assert(node != 0);
+  if (node == 0)
+    {
+    vtkErrorMacro("GenerateUniqueID: null input node, returning empty string");
+    return std::string("");
+    }
   std::string baseID = node->GetClassName();
   if (node->GetSingletonTag())
     {
@@ -2011,7 +2043,11 @@ std::string vtkMRMLScene::GenerateUniqueID(const std::string& baseID)
 //------------------------------------------------------------------------------
 int vtkMRMLScene::GetUniqueIDIndex(const std::string& baseID)
 {
-  assert(baseID.size() != 0);
+  if (baseID.size() == 0)
+    {
+    vtkErrorMacro("GetUniqueIDIndex: baseID is empty string, returning 0");
+    return 0;
+    }
   int lastIDIndex = 0;
   std::map< std::string, int>::const_iterator uidIt =
     this->UniqueIDs.find(baseID);
@@ -2050,7 +2086,11 @@ std::string vtkMRMLScene::BuildID(const std::string& baseID, int idIndex)const
 //------------------------------------------------------------------------------
 std::string vtkMRMLScene::GenerateUniqueName(vtkMRMLNode* node)
 {
-  assert(node);
+  if (!node)
+    {
+    vtkErrorMacro("GenerateUniqueName: null input node, returning empty string");
+    return std::string("");
+    }
   return this->GenerateUniqueName(node->GetNodeTagName());
 }
 
@@ -2075,7 +2115,11 @@ const char* vtkMRMLScene::GetUniqueNameByString(const char* baseName)
 //------------------------------------------------------------------------------
 int vtkMRMLScene::GetUniqueNameIndex(const std::string& baseName)
 {
-  assert(baseName.size() > 0);
+  if (baseName.size() == 0)
+    {
+    vtkErrorMacro("GetUniqueNameIndex: empty base name, returning -1");
+    return -1;
+    }
   int lastNameIndex = -1;
   std::map< std::string, int>::const_iterator uNameIt =
     this->UniqueNames.find(baseName);
