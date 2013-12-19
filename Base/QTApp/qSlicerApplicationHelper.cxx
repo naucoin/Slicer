@@ -21,6 +21,7 @@
 #include "qSlicerApplicationHelper.h"
 
 // Qt includes
+#include <QDebug>
 #include <QSettings>
 
 // Slicer includes
@@ -170,8 +171,16 @@ void qSlicerApplicationHelper::showMRMLEventLoggerWidget()
 void qSlicerApplicationHelper::initializePythonConsole(ctkPythonConsole* pythonConsole)
 {
 #ifdef Slicer_USE_PYTHONQT
-  Q_ASSERT(pythonConsole);
-  Q_ASSERT(qSlicerApplication::application()->pythonManager());
+  if (!pythonConsole)
+    {
+    qCritical() << "initializePythonConsole: no python console!";
+    return;
+    }
+  if (!qSlicerApplication::application()->pythonManager())
+    {
+    qCritical() << "initializePythonConsole: no python manager!";
+    return;
+    }
   pythonConsole->initialize(qSlicerApplication::application()->pythonManager());
 
   QStringList autocompletePreferenceList;

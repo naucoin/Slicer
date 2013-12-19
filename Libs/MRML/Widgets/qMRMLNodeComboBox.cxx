@@ -68,7 +68,11 @@ qMRMLNodeComboBoxPrivate::~qMRMLNodeComboBoxPrivate()
 void qMRMLNodeComboBoxPrivate::init(QAbstractItemModel* model)
 {
   Q_Q(qMRMLNodeComboBox);
-  Q_ASSERT(this->MRMLNodeFactory == 0);
+  if (this->MRMLNodeFactory != 0)
+    {
+    qCritical() << "init(...): MRML node factory is already defined!";
+    return;
+    }
 
   q->setLayout(new QHBoxLayout);
   q->layout()->setContentsMargins(0,0,0,0);
@@ -98,7 +102,11 @@ void qMRMLNodeComboBoxPrivate::init(QAbstractItemModel* model)
     rootModel = qobject_cast<QAbstractProxyModel*>(rootModel)->sourceModel();
     }
   this->MRMLSceneModel = qobject_cast<qMRMLSceneModel*>(rootModel);
-  Q_ASSERT(this->MRMLSceneModel);
+  if (!this->MRMLSceneModel)
+    {
+    qCritical() << "init(...): unable to get scene model from root model!";
+    return;
+    }
   // no need to reset the root model index here as the model is not yet set
   this->updateNoneItem(false);
   this->updateActionItems(false);
@@ -169,7 +177,11 @@ vtkMRMLNode* qMRMLNodeComboBoxPrivate::mrmlNode(int row)const
 vtkMRMLNode* qMRMLNodeComboBoxPrivate::mrmlNodeFromIndex(const QModelIndex& index)const
 {
   Q_Q(const qMRMLNodeComboBox);
-  Q_ASSERT(q->model());
+  if (!q->model())
+    {
+    qCritical() << "mrmlNodeFromIndex: no model defined!";
+    return 0;
+    }
   QString nodeId =
     this->ComboBox->model()->data(index, qMRMLSceneModel::UIDRole).toString();
   if (nodeId.isEmpty())
@@ -461,7 +473,11 @@ vtkMRMLNode* qMRMLNodeComboBox::addNode()
   vtkMRMLNode * newNode =
     d->MRMLNodeFactory->createNode(this->nodeTypes()[0]);
   // The created node is appended at the bottom of the current list
-  Q_ASSERT(newNode);
+  if (!newNode)
+    {
+    qCritical() << "addNode(): unable to crate new node!";
+    return 0;
+    }
   if (newNode && this->selectNodeUponCreation())
     {// select the created node.
     this->setCurrentNode(newNode);
@@ -847,10 +863,14 @@ QList<vtkMRMLNode*> qMRMLNodeComboBox::nodes()const
   for (int i = 0; i < this->nodeCount(); ++i)
     {
     vtkMRMLNode* node = this->nodeFromIndex(i);
-    Q_ASSERT(node);
     if (node)
       {
       nodeList << node;
+      }
+    else
+      {
+      qCritical() << "nodes(): unable to find node from index " << i;
+      return nodeList;
       }
     }
   return nodeList;
@@ -859,7 +879,11 @@ QList<vtkMRMLNode*> qMRMLNodeComboBox::nodes()const
 //--------------------------------------------------------------------------
 qMRMLSortFilterProxyModel* qMRMLNodeComboBox::sortFilterProxyModel()const
 {
-  Q_ASSERT(qobject_cast<qMRMLSortFilterProxyModel*>(this->model()));
+  if (!qobject_cast<qMRMLSortFilterProxyModel*>(this->model()))
+    {
+    qCritical() << "sortFilterProxyModel(): no model!";
+    return 0;
+    }
   return qobject_cast<qMRMLSortFilterProxyModel*>(this->model());
 }
 
@@ -873,7 +897,12 @@ QAbstractItemModel* qMRMLNodeComboBox::model()const
 //--------------------------------------------------------------------------
 qMRMLSceneModel* qMRMLNodeComboBox::sceneModel()const
 {
-  Q_ASSERT(this->sortFilterProxyModel());
+  if (!this->sortFilterProxyModel())
+    {
+    qCritical() << "sceneModel(): no sort filter proxy model "
+                << "from which to get a scene model!";
+    return 0;
+    }
   return this->sortFilterProxyModel()->sceneModel();
 }
 
@@ -937,7 +966,11 @@ QComboBox* qMRMLNodeComboBox::comboBox()const
 void qMRMLNodeComboBox::emitNodesAdded(const QModelIndex & parent, int start, int end)
 {
   Q_D(qMRMLNodeComboBox);
-  Q_ASSERT(this->model());
+  if (!this->model())
+    {
+    qCritical() << "emitNodesAdded: no model!";
+    return;
+    }
   for(int i = start; i <= end; ++i)
     {
     vtkMRMLNode* node = d->mrmlNodeFromIndex(this->model()->index(start, 0, parent));
@@ -952,7 +985,11 @@ void qMRMLNodeComboBox::emitNodesAdded(const QModelIndex & parent, int start, in
 void qMRMLNodeComboBox::emitNodesAboutToBeRemoved(const QModelIndex & parent, int start, int end)
 {
   Q_D(qMRMLNodeComboBox);
-  Q_ASSERT(this->model());
+  if (!this->model())
+    {
+    qCritical() << "emitNodesAboutToBeRemoved: no model!";
+    return;
+    }
   for(int i = start; i <= end; ++i)
     {
     vtkMRMLNode* node = d->mrmlNodeFromIndex(this->model()->index(start, 0, parent));

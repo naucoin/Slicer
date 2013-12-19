@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QPushButton>
 
 // QtGUI includes
@@ -74,11 +75,14 @@ void qSlicerExtensionsManagerDialogPrivate::init()
   qSlicerSettingsExtensionsPanel * extensionsPanel =
       qobject_cast<qSlicerSettingsExtensionsPanel*>(
         qSlicerApplication::application()->settingsDialog()->panel("Extensions"));
-  Q_ASSERT(extensionsPanel);
   if (extensionsPanel)
     {
     QObject::connect(extensionsPanel, SIGNAL(extensionsServerUrlChanged(QString)),
                      this->ExtensionsManagerWidget, SLOT(refreshInstallWidget()));
+    }
+  else
+    {
+    qCritical() << "init: no Extensions panel found";
     }
 }
 
@@ -156,7 +160,11 @@ void qSlicerExtensionsManagerDialog::setRestartRequested(bool value)
 void qSlicerExtensionsManagerDialog::onModelUpdated()
 {
   Q_D(qSlicerExtensionsManagerDialog);
-  Q_ASSERT(this->extensionsManagerModel());
+  if (!this->extensionsManagerModel())
+    {
+    qCritical() << "onModelUpdated: no extensions manager model!";
+    return;
+    }
   bool shouldRestart = false;
   qSlicerCoreApplication * coreApp = qSlicerCoreApplication::application();
   if (d->PreviousModulesAdditionalPaths

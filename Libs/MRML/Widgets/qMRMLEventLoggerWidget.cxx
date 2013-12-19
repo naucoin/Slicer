@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLEventLoggerWidget.h"
@@ -106,7 +107,11 @@ void qMRMLEventLoggerWidget::onNodeAddedEvent(vtkObject* caller,
   Q_UNUSED(caller);
   Q_D(qMRMLEventLoggerWidget);
   vtkMRMLNode * node = vtkMRMLNode::SafeDownCast(call_data);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "onNodeAddedEvent: call data is not a node!";
+    return;
+    }
   d->log(QString("NodeAdded: %1").arg(node->GetClassName()));
 }
 
@@ -117,7 +122,11 @@ void qMRMLEventLoggerWidget::onNodeRemovedEvent(vtkObject* caller,
   Q_UNUSED(caller);
   Q_D(qMRMLEventLoggerWidget);
   vtkMRMLNode * node = vtkMRMLNode::SafeDownCast(call_data);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "onNodeRemovedEvent: call data is not a node!";
+    return;
+    }
   d->log(QString("NodeRemoved: %1").arg(node->GetClassName()));
 }
 

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLSceneTransformModel.h"
@@ -88,12 +89,20 @@ bool qMRMLSceneTransformModel::canBeAParent(vtkMRMLNode* node)const
 //------------------------------------------------------------------------------
 bool qMRMLSceneTransformModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParent)
 {
-  Q_ASSERT(node);
-  if (!node || qMRMLSceneTransformModel::parentNode(node) == newParent)
+  if (!node)
+    {
+    qCritical() << "reparent: node is null!";
+    return false;
+    }
+  if (qMRMLSceneTransformModel::parentNode(node) == newParent)
     {
     return false;
     }
-  Q_ASSERT(newParent != node);
+  if (newParent == node)
+    {
+    qCritical() << "reparent: new parent is same as node!";
+    return false;
+    }
   // MRML Transformable Nodes
   vtkMRMLTransformableNode* transformableNode =
     vtkMRMLTransformableNode::SafeDownCast(node);

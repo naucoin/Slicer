@@ -105,7 +105,6 @@ bool qSlicerModuleFactoryManager::loadModule(const QString& name, const QString&
   if (!this->isRegistered(name) ||
       !this->isInstantiated(name))
     {
-    //Q_ASSERT(d->ModuleFactoryManager.isRegistered(name));
     return false;
     }
 
@@ -151,8 +150,10 @@ bool qSlicerModuleFactoryManager::loadModule(const QString& name, const QString&
   // Check the module has a title (required)
   if (instance->title().isEmpty())
     {
-    qWarning() << "Failed to retrieve module title corresponding to module name: " << name;
-    Q_ASSERT(!instance->title().isEmpty());
+    qCritical() << "qSlicerModuleFactoryManager::loadModule: "
+                << "Failed to retrieve module title corresponding to module "
+                << "name: "
+                << name;
     return false;
     }
 

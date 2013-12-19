@@ -18,6 +18,7 @@
 
 ==============================================================================*/
 // Qt includes
+#include <QDebug>
 
 // SlicerQt includes
 #include "qSlicerAbstractModule.h"
@@ -47,14 +48,22 @@ qSlicerAbstractModuleWidget::qSlicerAbstractModuleWidget(QWidget* parentWidget)
 //-----------------------------------------------------------------------------
 qSlicerAbstractModuleWidget::~qSlicerAbstractModuleWidget()
 {
-  Q_ASSERT(this->isEntered() == false);
+  if (this->isEntered() == true)
+    {
+    qCritical() << "Abstract module widget destructor: isEntered is true!";
+    return;
+    }
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerAbstractModuleWidget::enter()
 {
   Q_D(qSlicerAbstractModuleWidget);
-  Q_ASSERT(d->IsEntered == false);
+  if (d->IsEntered == true)
+    {
+    qCritical() << "enter: isEntered is already true!";
+    return;
+    }
   d->IsEntered = true;
 }
 
@@ -62,7 +71,11 @@ void qSlicerAbstractModuleWidget::enter()
 void qSlicerAbstractModuleWidget::exit()
 {
   Q_D(qSlicerAbstractModuleWidget);
-  Q_ASSERT(d->IsEntered == true);
+  if (d->IsEntered == false)
+    {
+    qCritical() << "exit: isEntered is already false!";
+    return;
+    }
   d->IsEntered = false;
 }
 

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileDialog>
 
 // SlicerQt includes
@@ -82,8 +83,14 @@ QList<vtkSmartPointer<vtkMRMLTransformableNode> > qSlicerTransformsModuleWidgetP
     vtkMRMLTransformableNode* node = vtkMRMLTransformableNode::SafeDownCast(
       tree->sortFilterProxyModel()->
       mrmlNodeFromIndex( selectedIndex ));
-    Q_ASSERT(node);
-    selectedNodes << node;
+    if (!node)
+      {
+      qCritical() << "getSelectedNodes: invalid node at selected index";
+      }
+    else
+      {
+      selectedNodes << node;
+      }
     }
   return selectedNodes;
 }

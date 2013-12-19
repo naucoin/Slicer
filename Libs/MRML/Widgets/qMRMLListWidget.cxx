@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // QT includes
+#include <QDebug>
 #include <QSortFilterProxyModel>
 
 // CTK includes
@@ -91,7 +92,11 @@ void qMRMLListWidget::setMRMLScene(vtkMRMLScene* scene)
 {
   QSortFilterProxyModel* sortModel = qobject_cast<QSortFilterProxyModel*>(this->model());
   qMRMLSceneModel* mrmlModel = qobject_cast<qMRMLSceneModel*>(sortModel->sourceModel());
-  Q_ASSERT(mrmlModel);
+  if (!mrmlModel)
+    {
+    qCritical() << "setMRMLScene: no scene model!";
+    return;
+    }
 
   mrmlModel->setMRMLScene(scene);
   if (scene)
@@ -106,6 +111,10 @@ void qMRMLListWidget::setMRMLScene(vtkMRMLScene* scene)
 vtkMRMLScene* qMRMLListWidget::mrmlScene()const
 {
   QSortFilterProxyModel* sortModel = qobject_cast<QSortFilterProxyModel*>(this->model());
-  Q_ASSERT(qobject_cast<const qMRMLSceneModel*>(sortModel->sourceModel()));
+  if (!qobject_cast<const qMRMLSceneModel*>(sortModel->sourceModel()))
+    {
+    qCritical() << "mrmlScene(): unable to get scene model! Returning 0.";
+    return 0;
+    }
   return qobject_cast<const qMRMLSceneModel*>(sortModel->sourceModel())->mrmlScene();
 }

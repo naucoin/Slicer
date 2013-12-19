@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 /// Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // CTK includes
@@ -75,7 +76,12 @@ QStringList qSlicerFileReader::supportedNameFilters(const QString& fileName)cons
     foreach(const QString& extension, ctk::nameFilterToExtensions(nameFilter))
       {
       QRegExp regExp(extension, Qt::CaseInsensitive, QRegExp::Wildcard);
-      Q_ASSERT(regExp.isValid());
+      if (!regExp.isValid())
+        {
+        qCritical() << "qSlicerFileReader::supportedNameFilters:"
+                    << " regular expresion is not valid";
+        return matchingNameFilters;
+        }
       if (regExp.exactMatch(file.absoluteFilePath()))
         {
         matchingNameFilters << nameFilter;

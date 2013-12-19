@@ -67,7 +67,11 @@ qSlicerWidgetValueWrapper::~qSlicerWidgetValueWrapper()
                                 const QString& _label, _WIDGET * _widget): \
         qSlicerWidgetValueWrapper(_name, _label, _widget)               \
         {                                                               \
-        Q_ASSERT(_widget);                                              \
+        if (!_widget)                                                   \
+          {                                                             \
+          qCritical() << "Null widget!";                                \
+          return;                                                       \
+          }                                                             \
         this->Widget = _widget;                                         \
         this->connect(this->Widget, SIGNAL(_NOTIFY),                    \
                       this, SIGNAL(valueChanged()));                    \
@@ -132,7 +136,11 @@ QButtonGroup* ButtonGroupWidgetWrapper::buttonGroup()const
 QString ButtonGroupWidgetWrapper::checkedValue()
 {
   QAbstractButton* button = this->ButtonGroup->checkedButton();
-  Q_ASSERT(button);
+  if (!button)
+    {
+    qCritical() << "checkedValue: no checked button";
+    return QString("");
+    }
   return button->text();
 }
 
@@ -871,7 +879,11 @@ qSlicerCLIModuleUIHelper::qSlicerCLIModuleUIHelper(qSlicerCLIModuleWidget* cliMo
 {
   Q_D(qSlicerCLIModuleUIHelper);
 
-  Q_ASSERT(cliModuleWidget);
+  if (!cliModuleWidget)
+    {
+    qCritical() << "qSlicerCLIModuleUIHelper: no cli module widget!";
+    return;
+    }
   d->CLIModuleWidget = cliModuleWidget;
 }
 
@@ -884,11 +896,15 @@ qSlicerCLIModuleUIHelper::~qSlicerCLIModuleUIHelper()
 QWidget* qSlicerCLIModuleUIHelper::createTagWidget(const ModuleParameter& moduleParameter)
 {
   Q_D(qSlicerCLIModuleUIHelper);
-  
-  Q_ASSERT(moduleParameter.GetHidden() != "true");
+
+  if (moduleParameter.GetHidden() == "true")
+    {
+    qCritical() << "createTagWidget: module paramter is hidden!";
+    return 0;
+    }
 
   QWidget * widget = 0;
-  
+
   if (moduleParameter.GetTag() == "integer")
     {
     widget = d->createIntegerTagWidget(moduleParameter);
@@ -971,7 +987,12 @@ void qSlicerCLIModuleUIHelper::updateMRMLCommandLineModuleNode(
   vtkMRMLCommandLineModuleNode* commandLineModuleNode)
 {
   Q_D(qSlicerCLIModuleUIHelper);
-  Q_ASSERT(commandLineModuleNode);
+  if (!commandLineModuleNode)
+    {
+    qCritical() << "updateMRMLCommandLineModuleNode: "
+                << "no command line module node!";
+    return;
+    }
 
   // Block ModifyEvent to be fired, only fire 1 event at the end.
   int disabledModify = commandLineModuleNode->StartModify();

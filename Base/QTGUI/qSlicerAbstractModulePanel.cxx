@@ -17,6 +17,8 @@
   and was partially funded by NIH grant 3P41RR013218-12S1
 
 ==============================================================================*/
+// Qt includes
+#include <QDebug>
 
 // SlicerQT includes
 #include "qSlicerAbstractModulePanel.h"
@@ -64,7 +66,12 @@ void qSlicerAbstractModulePanel::addModule(const QString& moduleName)
     return;
     }
   qSlicerAbstractCoreModule* module = this->moduleManager()->module(moduleName);
-  Q_ASSERT(module);
+  if (!module)
+    {
+    qCritical() << "addModule: unable to find module with name "
+                << moduleName;
+    return;
+    }
   this->addModule(module);
 }
 
@@ -76,6 +83,11 @@ void qSlicerAbstractModulePanel::removeModule(const QString& moduleName)
     return;
     }
   qSlicerAbstractCoreModule* module = this->moduleManager()->module(moduleName);
-  Q_ASSERT(module);
+  if (!module)
+    {
+    qCritical() << "removeModule:  unable to find module with name "
+                << moduleName;
+    return;
+    }
   this->removeModule(module);
 }

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // SlicerQt includes
@@ -103,7 +104,11 @@ QStringList qSlicerVolumeRenderingReader::extensions()const
 bool qSlicerVolumeRenderingReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerVolumeRenderingReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Volume Rendering reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
   // Name is ignored
   //QString name = QFileInfo(fileName).baseName();

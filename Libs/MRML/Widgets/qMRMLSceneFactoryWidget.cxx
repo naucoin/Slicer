@@ -129,19 +129,33 @@ vtkMRMLScene* qMRMLSceneFactoryWidget::mrmlScene()const
 vtkMRMLNode* qMRMLSceneFactoryWidget::generateNode()
 {
   Q_D(qMRMLSceneFactoryWidget);
-  Q_ASSERT(d->MRMLScene != 0);
+  if (d->MRMLScene == 0)
+    {
+    qCritical() << "SceneFactoryWidget::generateNode(): no mrml scene defined!";
+    return 0;
+    }
   QString nodeClassName = d->NewNodeLineEdit->text();
   if (nodeClassName.isEmpty())
     {
     int numClasses = d->MRMLScene->GetNumberOfRegisteredNodeClasses();
     int classNumber = rand() % numClasses; 
     vtkMRMLNode* node = d->MRMLScene->GetNthRegisteredNodeClass(classNumber);
-    Q_ASSERT(node);
+    if (!node)
+      {
+      qCritical() << "SceneFactoryWidget::generateNode(): unable to get "
+                  << classNumber << "th registered node class";
+      return 0;
+      }
     while (node->GetSingletonTag())
       {
       classNumber = rand() % numClasses;
       node = d->MRMLScene->GetNthRegisteredNodeClass(classNumber);
-      Q_ASSERT(node);
+      if (!node)
+        {
+        qCritical() << "SceneFactoryWidget::generateNode(): unable to get "
+                  << classNumber << "th registered node class (singleton)";
+        return 0;
+        }
       }
     nodeClassName = QLatin1String(node->GetClassName()); 
     if (nodeClassName.isEmpty())
@@ -157,10 +171,26 @@ vtkMRMLNode* qMRMLSceneFactoryWidget::generateNode()
 vtkMRMLNode* qMRMLSceneFactoryWidget::generateNode(const QString& className)
 {
   Q_D(qMRMLSceneFactoryWidget);
-  Q_ASSERT(!className.isEmpty());
-  Q_ASSERT(d->MRMLScene != 0);
+  if (className.isEmpty())
+    {
+    qCritical() << "SceneFactoryWidget::generateNode(className):"
+                << " empty class name string!";
+    return 0;
+    }
+  if (d->MRMLScene == 0)
+    {
+    qCritical() << "SceneFactoryWidget::generateNode(className):"
+                << " no mrml scene defined!";
+    return 0;
+    }
   vtkMRMLNode* node = qMRMLNodeFactory::createNode(d->MRMLScene, className);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "SceneFactoryWidget::generateNode(className):"
+                << " unable to create node with class name "
+                << className;
+    return 0;
+    }
   if (node)
     {
     emit mrmlNodeAdded(node);
@@ -172,7 +202,11 @@ vtkMRMLNode* qMRMLSceneFactoryWidget::generateNode(const QString& className)
 void qMRMLSceneFactoryWidget::deleteNode()
 {
   Q_D(qMRMLSceneFactoryWidget);
-  Q_ASSERT(d->MRMLScene != 0);
+  if (d->MRMLScene == 0)
+    {
+    qCritical() << "SceneFactoryWidget::deleteNode: no scene defined!";
+    return;
+    }
   QString nodeClassName = d->DeleteNodeLineEdit->text();
   if (!nodeClassName.isEmpty())
     {
@@ -194,8 +228,19 @@ void qMRMLSceneFactoryWidget::deleteNode()
 void qMRMLSceneFactoryWidget::deleteNode(const QString& className)
 {
   Q_D(qMRMLSceneFactoryWidget);
-  Q_ASSERT(!className.isEmpty());
-  Q_ASSERT(d->MRMLScene != 0);
+  if (className.isEmpty())
+    {
+    qCritical() << "SceneFactoryWidget::deleteNode(className)"
+                << ": emtpy string for class name!";
+    return;
+    }
+  if (d->MRMLScene == 0)
+    {
+    qCritical() << "SceneFactoryWidget::deleteNode(className)"
+                << ": no MRML scene defined";
+    return;
+    }
+
   int numNodes = d->MRMLScene->GetNumberOfNodesByClass(className.toLatin1());
   if (numNodes == 0)
     {

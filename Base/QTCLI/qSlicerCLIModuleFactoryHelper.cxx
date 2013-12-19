@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QSettings>
 
 // QtCLI includes
@@ -31,13 +32,22 @@
 //-----------------------------------------------------------------------------
 const QStringList qSlicerCLIModuleFactoryHelper::modulePaths()
 {
+  QStringList defaultCmdLineModulePaths;
+
   qSlicerCoreApplication * app = qSlicerCoreApplication::application();
-  Q_ASSERT(app);
+  if (!app)
+    {
+    qCritical() << "modulePaths: no application!";
+    return defaultCmdLineModulePaths;
+    }
 
   // slicerHome shouldn't be empty
-  Q_ASSERT(!app->slicerHome().isEmpty());
+  if (app->slicerHome().isEmpty())
+    {
+    qCritical() << "modulePaths: no slicerHome set!";
+    return defaultCmdLineModulePaths;
+    }
 
-  QStringList defaultCmdLineModulePaths;
   if (QFile::exists(app->slicerHome() + "/" + Slicer_CLIMODULES_LIB_DIR))
     {
     defaultCmdLineModulePaths << app->slicerHome() + "/" + Slicer_CLIMODULES_LIB_DIR;

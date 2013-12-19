@@ -86,7 +86,11 @@ void qSlicerPythonManager::eventBrokerScriptHandler(const char *script, void *cl
 #ifdef Slicer_USE_PYTHONQT_WITH_TCL
   QString pythonScript = QString("global _tpycl; _tpycl.tcl_callback('%1')").arg(script);
   qSlicerPythonManager * self = reinterpret_cast<qSlicerPythonManager*>(clientData);
-  Q_ASSERT(self);
+  if (!self)
+    {
+    qCritical() << "eventBrokerScriptHandler: self is undefined!";
+    return;
+    }
   //qDebug() << "Running broker observation script:" << script;
   self->executeString(pythonScript);
 #else

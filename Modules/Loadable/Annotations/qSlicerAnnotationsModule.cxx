@@ -1,5 +1,6 @@
 
 // Qt includes
+#include <QDebug>
 #include <QtPlugin>
 
 // MRMLDisplayableManager includes
@@ -152,7 +153,14 @@ QStringList qSlicerAnnotationsModule::categories() const
 //-----------------------------------------------------------------------------
 void qSlicerAnnotationsModule::showScreenshotDialog()
 {
-  Q_ASSERT(this->widgetRepresentation());
-  dynamic_cast<qSlicerAnnotationModuleWidget*>(this->widgetRepresentation())
-      ->grabSnapShot();
+  if (this->widgetRepresentation())
+    {
+    dynamic_cast<qSlicerAnnotationModuleWidget*>(this->widgetRepresentation())
+        ->grabSnapShot();
+    }
+  else
+    {
+    qCritical() << "showScreenshotDialog: unable to grab screen shot,"
+               << " no widget representation!";
+    }
 }

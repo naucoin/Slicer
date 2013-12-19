@@ -2,6 +2,7 @@
 #include "ui_qSlicerScalarVolumeDisplayWidget.h"
 
 // Qt includes
+#include <QDebug>
 
 // CTK includes
 #include <ctkVTKColorTransferFunction.h>
@@ -213,7 +214,11 @@ void qSlicerScalarVolumeDisplayWidget::updateTransferFunction()
   Q_D(qSlicerScalarVolumeDisplayWidget);
   // from vtkKWWindowLevelThresholdEditor::UpdateTransferFunction
   vtkMRMLVolumeNode* volumeNode = d->MRMLWindowLevelWidget->mrmlVolumeNode();
-  Q_ASSERT(volumeNode == d->MRMLVolumeThresholdWidget->mrmlVolumeNode());
+  if (volumeNode != d->MRMLVolumeThresholdWidget->mrmlVolumeNode())
+    {
+    qCritical() << "updateTransferFunction: volume node mismatch!";
+    return;
+    }
   vtkImageData* imageData = volumeNode ? volumeNode->GetImageData() : 0;
   if (imageData == 0)
     {
@@ -305,7 +310,12 @@ void qSlicerScalarVolumeDisplayWidget::setColorNode(vtkMRMLNode* colorNode)
     {
     return;
     }
-  Q_ASSERT(vtkMRMLColorNode::SafeDownCast(colorNode));
+  if (!vtkMRMLColorNode::SafeDownCast(colorNode))
+    {
+    qCritical() << "setColorNode: not a color node:"
+                << colorNode->GetClassName();
+    return;
+    }
   displayNode->SetAndObserveColorNodeID(colorNode->GetID());
 }
 

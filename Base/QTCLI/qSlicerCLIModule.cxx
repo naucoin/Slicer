@@ -88,11 +88,15 @@ qSlicerCLIModule::~qSlicerCLIModule()
 void qSlicerCLIModule::setup()
 {
   Q_D(qSlicerCLIModule);
-  
-  // Temporary directory should be set before the module is initialized
-  Q_ASSERT(!d->TempDirectory.isEmpty());
 
-  // Set temp directory 
+  // Temporary directory should be set before the module is initialized
+  if (d->TempDirectory.isEmpty())
+    {
+    qCritical() << "setup: no temporary directory set!";
+    return;
+    }
+
+  // Set temp directory
   vtkSlicerCLIModuleLogic* myLogic = vtkSlicerCLIModuleLogic::SafeDownCast(this->logic());
   myLogic->SetTemporaryDirectory(d->TempDirectory.toLatin1());
 }
@@ -132,7 +136,11 @@ void qSlicerCLIModule::setXmlModuleDescription(const QString& xmlModuleDescripti
 {
   Q_D(qSlicerCLIModule);
   //qDebug() << "xmlModuleDescription:" << xmlModuleDescription;
-  Q_ASSERT(!this->entryPoint().isEmpty());
+  if (this->entryPoint().isEmpty())
+    {
+    qCritical() << "setXmlModuleDescription: no entry point!";
+    return;
+    }
 
   // Parse module description
   ModuleDescription desc;

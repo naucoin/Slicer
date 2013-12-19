@@ -378,7 +378,11 @@ const QList<QUrl>& qSlicerIOManager::favorites()const
 void qSlicerIOManager::registerDialog(qSlicerFileDialog* dialog)
 {
   Q_D(qSlicerIOManager);
-  Q_ASSERT(dialog);
+  if (!dialog)
+    {
+    qCritical() << "registerDialog: can't register a null dialog!";
+    return;
+    }
   qSlicerFileDialog* existingDialog =
     d->findDialog(dialog->fileType(), dialog->action());
   if (existingDialog)
@@ -397,8 +401,8 @@ void qSlicerIOManager::registerDialog(qSlicerFileDialog* dialog)
     }
   else
     {
-    Q_ASSERT(dialog->action() == qSlicerFileDialog::Read ||
-             dialog->action() == qSlicerFileDialog::Write);
+    qCritical() << "registerDialog: Invalid action, Read and Write are valid";
+    return;
     }
   dialog->setParent(this);
 }

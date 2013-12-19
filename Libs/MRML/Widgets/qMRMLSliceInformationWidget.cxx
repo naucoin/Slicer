@@ -88,7 +88,11 @@ void qMRMLSliceInformationWidgetPrivate::setupUi(qMRMLWidget* widget)
 // --------------------------------------------------------------------------
 void qMRMLSliceInformationWidgetPrivate::updateWidgetFromMRMLSliceNode()
 {
-  Q_ASSERT(this->MRMLSliceNode);
+  if (!this->MRMLSliceNode)
+    {
+    qCritical() << "updateWidgetFromMRMLSliceNode: no slice node defined!";
+    return;
+    }
 
   //qDebug() << "qMRMLSliceInformationWidgetPrivate::updateWidgetFromMRMLSliceNode";
 
@@ -98,7 +102,11 @@ void qMRMLSliceInformationWidgetPrivate::updateWidgetFromMRMLSliceNode()
   // Update orientation selector state
   int index = this->SliceOrientationSelector->findText(
       QString::fromStdString(this->MRMLSliceNode->GetOrientationString()));
-  Q_ASSERT(index>=0 && index <=4);
+  if (!(index>=0 && index <=4))
+    {
+    qCritical() << "updateWidgetFromMRMLSliceNode: index out of bounds 0-4: " << index;
+    return;
+    }
   this->SliceOrientationSelector->setCurrentIndex(index);
 
   // Update slice visibility toggle
@@ -210,7 +218,11 @@ void qMRMLSliceInformationWidget::setSliceOrientation(const QString& orientation
 #ifndef QT_NO_DEBUG
   QStringList expectedOrientation;
   expectedOrientation << "Axial" << "Sagittal" << "Coronal" << "Reformat";
-  Q_ASSERT(expectedOrientation.contains(orientation));
+  if (!expectedOrientation.contains(orientation))
+    {
+    qCritical() << "setSliceOrientation: invalid orientation: " << orientation;
+    return;
+    }
 #endif
 
   if (!d->MRMLSliceNode)

@@ -1,7 +1,7 @@
 
 // Qt includes
-#include <QVBoxLayout>
 #include <QDebug>
+#include <QVBoxLayout>
 
 // CTK includes
 #include <ctkComboBox.h>
@@ -289,8 +289,12 @@ void qMRMLLabelComboBox::onCurrentIndexChanged(int index)
 void qMRMLLabelComboBox::updateWidgetFromMRML()
 {
   Q_D(qMRMLLabelComboBox);
-  Q_ASSERT(d->ColorNode);
-  
+  if (!d->ColorNode)
+    {
+    qCritical() << "updateWidgetFromMRML: no color node!";
+    return;
+    }
+
   //qDebug() << "qMRMLLabelComboBox::updateWidgetFromMRML";
 
   d->ComboBox->clear();
@@ -308,7 +312,11 @@ void qMRMLLabelComboBox::updateWidgetFromMRML()
   
   //LookUpTabletime.start();
   vtkLookupTable * lookupTable = d->ColorNode->GetLookupTable();
-  Q_ASSERT(lookupTable);
+  if (!lookupTable)
+    {
+    qCritical() << "updateWidgetFromMRML: no look up table!";
+    return;
+    }
 
   const int numberOfColors = lookupTable->GetNumberOfColors();
   //qDebug() << "updateWidgetFromMRML - NumberOfColors:" << numberOfColors;

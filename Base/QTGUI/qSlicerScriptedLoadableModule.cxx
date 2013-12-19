@@ -142,7 +142,12 @@ bool qSlicerScriptedLoadableModule::setPythonSource(const QString& newPythonSour
     return false;
     }
 
-  Q_ASSERT(newPythonSource.endsWith(".py"));
+  if (!newPythonSource.endsWith(".py"))
+    {
+    qCritical() << "setPythonSource: source file doesn't end in .py: "
+                << newPythonSource;
+    return false;
+    }
 
   // Extract moduleName from the provided filename
   QString moduleName = QFileInfo(newPythonSource).baseName();
@@ -207,7 +212,22 @@ bool qSlicerScriptedLoadableModule::setPythonSource(const QString& newPythonSour
   // Retrieve API methods
   for (int i = 0; i < Pimpl::APIMethodCount; ++i)
     {
-    Q_ASSERT(Pimpl::APIMethodNames[i]);
+    if (!Pimpl::APIMethodNames[i])
+      {
+      qCritical() << "ScriptedLoadableModule: setPythonSource: "
+                  << "missing API method name at index " << i
+                  << ", method count = " << Pimpl::APIMethodCount;
+      if (Pimpl::APIMethodCount > 0)
+        {
+        for (int ind = 0; ind < Pimpl::APIMethodCount; ind++)
+          {
+          qDebug() << "\t" << i << ": '"
+                   << (Pimpl::APIMethodNames[i] ? Pimpl::APIMethodNames[i] : "NULL")
+                   << "'";
+          }
+        }
+      return false;
+      }
     if (!PyObject_HasAttrString(self, Pimpl::APIMethodNames[i]))
       {
       continue;

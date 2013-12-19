@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLSceneModel.h"
@@ -86,7 +87,7 @@ QStandardItem* qMRMLSortFilterProxyModel::sourceItem(const QModelIndex& sourceIn
   qMRMLSceneModel* sceneModel = qobject_cast<qMRMLSceneModel*>(this->sourceModel());
   if (sceneModel == NULL)
     {
-    //Q_ASSERT(sceneModel);
+    qCritical() << "sourceItem: no scene model!";
     return NULL;
     }
   else
@@ -149,7 +150,7 @@ bool qMRMLSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
   QStandardItem* parentItem = this->sourceItem(source_parent);
   if (parentItem == 0)
     {
-    //Q_ASSERT(parentItem);
+    qCritical() << "filterAcceptsRow: null parent item!";
     return false;
     }
   QStandardItem* item = 0;
@@ -164,7 +165,7 @@ bool qMRMLSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInd
     }
   if (item == 0)
     {
-    //Q_ASSERT(item);
+    qCritical() << "filterAcceptsRow: no item found!";
     return false;
     }
   qMRMLSceneModel* sceneModel = qobject_cast<qMRMLSceneModel*>(this->sourceModel());

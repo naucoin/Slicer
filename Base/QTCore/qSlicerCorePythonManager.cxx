@@ -20,6 +20,7 @@
 
 // Qt includes
 #include <QBitArray>
+#include <QDebug>
 #include <QSettings>
 
 // CTK includes
@@ -158,17 +159,22 @@ void qSlicerCorePythonManager::addVTKObjectToPythonMain(const QString& name, vtk
   foreach(const QString& moduleName, moduleNameList)
     {
     module = PyImport_ImportModule(moduleName.toLatin1());
-    Q_ASSERT(module);
+    if (!module)
+      {
+      qCritical() << "addVTKObjectToPythonMain: module not found: "
+                  << moduleName;
+      return;
+      }
     }
 
   // Add the object to the imported module
   int ret = PyModule_AddObject(module, varName.toLatin1(),
                                vtkPythonUtil::GetObjectFromPointer(object));
-  Q_ASSERT(ret == 0);
   if (ret != 0)
     {
     qCritical() << "qSlicerCorePythonManager::addVTKObjectToPythonMain - "
                    "Failed to add VTK object:" << name;
+    return;
     }
 }
 

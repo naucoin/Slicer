@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLUtils.h"
@@ -138,21 +139,28 @@ vtkMRMLLinearTransformNode* qMRMLLinearTransformSlider::mrmlTransformNode()const
 void qMRMLLinearTransformSlider::onMRMLTransformNodeModified(vtkObject* caller)
 {
   Q_D(qMRMLLinearTransformSlider);
-  
+
   vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(caller);
   if (!transformNode)
     {
     return;
     }
-  Q_ASSERT(d->MRMLTransformNode == transformNode);
+  if (d->MRMLTransformNode != transformNode)
+    {
+    qCritical() << "onMRMLTransformNodeModified: transform node mismatch!";
+    return;
+    }
 
   vtkNew<vtkTransform> transform;
   qMRMLUtils::getTransformInCoordinateSystem(d->MRMLTransformNode,
     d->CoordinateReference == qMRMLLinearTransformSlider::GLOBAL, transform.GetPointer());
 
   vtkMatrix4x4 * matrix = transform->GetMatrix();
-  Q_ASSERT(matrix);
-  if (!matrix) { return; }
+  if (!matrix)
+    {
+    qCritical() << "onMRMLTransformNodeModified: no matrix in the transform";
+    return;
+    }
 
   double _value = 0.0;
   if (this->typeOfTransform() == TRANSLATION_LR)
@@ -197,8 +205,11 @@ void qMRMLLinearTransformSlider::applyTransformation(double _sliderPosition)
     d->CoordinateReference == qMRMLLinearTransformSlider::GLOBAL, transform.GetPointer());
 
   vtkMatrix4x4 * matrix = transform->GetMatrix();
-  Q_ASSERT(matrix);
-  if (!matrix) { return; }
+  if (!matrix)
+    {
+    qCritical() << "applyTransformation: no matrix in transform";
+    return;
+    }
 
   if (this->typeOfTransform() == ROTATION_LR)
     {

@@ -195,10 +195,18 @@ void qMRMLVolumeInfoWidget::setDataTypeEditable(bool enable)
 bool qMRMLVolumeInfoWidget::isDataTypeEditable()const
 {
   Q_D(const qMRMLVolumeInfoWidget);
-  Q_ASSERT(d->ScanOrderComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this)) ==
-           d->NumberOfScalarsSpinBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this)));
-  Q_ASSERT(d->ScanOrderComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this)) ==
-           d->ScalarTypeComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this)));
+  if (!(d->ScanOrderComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this)) ==
+        d->NumberOfScalarsSpinBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this))))
+    {
+    qCritical() << "isDataTypeEditable: error in scan order or number of scalars!";
+    return false;
+    }
+  if (!(d->ScanOrderComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this)) ==
+        d->ScalarTypeComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this))))
+    {
+    qCritical() << "isDataTypeEditable: error in scan order or scalar type!";
+    return false;
+    }
   return d->ScanOrderComboBox->isEnabledTo(const_cast<qMRMLVolumeInfoWidget*>(this));
 }
 

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QKeyEvent>
@@ -176,7 +177,11 @@ int qSlicerModulesListViewPrivate
   for (; index < this->ModulesListModel->rowCount(); ++index)
     {
     QStandardItem* item = this->ModulesListModel->item(index);
-    Q_ASSERT(item);
+    if (!item)
+      {
+      qCritical() << "sortedInsertionIndex: no item at index " << index;
+      return 0;
+      }
     if (QString::compare(moduleName, item->text(), Qt::CaseInsensitive) < 0)
       {
       break;
@@ -431,7 +436,12 @@ void qSlicerModulesListView::addModules(const QStringList& moduleNames)
 void qSlicerModulesListView::addModule(const QString& moduleName)
 {
   Q_D(qSlicerModulesListView);
-  Q_ASSERT(d->moduleItem(moduleName) == 0);
+  if (d->moduleItem(moduleName) != 0)
+    {
+    qCritical() << "addModule: already a module with name "
+                << moduleName;
+    return;
+    }
   QStandardItem * item = new QStandardItem();
   item->setData(moduleName, Qt::UserRole);
   d->updateItem(item);

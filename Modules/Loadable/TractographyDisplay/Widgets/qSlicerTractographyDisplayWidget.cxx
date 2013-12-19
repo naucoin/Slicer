@@ -1,4 +1,5 @@
 // QT includes
+#include <QDebug>
 
 // qMRML includes
 #include "qSlicerTractographyDisplayWidget.h"
@@ -406,7 +407,11 @@ void qSlicerTractographyDisplayWidget::setColorByCellScalarsColorTable(vtkMRMLNo
     { 
     return;
     }
-  Q_ASSERT(vtkMRMLColorNode::SafeDownCast(colortableNode));
+  if (!vtkMRMLColorNode::SafeDownCast(colortableNode))
+    {
+    qCritical() << "setColorByCellScalarsColorTable: not a color node";
+    return;
+    }
   d->FiberBundleDisplayNode->SetAndObserveColorNodeID(colortableNode->GetID());
 }
 

@@ -87,7 +87,11 @@ void qMRMLLayoutManagerPrivate::init()
 //------------------------------------------------------------------------------
 qMRMLThreeDWidget* qMRMLLayoutManagerPrivate::threeDWidget(int id)const
 {
-  Q_ASSERT(id >= 0);
+  if (id < 0)
+    {
+    qCritical() << "threeDWidget: id " << id << " is less than 0!";
+    return 0;
+    }
   if (id >= this->ThreeDWidgetList.size())
     {
     return 0;
@@ -98,7 +102,11 @@ qMRMLThreeDWidget* qMRMLLayoutManagerPrivate::threeDWidget(int id)const
 //------------------------------------------------------------------------------
 qMRMLChartWidget* qMRMLLayoutManagerPrivate::chartWidget(int id)const
 {
-  Q_ASSERT(id >= 0);
+  if (id < 0)
+    {
+    qCritical() << "charWidget: id " << id << " is less than 0!";
+    return 0;
+    }
   if (id >= this->ChartWidgetList.size())
     {
     return 0;
@@ -247,13 +255,25 @@ QWidget* qMRMLLayoutManagerPrivate::createSliceWidget(vtkMRMLSliceNode* sliceNod
   Q_Q(qMRMLLayoutManager);
   if (!q->viewport() || !sliceNode || !this->MRMLScene)
     {// can't create a slice widget if there is no parent widget
-    Q_ASSERT(this->MRMLScene);
-    Q_ASSERT(sliceNode);
+    if (!this->MRMLScene)
+      {
+      qCritical() << "createSliceWidget: no MRML scene defined!";
+      }
+    if (!sliceNode)
+      {
+      qCritical() << "createSliceWidget: no slice node defined!";
+      }
     return 0;
     }
 
   // there is a unique slice widget per node
-  Q_ASSERT(!this->sliceWidget(sliceNode));
+  if (this->sliceWidget(sliceNode) != 0)
+    {
+    qCritical() << "createSliceWidget: there is already a slice widget "
+                << "for the slice node with id "
+                << (sliceNode->GetID() ? sliceNode->GetID() : "NULL");
+    return 0;
+    }
 
   qMRMLSliceWidget * sliceWidget = new qMRMLSliceWidget(q->viewport());
   sliceWidget->sliceController()->setControllerButtonGroup(this->SliceControllerButtonGroup);
@@ -286,13 +306,25 @@ qMRMLThreeDWidget* qMRMLLayoutManagerPrivate::createThreeDWidget(vtkMRMLViewNode
   Q_Q(qMRMLLayoutManager);
   if (!q->viewport() || !this->MRMLScene || !viewNode)
     {
-    Q_ASSERT(this->MRMLScene);
-    Q_ASSERT(viewNode);
+    if (!this->MRMLScene)
+      {
+      qCritical() << "createThreeDWidget: no MRML scene defined!";
+      }
+    if (!viewNode)
+      {
+      qCritical() << "createThreeDWidget: null view node!";
+      }
     return 0;
     }
 
   // There must be a unique ThreeDWidget per node
-  Q_ASSERT(!this->threeDWidget(viewNode));
+  if (this->threeDWidget(viewNode))
+    {
+    qCritical() << "createThreeDWidget: already a threeD widget"
+                << " defined for view node with id "
+                << (viewNode->GetID() ? viewNode->GetID() : "NULL");
+    return 0;
+    }
 
   qMRMLThreeDWidget* threeDWidget = new qMRMLThreeDWidget(q->viewport());
   threeDWidget->setObjectName(QString("ThreeDWidget%1").arg(viewNode->GetLayoutLabel()));
@@ -311,13 +343,25 @@ qMRMLChartWidget* qMRMLLayoutManagerPrivate::createChartWidget(vtkMRMLChartViewN
   Q_Q(qMRMLLayoutManager);
   if (!q->viewport() || !this->MRMLScene || !viewNode)
     {
-    Q_ASSERT(this->MRMLScene);
-    Q_ASSERT(viewNode);
+    if (!this->MRMLScene)
+      {
+      qCritical() << "createChartWidget: no mrml scene defined!";
+      }
+    if (!viewNode)
+      {
+      qCritical() << "createChartWidget: no view node defined!";
+      }
     return 0;
     }
 
   // There must be a unique ChartWidget per node
-  Q_ASSERT(!this->chartWidget(viewNode));
+  if (this->chartWidget(viewNode))
+    {
+    qCritical() << "createChartWidget: already a chart widget "
+                << "for viewnode with id"
+                << (viewNode->GetID() ? viewNode->GetID() : "NULL");
+    return 0;
+    }
 
   qMRMLChartWidget* chartWidget = 0;
 
@@ -338,7 +382,11 @@ qMRMLChartWidget* qMRMLLayoutManagerPrivate::createChartWidget(vtkMRMLChartViewN
 // --------------------------------------------------------------------------
 void qMRMLLayoutManagerPrivate::removeSliceView(vtkMRMLSliceNode* sliceNode)
 {
-  Q_ASSERT(sliceNode);
+  if (!sliceNode)
+    {
+    qCritical() << "removeSliceView: no slice node defined!";
+    return;
+    }
 
   qMRMLSliceWidget * sliceWidgetToDelete = this->sliceWidget(sliceNode);
 
@@ -353,7 +401,11 @@ void qMRMLLayoutManagerPrivate::removeSliceView(vtkMRMLSliceNode* sliceNode)
 // --------------------------------------------------------------------------
 void qMRMLLayoutManagerPrivate::removeThreeDWidget(vtkMRMLViewNode* viewNode)
 {
-  Q_ASSERT(viewNode);
+  if (!viewNode)
+    {
+    qCritical() << "removeThreeDWidget: no view node defined!";
+    return;
+    }
   qMRMLThreeDWidget * threeDWidgetToDelete = this->threeDWidget(viewNode);
 
   // Remove threeDView
@@ -367,7 +419,11 @@ void qMRMLLayoutManagerPrivate::removeThreeDWidget(vtkMRMLViewNode* viewNode)
 // --------------------------------------------------------------------------
 void qMRMLLayoutManagerPrivate::removeChartWidget(vtkMRMLChartViewNode* viewNode)
 {
-  Q_ASSERT(viewNode);
+  if (!viewNode)
+    {
+    qCritical() << "removeChartDWidget: no view node defined!";
+    return;
+    }
   qMRMLChartWidget * chartWidgetToDelete = this->chartWidget(viewNode);
 
   // Remove threeDView
@@ -381,9 +437,16 @@ void qMRMLLayoutManagerPrivate::removeChartWidget(vtkMRMLChartViewNode* viewNode
 // --------------------------------------------------------------------------
 void qMRMLLayoutManagerPrivate::onNodeAddedEvent(vtkObject* scene, vtkObject* node)
 {
-  Q_UNUSED(scene);
-  Q_ASSERT(scene);
-  Q_ASSERT(scene == this->MRMLScene);
+  if (!scene)
+    {
+    qCritical() << "onNodeAddedEvent: scene is undefined!";
+    return;
+    }
+  if (scene != this->MRMLScene)
+    {
+    qCritical() << "onNodeAddedEvent: scene mismatch!";
+    return;
+    }
   if (!this->MRMLScene || this->MRMLScene->IsBatchProcessing())
     {
     return;
@@ -395,9 +458,9 @@ void qMRMLLayoutManagerPrivate::onNodeAddedEvent(vtkObject* scene, vtkObject* no
     {
     //qDebug() << "qMRMLLayoutManagerPrivate::onLayoutNodeAddedEvent";
     // Only one Layout node is expected
-    Q_ASSERT(this->MRMLLayoutNode == 0);
     if (this->MRMLLayoutNode != 0)
       {
+      qCritical() << "onNodeAddedEvent: only one layout node is expected!";
       return;
       }
     this->setMRMLLayoutNode(layoutNode);
@@ -441,15 +504,28 @@ void qMRMLLayoutManagerPrivate::onNodeAddedEvent(vtkObject* scene, vtkObject* no
 // --------------------------------------------------------------------------
 void qMRMLLayoutManagerPrivate::onNodeRemovedEvent(vtkObject* scene, vtkObject* node)
 {
-  Q_UNUSED(scene);
-  Q_ASSERT(scene);
-  Q_ASSERT(scene == this->MRMLScene);
+ if (!scene)
+    {
+    qCritical() << "onNodeRemovedEvent: scene is undefined!";
+    return;
+    }
+  if (scene != this->MRMLScene)
+    {
+    qCritical() << "onNodeRemovedEvent: scene mismatch!";
+    return;
+    }
   // Layout node
   vtkMRMLLayoutNode * layoutNode = vtkMRMLLayoutNode::SafeDownCast(node);
   if (layoutNode)
     {
     // The layout to be removed should be the same as the stored one
-    Q_ASSERT(this->MRMLLayoutNode == layoutNode);
+    if (this->MRMLLayoutNode != layoutNode)
+      {
+      qCritical() << "onNodeRemovedEvent: layout node mismatch! "
+                  << "The layout to be removed should be the same as "
+                  << "the stored one.";
+      return;
+      }
     this->setMRMLLayoutNode(0);
     }
 
@@ -520,7 +596,11 @@ void qMRMLLayoutManagerPrivate::onSceneClosedEvent()
   // initialize will make sure the LayoutNode, MRMLViewNode,
   // MRMLSliceNode exists.
   this->updateLayoutFromMRMLScene();
-  Q_ASSERT(this->MRMLLayoutNode);
+  if (!this->MRMLLayoutNode)
+    {
+    qCritical() << "onSceneClosedEvent: no layout node stored!";
+    return;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -994,11 +1074,23 @@ QWidget* qMRMLLayoutManager::viewFromXML(QDomElement viewElement)
   vtkMRMLNode* viewNode = d->MRMLLayoutLogic->GetViewFromAttributes(attributes);
   // the view should have been created automatically by the logic when the new
   // view arrangement is set
-  Q_ASSERT(viewNode);
+  if (!viewNode)
+    {
+    qCritical() << "viewFromXML; undefined view node! "
+                << "The view should have been created automatically by the "
+                << "logic when the new view arrangement is set";
+    return 0;
+    }
   vtkMRMLLayoutLogic::ViewProperties properties = d->propertiesFromXML(viewElement);
   d->MRMLLayoutLogic->ApplyProperties(properties, viewNode, "relayout");
   QWidget* view = d->viewWidget(viewNode);
-  Q_ASSERT(view);
+  if (!view)
+    {
+    qCritical() << "viewFromXML; unable to find view widget from view node "
+                << "with id "
+                << (viewNode->GetID() ? viewNode->GetID() : "NULL");
+    return 0;
+    }
   return view;
 }
 

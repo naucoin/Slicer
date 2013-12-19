@@ -230,7 +230,11 @@ qSlicerAbstractModuleRepresentation* qSlicerAbstractCoreModule::createNewWidgetR
   // diffent logic object
 #ifndef QT_NO_DEBUG // Required to avoid undefined variable warning
   vtkMRMLAbstractLogic* currentLogic = d->Logic;
-  Q_ASSERT(currentLogic == this->logic());
+  if (currentLogic != this->logic())
+    {
+    qCritical() << "createNewWidgetRepresentation: Logic mismatch!";
+    return 0;
+    }
 #endif
 
   qSlicerAbstractModuleRepresentation *newWidgetRepresentation;

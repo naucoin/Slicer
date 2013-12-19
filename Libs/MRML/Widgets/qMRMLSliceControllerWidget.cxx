@@ -779,7 +779,12 @@ void qMRMLSliceControllerWidgetPrivate::updateWidgetFromMRMLSliceNode()
   // Update orientation selector state
   int index = this->SliceOrientationSelector->findText(
       QString::fromStdString(this->MRMLSliceNode->GetOrientationString()));
-  Q_ASSERT(index>=0 && index <=4);
+  if (!(index>=0 && index <=4))
+    {
+    qCritical() << "updateWidgetFromMRMLSliceNode: index out of bounds 0-4: "
+                << index;
+    return;
+    }
 
   // We block the signal to avoid calling setSliceOrientation from the MRMLNode
   wasBlocked = this->SliceOrientationSelector->blockSignals(true);
@@ -890,8 +895,13 @@ void qMRMLSliceControllerWidgetPrivate::updateWidgetFromMRMLSliceCompositeNode()
     // the volumes pointed by the slice composite node don't exist yet
     return;
     }
-  Q_ASSERT(this->MRMLSliceCompositeNode);
-  
+  if (!this->MRMLSliceCompositeNode)
+    {
+    qCritical() << "updateWidgetFromMRMLSliceCompositeNode: "
+                << "no slice composite node!";
+      return;
+    }
+
   bool wasBlocked;
 
   // Update slice link toggle. Must be done first as its state controls
@@ -1048,7 +1058,11 @@ void qMRMLSliceControllerWidgetPrivate::onSliceLogicModifiedEvent()
 
   // Set the scale increments to match the z spacing (rotated into slice space)
   const double * sliceSpacing = this->SliceLogic->GetLowestVolumeSliceSpacing();
-  Q_ASSERT(sliceSpacing);
+  if (!sliceSpacing)
+    {
+    qCritical() << "onSliceLogicModifiedEvent: cannot get lowest volume slice spacing!";
+    return;
+    }
   double offsetResolution = sliceSpacing ? sliceSpacing[2] : 0;
   q->setSliceOffsetResolution(offsetResolution);
 
@@ -1056,7 +1070,13 @@ void qMRMLSliceControllerWidgetPrivate::onSliceLogicModifiedEvent()
   // Calculate the number of slices in the current range
   double sliceBounds[6] = {0, -1, 0, -1, 0, -1};
   this->SliceLogic->GetLowestVolumeSliceBounds(sliceBounds);
-  Q_ASSERT(sliceBounds[4] <= sliceBounds[5]);
+  if (sliceBounds[4] > sliceBounds[5])
+    {
+    qCritical() << "onSliceLogicModifiedEvent: slice bounds [4] "
+                << sliceBounds[4] << " > [5] "
+                << sliceBounds[5];
+    return;
+    }
   q->setSliceOffsetRange(sliceBounds[4], sliceBounds[5]);
 
   // Update slider position
@@ -1604,7 +1624,12 @@ void qMRMLSliceControllerWidget::setSliceOrientation(const QString& orientation)
 #ifndef QT_NO_DEBUG
   QStringList expectedOrientation;
   expectedOrientation << "Axial" << "Sagittal" << "Coronal" << "Reformat";
-  Q_ASSERT(expectedOrientation.contains(orientation));
+  if (!expectedOrientation.contains(orientation))
+    {
+    qCritical() << "setSliceOrientation: invalid orientation "
+                << orientation;
+    return;
+    }
 #endif
 
   if (!d->MRMLSliceNode || !d->MRMLSliceCompositeNode)
@@ -1636,13 +1661,10 @@ void qMRMLSliceControllerWidget::setSliceVisible(bool visible)
 bool qMRMLSliceControllerWidget::isLinked()const
 {
   Q_D(const qMRMLSliceControllerWidget);
-  // It is not really an assert here, what could have happen is that the
+  // An assert is not needed here, what could have happen is that the
   // mrml slice composite node LinkedControl property has been changed but the
   // modified event has not been yet fired, updateWidgetFromMRMLSliceCompositeNode not having been
   // called yet, the slicelinkbutton state is not uptodate.
-  //Q_ASSERT(!d->MRMLSliceCompositeNode ||
-  //        d->MRMLSliceCompositeNode->GetLinkedControl() ==
-  //         d->SliceLinkButton->isChecked());
   return d->MRMLSliceCompositeNode ? d->MRMLSliceCompositeNode->GetLinkedControl() : d->SliceLinkButton->isChecked();
 }
 

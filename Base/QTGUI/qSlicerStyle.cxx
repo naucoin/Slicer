@@ -130,7 +130,11 @@ QRect qSlicerStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                                    SubControl subControl, const QWidget *widget) const
 {
   const QCommonStyle * commonStyle = qobject_cast<const QCommonStyle*>(this->proxy());
-  Q_ASSERT(commonStyle);
+  if (!commonStyle)
+    {
+    qCritical() << "subControlRect: invalid common style";
+    return QRect(0,0,0,0);
+    }
   QRect rect = commonStyle->QCommonStyle::subControlRect(
       control, option, subControl, widget);
 

@@ -321,7 +321,10 @@ qSlicerCommandOptions* qSlicerApplication::commandOptions()
 {
   qSlicerCommandOptions* _commandOptions =
     dynamic_cast<qSlicerCommandOptions*>(this->coreCommandOptions());
-  Q_ASSERT(_commandOptions);
+  if (!_commandOptions)
+    {
+    qCritical() << "commandOptions: no command options!";
+    }
   return _commandOptions;
 }
 
@@ -329,7 +332,10 @@ qSlicerCommandOptions* qSlicerApplication::commandOptions()
 qSlicerIOManager* qSlicerApplication::ioManager()
 {
   qSlicerIOManager* _ioManager = dynamic_cast<qSlicerIOManager*>(this->coreIOManager());
-  Q_ASSERT(_ioManager);
+  if (!_ioManager)
+    {
+    qCritical() << "ioManger: no IO Manager!";
+    }
   return _ioManager;
 }
 
@@ -341,7 +347,10 @@ qSlicerPythonManager* qSlicerApplication::pythonManager()
   if (!qSlicerCoreApplication::testAttribute(qSlicerCoreApplication::AA_DisablePython))
     {
     _pythonManager = qobject_cast<qSlicerPythonManager*>(this->corePythonManager());
-    Q_ASSERT(_pythonManager);
+    if (!_pythonManager)
+      {
+      qCritical() << "pythonManager: no python manager!";
+      }
     }
 
   return _pythonManager;
@@ -398,7 +407,11 @@ QMainWindow* qSlicerApplication::mainWindow()const
 void qSlicerApplication::handleCommandLineArguments()
 {
   qSlicerCommandOptions* options = this->commandOptions();
-  Q_ASSERT(options);
+  if (!options)
+    {
+    qCritical() << "handleCommandLineArguments: no command options!";
+    return;
+    }
 
   if (options->noMainWindow() || options->disableMessageHandlers())
     {

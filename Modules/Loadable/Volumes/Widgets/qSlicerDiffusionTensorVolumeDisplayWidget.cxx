@@ -22,6 +22,7 @@
 #include "ui_qSlicerDiffusionTensorVolumeDisplayWidget.h"
 
 // Qt includes
+#include <QDebug>
 
 // MRML includes
 #include "vtkMRMLDiffusionTensorVolumeNode.h"
@@ -174,7 +175,11 @@ void qSlicerDiffusionTensorVolumeDisplayWidget::setMRMLVolumeNode(vtkMRMLDiffusi
       dtiSliceDisplayNodes =
         newVolumeDisplayNode->GetSliceGlyphDisplayNodes(d->VolumeNode);
       }
-    Q_ASSERT(dtiSliceDisplayNodes.size());
+    if (!dtiSliceDisplayNodes.size())
+      {
+      qCritical() << "setMRMLVolumeNode: no dti slice display nodes";
+      return;
+      }
     glyphableVolumeSliceNode = dtiSliceDisplayNodes[0];
     }
   // The update tasks are also needed when scene is closed (newVolumeDisplayNode is NULL)

@@ -69,7 +69,11 @@ void qSlicerWebWidgetPrivate::init()
   this->WebView->installEventFilter(q);
 
   QNetworkAccessManager * networkAccessManager = this->WebView->page()->networkAccessManager();;
-  Q_ASSERT(networkAccessManager);
+  if (!networkAccessManager)
+    {
+    qCritical() << "init: no network access manager!";
+    return;
+    }
   networkAccessManager->setCookieJar(new qSlicerPersistentCookieJar());
 
   QObject::connect(this->WebView, SIGNAL(loadStarted()),
@@ -232,7 +236,11 @@ void qSlicerWebWidget::handleSslErrors(QNetworkReply* reply,
 bool qSlicerWebWidget::eventFilter(QObject* obj, QEvent* event)
 {
   Q_D(qSlicerWebWidget);
-  Q_ASSERT(d->WebView == obj);
+  if (d->WebView != obj)
+    {
+    qCritical() << "eventFilter: mismatch in web view object";
+    return false;
+    }
   if (d->WebView == obj && !event->spontaneous() &&
       (event->type() == QEvent::Show || event->type() == QEvent::Hide))
     {

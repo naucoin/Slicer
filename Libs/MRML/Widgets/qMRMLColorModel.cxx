@@ -20,6 +20,7 @@
 
 // Qt includes
 #include <QApplication>
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLColorModel_p.h"
@@ -366,8 +367,16 @@ void qMRMLColorModel::onMRMLNodeEvent(vtkObject* vtk_obj, unsigned long event,
 {
   vtkMRMLColorNode* colorNode = reinterpret_cast<vtkMRMLColorNode*>(vtk_obj);
   qMRMLColorModel* colorModel = reinterpret_cast<qMRMLColorModel*>(client_data);
-  Q_ASSERT(colorNode);
-  Q_ASSERT(colorModel);
+  if (!colorNode)
+    {
+    qCritical() << "onMRMLNodeEvent: color node is invalid";
+    return;
+    }
+  if (!colorModel)
+    {
+    qCritical() << "onMRMLNodeEvent: color model is invalid";
+    return;
+    }
   switch(event)
     {
     default:
@@ -382,9 +391,11 @@ void qMRMLColorModel::onMRMLColorNodeModified(vtkObject* node)
 {
   Q_D(qMRMLColorModel);
   vtkMRMLColorNode* colorNode = vtkMRMLColorNode::SafeDownCast(node);
-  Q_UNUSED(colorNode);
-  Q_UNUSED(d);
-  Q_ASSERT(colorNode == d->MRMLColorNode);
+  if (colorNode != d->MRMLColorNode)
+    {
+    qCritical() << "onMRMLColorNodeModified: color node not valid";
+    return;
+    }
   this->updateNode();
 }
 

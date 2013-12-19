@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // SlicerQt includes
@@ -111,7 +112,11 @@ qSlicerIOOptions* qSlicerVolumesReader::options()const
 bool qSlicerVolumesReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerVolumesReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Volumes reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   QString name = QFileInfo(fileName).baseName();
@@ -149,7 +154,11 @@ bool qSlicerVolumesReader::load(const IOProperties& properties)
       fileList->InsertNextValue(file.toLatin1());
       }
     }
-  Q_ASSERT(d->Logic);
+  if (!d->Logic)
+    {
+    qCritical() << "Volumes reader load: no logic!";
+    return false;
+    }
   vtkMRMLVolumeNode* node = d->Logic->AddArchetypeVolume(
     fileName.toLatin1(),
     name.toLatin1(),

@@ -49,7 +49,11 @@ QString            ErrorString;
 //-----------------------------------------------------------------------------
 void runCli(void * data)
 {
-  Q_ASSERT(CLIModule);
+  if (!CLIModule)
+    {
+    ErrorString = "CLIModule undefined";
+    return;
+    }
   Q_UNUSED(data);
 
   QTemporaryFile outputFile("qSlicerCLIModuleTest1-outputFile-XXXXXX");

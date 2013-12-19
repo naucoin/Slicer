@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
@@ -103,7 +104,11 @@ vtkObservation* qMRMLEventBrokerWidgetPrivate::observation(QTreeWidgetItem* item
 
   vtkEventBroker::ObservationVector observations =
     vtkEventBroker::GetInstance()->GetObservations(subject, event, observer, 0, 1);
-  Q_ASSERT(observations.size());
+  if (!observations.size())
+    {
+    qCritical() << "observation: no observations found!";
+    return 0;
+    }
   return observations.size() ? (*observations.begin()) : 0;
 }
 

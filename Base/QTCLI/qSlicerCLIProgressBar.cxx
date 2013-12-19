@@ -238,7 +238,12 @@ void qSlicerCLIProgressBar::updateUiFromCommandLineModuleNode(
   vtkObject* commandLineModuleNode)
 {
   Q_D(qSlicerCLIProgressBar);
-  Q_ASSERT(commandLineModuleNode == d->CommandLineModuleNode);
+  if (commandLineModuleNode != d->CommandLineModuleNode)
+    {
+    qCritical() << "updateUiFromCommandLineModuleNode: "
+                << "command line module node mismatch!";
+    return;
+    }
   vtkMRMLCommandLineModuleNode * node =
     vtkMRMLCommandLineModuleNode::SafeDownCast(commandLineModuleNode);
 

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QToolButton>
 
 // SlicerQt includes
@@ -396,7 +397,11 @@ void qSlicerViewersToolBarPrivate::setMRMLScene(vtkMRMLScene* newScene)
 //---------------------------------------------------------------------------
 void qSlicerViewersToolBarPrivate::updateWidgetFromMRML()
 {
-  Q_ASSERT(this->MRMLScene);
+  if (!this->MRMLScene)
+    {
+    qCritical() << "updateWidgetFromMRML: no mrml scene!";
+    return;
+    }
 
   vtkMRMLNode *node;
   vtkCollectionSimpleIterator it;
@@ -498,8 +503,12 @@ void qSlicerViewersToolBarPrivate::OnMRMLSceneEndImport()
 void qSlicerViewersToolBarPrivate::OnMRMLSceneEndClose()
 {
   Q_Q(qSlicerViewersToolBar);
-  Q_ASSERT(this->MRMLScene);
-  if (!this->MRMLScene || this->MRMLScene->IsBatchProcessing())
+ if (!this->MRMLScene)
+   {
+   qCritical() << "OnMRMLSceneEndClose: no mrml scene!";
+   return;
+   }
+  if (this->MRMLScene->IsBatchProcessing())
     {
     return;
     }

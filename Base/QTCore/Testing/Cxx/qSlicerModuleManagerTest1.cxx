@@ -25,7 +25,7 @@ int qSlicerModuleManagerTest1(int argc, char * argv [] )
   // By design, a ModuleManager should be instantiated only if a
   // qSlicerCoreApplication exists and has been initialized.
   // That we will be sure, an ApplicationLogic and a MRMLScene have also been instantiated
-  // This enforced in the constructor of qSlicerModuleManager (using Q_ASSERTs)
+  // This enforced in the constructor of qSlicerModuleManager
   qSlicerCoreApplication app(argc, argv);
   app.initialize(); 
   

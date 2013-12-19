@@ -211,10 +211,20 @@ QList<qSlicerIO::IOProperties> qSlicerDataDialogPrivate::selectedFiles()const
     {
     qSlicerIO::IOProperties properties;
     QTableWidgetItem* fileItem = this->FileWidget->item(row, FileColumn);
-    QComboBox* descriptionComboBox = 
+    QComboBox* descriptionComboBox =
       qobject_cast<QComboBox*>(this->FileWidget->cellWidget(row, TypeColumn));
-    Q_ASSERT(fileItem);
-    Q_ASSERT(descriptionComboBox);
+    if (!fileItem)
+      {
+      qCritical() << "selectedFiles: no file item at row "
+                  << row << ", column " << FileColumn;
+      return files;
+      }
+    if (!descriptionComboBox)
+      {
+      qCritical() << "selectedFiles: descripton combo box at row "
+                  << row << ", column " << TypeColumn;
+      return files;
+      }
     if (fileItem->checkState() != Qt::Checked)
       {
       continue;
@@ -472,7 +482,6 @@ void qSlicerDataDialog::dropEvent(QDropEvent *event)
 bool qSlicerDataDialog::exec(const qSlicerIO::IOProperties& readerProperties)
 {
   Q_D(qSlicerDataDialog);
-  Q_ASSERT(!readerProperties.contains("fileName"));
   if (readerProperties.contains("fileNames"))
     {
     QStringList fileNames = readerProperties["fileNames"].toStringList();

@@ -47,7 +47,11 @@ int qSlicerAppMainWindowTest1(int argc, char * argv[] )
 
 #ifdef Slicer_USE_PYTHONQT
   // Create python console
-  Q_ASSERT(qSlicerApplication::application()->pythonManager());
+  if (!qSlicerApplication::application()->pythonManager())
+    {
+    std::cerr << "Unable to create python console" << std::endl;
+    return EXIT_FAILURE;
+    }
   ctkPythonConsole pythonConsole;
   pythonConsole.initialize(qSlicerApplication::application()->pythonManager());
   pythonConsole.resize(600, 280);

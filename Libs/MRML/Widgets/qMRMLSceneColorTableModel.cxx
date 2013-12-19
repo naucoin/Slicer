@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QPixmap>
 
 // CTK includes
@@ -104,7 +105,11 @@ void qMRMLSceneColorTableModel::updateItemFromNode(QStandardItem* item, vtkMRMLN
 bool qMRMLSceneColorTableModel::updateGradientFromNode(vtkMRMLColorNode* node)const
 {
   Q_D(const qMRMLSceneColorTableModel);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "updateGradientFromNode: null input color node!";
+    return false;
+    }
   /// TODO: Improve the cache of the pixmaps, right now, they are not shared
   /// between the different qMRMLSceneColorTableModels.
   qMRMLSceneColorTableModelPrivate::ColorGradient& colorGradient = d->GradientCache[node->GetID()];

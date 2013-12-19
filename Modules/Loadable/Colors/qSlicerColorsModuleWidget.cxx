@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QInputDialog>
 
 // SlicerQt includes
@@ -194,7 +195,14 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
     colorNode->GetType() == vtkMRMLColorTableNode::User);
   d->NumberOfColorsSpinBox->setValue(colorNode->GetNumberOfColors());
 
-  Q_ASSERT(d->NumberOfColorsSpinBox->value() == colorNode->GetNumberOfColors());
+  if (d->NumberOfColorsSpinBox->value() != colorNode->GetNumberOfColors())
+    {
+    qCritical() << "onMRMLColorNodeChanged: Number of colors widget value "
+               << d->NumberOfColorsSpinBox->value()
+               << " doesn't match color node number of colors "
+               << colorNode->GetNumberOfColors();
+    return;
+    }
 
   if (colorNode->GetLookupTable())
     {
@@ -257,7 +265,11 @@ void qSlicerColorsModuleWidget::copyCurrentColorNode()
   Q_D(qSlicerColorsModuleWidget);
   vtkMRMLColorNode* currentNode = vtkMRMLColorNode::SafeDownCast(
     d->ColorTableComboBox->currentNode());
-  Q_ASSERT(currentNode);
+  if (!currentNode)
+    {
+    qCritical() << "copyCurrentColorNode: current node is not a color node!";
+    return;
+    }
   QString newColorName = QInputDialog::getText(
     this, "Transfer function name",
     "Please select a new name for the transfer function to create from copy",

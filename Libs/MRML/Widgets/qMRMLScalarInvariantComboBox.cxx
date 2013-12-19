@@ -20,6 +20,7 @@
 
 // QT includes
 #include <QComboBox>
+#include <QDebug>
 #include <QHBoxLayout>
 
 // qMRML includes
@@ -98,12 +99,29 @@ void qMRMLScalarInvariantComboBoxPrivate::setScalarInvariantToComboBox(int scala
 { // The combobox has been populated on the assumption that all the scalar
   // invariant were comprised between GetFirstScalarInvariant() and
   // GetLastScalarInvariant().
-  Q_ASSERT(scalarInvariant >=
-           vtkMRMLDiffusionTensorDisplayPropertiesNode::GetFirstScalarInvariant());
-  Q_ASSERT(scalarInvariant <=
-           vtkMRMLDiffusionTensorDisplayPropertiesNode::GetLastScalarInvariant());
+  if (scalarInvariant <
+      vtkMRMLDiffusionTensorDisplayPropertiesNode::GetFirstScalarInvariant())
+    {
+    qCritical() << "setScalarInvariantToComboBox: scalarInvariant out of range: "
+                << scalarInvariant << " is less than first scalar invariant "
+                << vtkMRMLDiffusionTensorDisplayPropertiesNode::GetFirstScalarInvariant();
+    return;
+    }
+  if (scalarInvariant >
+      vtkMRMLDiffusionTensorDisplayPropertiesNode::GetLastScalarInvariant())
+    {
+    qCritical() << "setScalarInvariantToComboBox: scalarInvariant out of range: "
+                << scalarInvariant << " is greater than last scalar invariant "
+                << vtkMRMLDiffusionTensorDisplayPropertiesNode::GetLastScalarInvariant();
+    return;
+    }
   int index = this->ComboBox->findData(QVariant(scalarInvariant));
-  Q_ASSERT(index >= 0);
+  if (index < 0)
+    {
+     qCritical() << "setScalarInvariantToComboBox: index out of range: "
+                 << index << " is less than 0";
+     return;
+    }
   this->ComboBox->setCurrentIndex(index);
 }
 

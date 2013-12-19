@@ -277,7 +277,11 @@ void qSlicerModuleSelectorToolBar::actionSelected(QAction* action)
       {
       previousActions.push_front(nextActions.takeFirst());
       }
-    Q_ASSERT(nextActions[0] == action);
+    if (nextActions[0] != action)
+      {
+      qCritical() << "actionSelected: first of next actions not set to action";
+      return;
+      }
     nextActions.removeFirst();
     }
   else if ( actionIndexInPreviousMenu >= 0)
@@ -290,7 +294,11 @@ void qSlicerModuleSelectorToolBar::actionSelected(QAction* action)
       {
       nextActions.push_front(previousActions.takeFirst());
       }
-    Q_ASSERT(previousActions[0] == action);
+    if (previousActions[0] != action)
+      {
+      qCritical() << "actionSelected: first of previous actions not set to action";
+      return;
+      }
     previousActions.removeFirst();
     }
   else

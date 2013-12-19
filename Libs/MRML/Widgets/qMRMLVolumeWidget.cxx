@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QVBoxLayout>
 
 // CTK includes
@@ -127,7 +128,12 @@ void qMRMLVolumeWidgetPrivate
   // a display node correctly set here (it's done )
   this->RangeWidget->blockSignals(true);
   double interval = range[1] - range[0];
-  Q_ASSERT(interval >= 0.);
+  if (interval < 0.)
+    {
+    qCritical() << "updateRangeForVolumeDisplayNode: interval less than 0: "
+                << interval;
+    return;
+    }
   double min, max;
 
   if (interval <= 10.)

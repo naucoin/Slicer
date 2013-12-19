@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // QT includes
+#include <QDebug>
 #include <QMenu>
 #include <QString>
 
@@ -182,7 +183,11 @@ void qSlicerReformatModuleWidgetPrivate::updateOffsetSlidersGroupBox()
   // Set the scale increments to match the z spacing (rotated into slice space)
   const double * sliceSpacing =
     this->MRMLSliceLogic->GetLowestVolumeSliceSpacing();
-  Q_ASSERT(sliceSpacing);
+  if (!sliceSpacing)
+    {
+    qCritical() << "updateOffsetSlidersGroupBox: Unable to get slice spacing!";
+    return;
+    }
   double offsetResolution = sliceSpacing ? sliceSpacing[2] : 0;
   this->OffsetSlider->setSingleStep(offsetResolution);
   this->OffsetSlider->setPageStep(offsetResolution);
@@ -191,7 +196,14 @@ void qSlicerReformatModuleWidgetPrivate::updateOffsetSlidersGroupBox()
   // Calculate the number of slices in the current range
   double sliceBounds[6] = {0, -1, 0, -1, 0, -1};
   this->MRMLSliceLogic->GetLowestVolumeSliceBounds(sliceBounds);
-  Q_ASSERT(sliceBounds[4] <= sliceBounds[5]);
+  if (!(sliceBounds[4] <= sliceBounds[5]))
+    {
+    qCritical() << "updateOffsetSlidersGroupBox: Slice bounds invalid "
+                << sliceBounds[4]
+                << " needs to be <= "
+                << sliceBounds[5];
+    return;
+    }
   this->OffsetSlider->setRange(sliceBounds[4], sliceBounds[5]);
 
   // Update slider position
@@ -263,7 +275,12 @@ void qSlicerReformatModuleWidgetPrivate::updateOrientationGroupBox()
   // Update the selector
   int index = this->SliceOrientationSelector->findText(
       QString::fromStdString(this->MRMLSliceNode->GetOrientationString()));
-  Q_ASSERT(index>=0 && index <=4);
+  if (!(index>=0 && index <=4))
+    {
+    qCritical() << "updateOrientationGroupBox: index "
+                << index << " out of range 0-4";
+    return;
+    }
   this->SliceOrientationSelector->setCurrentIndex(index);
 
   // Update the normal spinboxes
@@ -645,7 +662,12 @@ onSliceOrientationChanged(const QString& orientation)
   QStringList expectedOrientation;
   expectedOrientation << tr("Axial") << tr("Sagittal")
                       << tr("Coronal") << tr("Reformat");
-  Q_ASSERT(expectedOrientation.contains(orientation));
+  if (!expectedOrientation.contains(orientation))
+    {
+    qCritical() << "onSliceOrientationChanged: Expected orientation "
+                << " does not contain oriention " << orientation;
+    return;
+    }
 #endif
 
   d->MRMLSliceNode->SetOrientation(orientation.toLatin1());

@@ -182,9 +182,16 @@ int SlicerAppMain(int argc, char* argv[])
   // Load all available modules
   foreach(const QString& name, moduleFactoryManager->instantiatedModuleNames())
     {
-    Q_ASSERT(!name.isNull());
-    splashMessage(splashScreen, "Loading module \"" + name + "\"...");
-    moduleFactoryManager->loadModule(name);
+    if (name.isNull())
+      {
+      splashMessage(splashScreen, "Unable to load module with no name");
+      qCritical() << "Unable to load module with no name";
+      }
+    else
+      {
+      splashMessage(splashScreen, "Loading module \"" + name + "\"...");
+      moduleFactoryManager->loadModule(name);
+      }
     }
   if (app.commandOptions()->verbose())
     {

@@ -123,7 +123,11 @@ bool qSlicerNodeWriter::write(const qSlicerIO::IOProperties& properties)
 {
   this->setWrittenNodes(QStringList());
 
-  Q_ASSERT(!properties["nodeID"].toString().isEmpty());
+  if (properties["nodeID"].toString().isEmpty())
+    {
+    qCritical() << "Node Writer: write: nodeID string is empty!";
+    return false;
+    }
 
   vtkMRMLStorableNode* node = vtkMRMLStorableNode::SafeDownCast(
     this->getNodeByID(properties["nodeID"].toString().toLatin1().data()));
@@ -148,7 +152,11 @@ bool qSlicerNodeWriter::write(const qSlicerIO::IOProperties& properties)
     return false;
     }
 
-  Q_ASSERT(!properties["fileName"].toString().isEmpty());
+  if (properties["fileName"].toString().isEmpty())
+    {
+    qCritical() << "Node Writer write: filename is empty!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
   snode->SetFileName(fileName.toLatin1());
 

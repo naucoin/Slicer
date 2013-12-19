@@ -162,7 +162,11 @@ void qSlicerModulesMenuPrivate::addModuleAction(QMenu* menu, QAction* moduleActi
   // Search where moduleAction should be inserted. Before what action.
   foreach(QAction* action, actions)
     {
-    Q_ASSERT(action);
+    if (!action)
+      {
+      qCritical() << "addModuleAction: null action in actions list";
+      return;
+      }
     int actionIndex = action->property("index").toInt(&ok);
     if (!ok || actionIndex == -1 || !useIndex)
       {
@@ -398,7 +402,11 @@ void qSlicerModulesMenu::addModule(qSlicerAbstractCoreModule* moduleToAdd)
     return;
     }
   QAction* moduleAction = module->action();
-  Q_ASSERT(moduleAction);
+  if (!moduleAction)
+    {
+    qCritical() << "addModule: a module needs an action!";
+    return;
+    }
   if (d->DuplicateActions)
     {
     QAction* duplicateAction = new QAction(moduleAction->icon(), moduleAction->text(), this);

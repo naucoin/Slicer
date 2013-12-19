@@ -276,7 +276,11 @@ void qSlicerUnitsSettingsPanel::onNodeIDChanged(const QString& id)
     {
     qMRMLNodeComboBox* sender =
       qobject_cast<qMRMLNodeComboBox*>(QObject::sender());
-    Q_ASSERT(sender);
+    if (!sender)
+      {
+      qCritical() << "onNodeIDChanged: sender is not a node combo box!";
+      return;
+      }
 
     QString quantity = sender->property("Quantity").toString();
     d->Logic->SetDefaultUnit(quantity.toLatin1(), id.toLatin1());

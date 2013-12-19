@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // SlicerQt includes
 #include "qSlicerTransformsReader.h"
@@ -90,7 +91,11 @@ QStringList qSlicerTransformsReader::extensions()const
 bool qSlicerTransformsReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerTransformsReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Transforms reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   if (d->TransformLogic.GetPointer() == 0)

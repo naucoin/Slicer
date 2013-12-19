@@ -22,6 +22,7 @@
 #include "ui_qMRMLTransformSliders.h"
 
 // Qt includes
+#include <QDebug>
 #include <QStack>
 
 // qMRML includes
@@ -183,9 +184,9 @@ void qMRMLTransformSliders::onMRMLTransformNodeModified(vtkObject* caller)
   vtkMRMLLinearTransformNode* transformNode = vtkMRMLLinearTransformNode::SafeDownCast(caller);
   if (!transformNode)
     {
+    qCritical() << "onMRMLTransformNodeModified: caller is not a transform node";
     return;
     }
-  Q_ASSERT(transformNode);
 
   // If the type of transform is ROTATION, do not modify
   if(this->typeOfTransform() == qMRMLTransformSliders::ROTATION)
@@ -198,8 +199,11 @@ void qMRMLTransformSliders::onMRMLTransformNodeModified(vtkObject* caller)
       this->coordinateReference() == qMRMLTransformSliders::GLOBAL, transform.GetPointer());
 
   vtkMatrix4x4 * matrix = transform->GetMatrix();
-  Q_ASSERT(matrix);
-  if (!matrix) { return; }
+  if (!matrix)
+    {
+    qCritical() << "onMRMLTransformNodeModified: Transform doesn't have a matrix";
+    return;
+    }
 
   //Extract the min/max values from the matrix
   //Change them if the matrix changed externally(python, cli, etc.)
@@ -427,7 +431,12 @@ void qMRMLTransformSliders::onSliderPositionChanged(double position)
   Q_D(qMRMLTransformSliders);
   qMRMLLinearTransformSlider* slider =
     qobject_cast<qMRMLLinearTransformSlider*>(this->sender());
-  Q_ASSERT(slider);
+  if (!slider)
+    {
+    qCritical() << "onSliderPositionChanged: sender is not a "
+                << "linear transform slider!";
+    return;
+    }
   d->ActiveSliders.push(slider);
 
   if (this->typeOfTransform() == qMRMLTransformSliders::ROTATION
@@ -450,7 +459,7 @@ QPair<double, double> qMRMLTransformSliders::extractMinMaxTranslationValue(
   QPair<double, double> minmax;
   if (!mat)
     {
-    Q_ASSERT(mat);
+    qCritical() << "extractMinMaxTranslationValue: no matrix!";
     return minmax;
     }
   for (int i=0; i <3; i++)

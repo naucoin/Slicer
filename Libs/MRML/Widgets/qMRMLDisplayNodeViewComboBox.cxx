@@ -123,7 +123,12 @@ void qMRMLDisplayNodeViewComboBox::updateWidgetFromMRML()
   for (int i = 0; i < this->nodeCount(); ++i)
     {
     vtkMRMLNode* view = this->nodeFromIndex(i);
-    Q_ASSERT(view);
+    if (!view)
+      {
+      qCritical() << "updateWidgetFromMRML: unable to get view node at index "
+                  << i;
+      return;
+      }
     bool check = d->MRMLDisplayNode->IsDisplayableInView(view->GetID());
     Qt::CheckState viewCheckState = check ? Qt::Checked : Qt::Unchecked;
     if (this->checkState(view) != viewCheckState)

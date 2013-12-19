@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QListView>
@@ -153,7 +154,13 @@ bool qSlicerDirectoryListView::hasDirectory(const QString& path)const
   QModelIndexList foundIndexes = d->DirectoryListModel.match(
         d->DirectoryListModel.index(0, 0), qSlicerDirectoryListViewPrivate::AbsolutePathRole,
         QVariant(absolutePath), /* hits = */ 1, Qt::MatchExactly | Qt::MatchWrap);
-  Q_ASSERT(foundIndexes.size() < 2);
+  if (foundIndexes.size() > 1)
+    {
+    qCritical() << "hasDirectory: found too many directories: "
+                << " found " << foundIndexes.size() << " when need 1"
+                << ". absolutePath = " << absolutePath;
+    return false;
+    }
   return (foundIndexes.size() != 0);
 }
 
@@ -170,7 +177,12 @@ void qSlicerDirectoryListView::removeDirectory(const QString& path)
 {
   Q_D(qSlicerDirectoryListView);
   QList<QStandardItem*> foundItems = d->DirectoryListModel.findItems(path);
-  Q_ASSERT(foundItems.count() < 2);
+  if (foundItems.count() != 1)
+    {
+    qCritical() << "removeDirectory: found too many directories with path "
+                << path << ": " << foundItems.count();
+    return;
+    }
   if (foundItems.count() == 1)
     {
     d->DirectoryListModel.removeRow(foundItems.at(0)->row());

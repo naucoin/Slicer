@@ -65,7 +65,11 @@ QStringList qSlicerSceneBundleReader::extensions()const
 //-----------------------------------------------------------------------------
 bool qSlicerSceneBundleReader::load(const qSlicerIO::IOProperties& properties)
 {
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Scene Bundle reader load: no file name!";
+    return false;
+    }
   QString file = properties["fileName"].toString();
 
   // TODO: switch to QTemporaryDir in Qt5.

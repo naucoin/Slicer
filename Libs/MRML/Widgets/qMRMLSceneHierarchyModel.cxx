@@ -229,7 +229,12 @@ int qMRMLSceneHierarchyModel::nodeIndex(vtkMRMLNode* node)const
         {
         // if the current node is a hierarchynode associated with the node,
         // then it should have been caught at the beginning of the function
-        Q_ASSERT(strcmp(nodeId, hierarchy->GetAssociatedNodeID()));
+        if (strcmp(nodeId, hierarchy->GetAssociatedNodeID()) == 0)
+          {
+          qCritical() << "SceneHierarchyModel::nodeIndex: node ID "
+                      << nodeId << " matches hierarchy associated node id!";
+          return -1;
+          }
         ++index;
         }
       }
@@ -336,7 +341,11 @@ bool qMRMLSceneHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParen
         hierarchyNode = vtkMRMLHierarchyNode::GetAssociatedHierarchyNode(mrmlNode->GetScene(), mrmlNode->GetID());
         }
       }
-    Q_ASSERT_X(hierarchyNode != mrmlParentNode, "qMRMLSceneHierarchyNode::reparent", "Shouldn't be possible, maybe the droppable flag wasn't set");
+    if (hierarchyNode == mrmlParentNode)
+      {
+      qCritical("qMRMLSceneHierarchyNode::reparent: Shouldn't be possible, maybe the droppable flag wasn't set");
+      return false;
+      }
     if (!hierarchyParentNode && mrmlParentNode && mrmlParentNode->GetScene() &&  mrmlParentNode->GetID())
       {
       hierarchyParentNode = vtkMRMLHierarchyNode::GetAssociatedHierarchyNode(mrmlParentNode->GetScene(), mrmlParentNode->GetID());

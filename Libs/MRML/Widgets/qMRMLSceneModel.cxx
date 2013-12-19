@@ -101,7 +101,13 @@ QModelIndexList qMRMLSceneModelPrivate::indexes(const QString& nodeID)const
   QModelIndexList nodeIndexes = q->match(
     scene, qMRMLSceneModel::UIDRole, nodeID,
     1, Qt::MatchExactly | Qt::MatchRecursive);
-  Q_ASSERT(nodeIndexes.size() <= 1); // we know for sure it won't be more than 1
+  if (nodeIndexes.size() > 1) // we know for sure it won't be more than 1
+    {
+    qCritical() << "SceneModelPrivate: indexes: found too many node indices!"
+                << " Array size = " << nodeIndexes.size()
+                << ", is supposed to be <= 1";
+    return QModelIndexList();
+    }
   if (nodeIndexes.size() == 0)
     {
     return nodeIndexes;
@@ -140,7 +146,11 @@ void qMRMLSceneModelPrivate::insertExtraItem(int row, QStandardItem* parent,
                                              const QString& extraType,
                                              const Qt::ItemFlags& flags)
 {
-  Q_ASSERT(parent);
+  if (!parent)
+    {
+    qCritical() << "SceneModelPrivate::insertExtraItem: parent is null!";
+    return;
+    }
 
   QList<QStandardItem*> items;
   // fill with empty column items
@@ -211,7 +221,11 @@ QStringList qMRMLSceneModelPrivate::extraItems(QStandardItem* parent, const QStr
 void qMRMLSceneModelPrivate::removeAllExtraItems(QStandardItem* parent, const QString extraType)
 {
   Q_Q(qMRMLSceneModel);
-  Q_ASSERT(parent);
+  if (!parent)
+    {
+    qCritical() << "SceneModelPrivate::removeAllExtraItems: no parent defined!";
+    return;
+    }
   QMap<QString, QVariant> extraItems =
     parent->data(qMRMLSceneModel::ExtraItemsRole).toMap();
   if (extraItems[extraType].toStringList().size() == 0)
@@ -424,7 +438,11 @@ vtkMRMLNode* qMRMLSceneModel::mrmlNodeFromItem(QStandardItem* nodeItem)const
   vtkMRMLNode* node = static_cast<vtkMRMLNode*>(
     reinterpret_cast<void *>(
       nodePointer.toLongLong()));
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "SceneModel::mrmlNodeFromItem: node not found!";
+    return 0;
+    }
   return node;
 }
 //------------------------------------------------------------------------------
@@ -477,7 +495,13 @@ QModelIndex qMRMLSceneModel::indexFromNode(vtkMRMLNode* node, int column)const
     QModelIndexList nodeIndexes = this->match(
       this->mrmlSceneIndex(), qMRMLSceneModel::UIDRole, QString(node->GetID()),
       1, Qt::MatchExactly | Qt::MatchRecursive);
-    Q_ASSERT(nodeIndexes.size() <= 1); // we know for sure it won't be more than 1
+    if (nodeIndexes.size() > 1) // we know for sure it won't be more than 1
+      {
+      qCritical() << "indexFromNode: found too many node indices!"
+                  << " Array size = " << nodeIndexes.size()
+                  << ", is supposed to be <= 1";
+      return QModelIndex();
+      }
     if (nodeIndexes.size() == 0)
       {
       // maybe the node hasn't been added to the scene yet...
@@ -492,13 +516,23 @@ QModelIndex qMRMLSceneModel::indexFromNode(vtkMRMLNode* node, int column)const
     {
     // QAbstractItemModel::match only search through the first column
     // (because scene is in the first column)
-    Q_ASSERT(nodeIndex.isValid());
+    if (!nodeIndex.isValid())
+      {
+      qCritical() << "SceneModel::indexFromNode: node index is invalid!";
+      return QModelIndex();
+      }
     return nodeIndex;
     }
   // Add the QModelIndexes from the other columns
   const int row = nodeIndex.row();
   QModelIndex nodeParentIndex = nodeIndex.parent();
-  Q_ASSERT( column < this->columnCount(nodeParentIndex) );
+  if ( column >= this->columnCount(nodeParentIndex) )
+    {
+    qCritical() << "SceneModel::indexFromNode: column "
+                << column << " is >= column count of parent "
+                << this->columnCount(nodeParentIndex);
+    return QModelIndex();
+    }
   return nodeParentIndex.child(row, column);
 }
 
@@ -772,7 +806,11 @@ void qMRMLSceneModel::updateScene()
 void qMRMLSceneModel::populateScene()
 {
   Q_D(qMRMLSceneModel);
-  Q_ASSERT(d->MRMLScene);
+  if (!d->MRMLScene)
+    {
+    qCritical() << "SceneModel::populateScene: no scene defined!";
+    return;
+    }
   // Add nodes
   vtkMRMLNode *node = 0;
   vtkCollectionSimpleIterator it;
@@ -804,9 +842,18 @@ QStandardItem* qMRMLSceneModel::insertNode(vtkMRMLNode* node)
     parentNode ? this->itemFromNode(parentNode) : this->mrmlSceneItem();
   if (!parentItem)
     {
-    Q_ASSERT(parentNode);
+    if (!parentNode)
+      {
+      qCritical() << "SceneModel::insertNode no parent item, no parent node";
+      return 0;
+      }
     parentItem = this->insertNode(parentNode);
-    Q_ASSERT(parentItem);
+    if (!parentItem)
+      {
+      qCritical() << "SceneModel::insertNode no parent item after inserting "
+                  << "parent node";
+      return 0;
+      }
     }
   int min = this->preItems(parentItem).count();
   int max = parentItem->rowCount() - this->postItems(parentItem).count();
@@ -817,7 +864,12 @@ QStandardItem* qMRMLSceneModel::insertNode(vtkMRMLNode* node)
     row = max;
     }
   nodeItem = this->insertNode(node, parentItem, row);
-  Q_ASSERT(this->itemFromNode(node) == nodeItem);
+  if (this->itemFromNode(node) != nodeItem)
+    {
+    qCritical() << "SceneModel::insertNode item from node "
+                << "doesn't match node item";
+    return 0;
+    }
   return nodeItem;
 }
 
@@ -825,7 +877,16 @@ QStandardItem* qMRMLSceneModel::insertNode(vtkMRMLNode* node)
 QStandardItem* qMRMLSceneModel::insertNode(vtkMRMLNode* node, QStandardItem* parent, int row)
 {
   Q_D(qMRMLSceneModel);
-  Q_ASSERT(vtkMRMLNode::SafeDownCast(node));
+  if (node == 0)
+    {
+    qCritical() << "SceneMode::insertNode(...): input node is null";
+    return 0;
+    }
+  if (vtkMRMLNode::SafeDownCast(node) == 0)
+    {
+    qCritical() << "SceneMode::insertNode(...): node is not a mrml node";
+    return 0;
+    }
 
   QList<QStandardItem*> items;
   for (int i= 0; i < this->columnCount(); ++i)
@@ -845,7 +906,6 @@ QStandardItem* qMRMLSceneModel::insertNode(vtkMRMLNode* node, QStandardItem* par
   if (parent)
     {
     parent->insertRow(row, items);
-    //Q_ASSERT(parent->columnCount() == 2);
     }
   else
     {
@@ -1021,7 +1081,12 @@ void qMRMLSceneModel::updateNodeFromItem(vtkMRMLNode* node, QStandardItem* item)
     return;
     }
 
- Q_ASSERT(node != this->mrmlNodeFromItem(item->parent()));
+ if (node == this->mrmlNodeFromItem(item->parent()))
+   {
+   qCritical() << "SceneModel::updateNodeFromItem(...): "
+               << "node is same as parent node!";
+   return;
+   }
 
   QStandardItem* parentItem = item->parent();
   int columnCount = parentItem ? parentItem->columnCount() : 0;
@@ -1089,7 +1154,12 @@ void qMRMLSceneModel::updateNodeFromItemData(vtkMRMLNode* node, QStandardItem* i
       {
       displayNode = displayableHierarchyNode->GetDisplayNode();
       }
-    Q_ASSERT(!item->data(VisibilityRole).isNull());
+    if (item->data(VisibilityRole).isNull())
+      {
+      qCritical() << "SceneModel::updateNodeFromItemData(...):"
+                  << " item data visibility role is NULL!";
+      return;
+      }
     int visible = item->data(VisibilityRole).toInt();
     if (displayNode)
       {
@@ -1109,24 +1179,54 @@ void qMRMLSceneModel::onMRMLSceneEvent(vtkObject* vtk_obj, unsigned long event,
   vtkMRMLScene* scene = reinterpret_cast<vtkMRMLScene*>(vtk_obj);
   qMRMLSceneModel* sceneModel = reinterpret_cast<qMRMLSceneModel*>(client_data);
   vtkMRMLNode* node = reinterpret_cast<vtkMRMLNode*>(call_data);
-  Q_ASSERT(scene);
-  Q_ASSERT(sceneModel);
+  if (!scene)
+    {
+    qCritical() << "SceneModel::onMRMLSceneEvent(...):"
+                << " scene is undefined!";
+    return;
+    }
+  if (!sceneModel)
+    {
+    qCritical() << "SceneModel::onMRMLSceneEvent(...):"
+                << " scene model is undefined!";
+    return;
+    }
   switch(event)
     {
     case vtkMRMLScene::NodeAboutToBeAddedEvent:
-      Q_ASSERT(node);
+      if (!node)
+        {
+        qCritical() << "SceneModel::onMRMLSceneEvent(...):"
+                << " node is undefined!";
+        return;
+        }
       sceneModel->onMRMLSceneNodeAboutToBeAdded(scene, node);
       break;
     case vtkMRMLScene::NodeAddedEvent:
-      Q_ASSERT(node);
+      if (!node)
+        {
+        qCritical() << "SceneModel::onMRMLSceneEvent(...):"
+                << " NodeAdded: node is undefined!";
+        return;
+        }
       sceneModel->onMRMLSceneNodeAdded(scene, node);
       break;
     case vtkMRMLScene::NodeAboutToBeRemovedEvent:
-      Q_ASSERT(node);
+      if (!node)
+        {
+        qCritical() << "SceneModel::onMRMLSceneEvent(...):"
+                << " NodeAboutToBeRemoved: node is undefined!";
+        return;
+        }
       sceneModel->onMRMLSceneNodeAboutToBeRemoved(scene, node);
       break;
     case vtkMRMLScene::NodeRemovedEvent:
-      Q_ASSERT(node);
+      if (!node)
+        {
+        qCritical() << "SceneModel::onMRMLSceneEvent(...):"
+                << " NodeRemoved: node is undefined!";
+        return;
+        }
       sceneModel->onMRMLSceneNodeRemoved(scene, node);
       break;
     case vtkCommand::DeleteEvent:
@@ -1156,12 +1256,23 @@ void qMRMLSceneModel::onMRMLSceneEvent(vtkObject* vtk_obj, unsigned long event,
 //------------------------------------------------------------------------------
 void qMRMLSceneModel::onMRMLSceneNodeAboutToBeAdded(vtkMRMLScene* scene, vtkMRMLNode* node)
 {
+#ifdef QT_NO_DEBUG
   Q_UNUSED(scene);
   Q_UNUSED(node);
-#ifndef QT_NO_DEBUG
+#else
   Q_D(qMRMLSceneModel);
-  Q_ASSERT(scene != 0);
-  Q_ASSERT(scene == d->MRMLScene);
+  if (scene == 0)
+    {
+    qCritical() << "SceneModel::onMRMLSceneNodeAboutToBeAdded:"
+                << " scene is undefined";
+    return;
+    }
+  if (scene != d->MRMLScene)
+    {
+    qCritical() << "SceneModel::onMRMLSceneNodeAboutToBeAdded:"
+                << " scene mismatch";
+    return;
+    }
 #endif
 }
 
@@ -1169,10 +1280,18 @@ void qMRMLSceneModel::onMRMLSceneNodeAboutToBeAdded(vtkMRMLScene* scene, vtkMRML
 void qMRMLSceneModel::onMRMLSceneNodeAdded(vtkMRMLScene* scene, vtkMRMLNode* node)
 {
   Q_D(qMRMLSceneModel);
-  Q_UNUSED(d);
-  Q_UNUSED(scene);
-  Q_ASSERT(scene == d->MRMLScene);
-  Q_ASSERT(vtkMRMLNode::SafeDownCast(node));
+  if (scene != d->MRMLScene)
+    {
+    qCritical() << "SceneModel::onMRMLSceneNodeAdded: scene mismatch!";
+    return;
+    }
+  if (node == NULL)
+    {
+    // subclasses should check that a safe down cast into the expected
+    // mrml node class is not null
+    qCritical() << "SceneModel::onMRMLSceneNodeAdded: node is null!";
+    return;
+    }
 
   if (d->LazyUpdate && d->MRMLScene->IsBatchProcessing())
     {
@@ -1185,9 +1304,12 @@ void qMRMLSceneModel::onMRMLSceneNodeAdded(vtkMRMLScene* scene, vtkMRMLNode* nod
 void qMRMLSceneModel::onMRMLSceneNodeAboutToBeRemoved(vtkMRMLScene* scene, vtkMRMLNode* node)
 {
   Q_D(qMRMLSceneModel);
-  Q_UNUSED(d);
-  Q_UNUSED(scene);
-  Q_ASSERT(scene == d->MRMLScene);
+  if (scene != d->MRMLScene)
+    {
+    qCritical() << "SceneModel::onMRMLSceneNodeAboutToBeRemoved: "
+                << "scene mismatch!";
+    return;
+    }
 
   if (d->MRMLScene->IsClosing() || (d->LazyUpdate && d->MRMLScene->IsBatchProcessing()))
     {
@@ -1198,13 +1320,17 @@ void qMRMLSceneModel::onMRMLSceneNodeAboutToBeRemoved(vtkMRMLScene* scene, vtkMR
     qvtkDisconnect(node, vtkCommand::ModifiedEvent,
                    this, SLOT(onMRMLNodeModified(vtkObject*)));
 
-  Q_ASSERT_X(((d->ListenNodeModifiedEvent == NoNodes) && connectionsRemoved == 0) ||
-             (d->ListenNodeModifiedEvent != NoNodes && connectionsRemoved <= 1),
-             "qMRMLSceneModel::onMRMLSceneNodeAboutToBeRemoved()",
-             "A node has been removed from the scene but the scene model has "
-             "never been notified it has been added in the first place. Maybe"
-             " vtkMRMLScene::AddNodeNoNotify() has been used instead of "
-             "vtkMRMLScene::AddNode");
+  if (!(((d->ListenNodeModifiedEvent == NoNodes) && connectionsRemoved == 0) ||
+        (d->ListenNodeModifiedEvent != NoNodes && connectionsRemoved <= 1)))
+    {
+    qCritical() << "ERROR: "
+                << "qMRMLSceneModel::onMRMLSceneNodeAboutToBeRemoved()"
+                << "A node has been removed from the scene but the scene model "
+                << "has never been notified it has been added in the first "
+                << "place. Maybe vtkMRMLScene::AddNodeNoNotify() has been used "
+                << "instead of vtkMRMLScene::AddNode";
+    return;
+    }
   Q_UNUSED(connectionsRemoved);
   // Remove all the observations on the node
   qvtkDisconnect(node, vtkCommand::NoEvent, this, 0);
@@ -1257,7 +1383,13 @@ void qMRMLSceneModel::onMRMLSceneNodeRemoved(vtkMRMLScene* scene, vtkMRMLNode* n
       {
       // Not sure how it is possible, but if it is, then we might want to
       // review the logic behind.
-      Q_ASSERT(orphan->parent() == 0);
+      if (orphan->parent() != 0)
+        {
+        qCritical() << "SceneModel::onMRMLSceneNodeRemoved: "
+                    << "orphan already has a parent! Review "
+                    << "the logic that led to this case!";
+        return;
+        }
       continue;
       }
     vtkMRMLNode* node = this->mrmlNodeFromItem(orphan);
@@ -1267,7 +1399,12 @@ void qMRMLSceneModel::onMRMLSceneNodeRemoved(vtkMRMLScene* scene, vtkMRMLNode* n
       {
       newParentItem = this->mrmlSceneItem();
       }
-    Q_ASSERT(newParentItem);
+    if (!newParentItem)
+      {
+      qCritical() << "SceneModel::onMRMLSceneNodeRemoved: "
+                  << "unable to get the scene as a new parent item!";
+      return;
+      }
     d->reparentItems(orphans, newIndex, newParentItem);
     }
   d->Orphans.clear();
@@ -1276,10 +1413,16 @@ void qMRMLSceneModel::onMRMLSceneNodeRemoved(vtkMRMLScene* scene, vtkMRMLNode* n
 //------------------------------------------------------------------------------
 void qMRMLSceneModel::onMRMLSceneDeleted(vtkObject* scene)
 {
+#ifdef QT_NO_DEBUG
   Q_UNUSED(scene);
-#ifndef QT_NO_DEBUG
+#else
   Q_D(qMRMLSceneModel);
-  Q_ASSERT(scene == d->MRMLScene);
+  if (scene != d->MRMLScene)
+    {
+    qCritical() << "SceneModel::onMRMLSceneDeleted: "
+                << "stored scene different from argument!";
+    return;
+    }
 #endif
   this->setMRMLScene(0);
 }
@@ -1346,14 +1489,24 @@ void qMRMLSceneModel::updateNodeItems(vtkMRMLNode* node, const QString& nodeUID)
     return;
     }
 
-  // If there is an assert here that means the node has been removed from the
+  // If there is an error message here that means the node has been removed from the
   // scene but the scene model hasn't been notified or that the scene model is
   // still observing the node (in a subclass)
-  Q_ASSERT(node && node->GetScene());
-  //Q_ASSERT(node->GetScene()->IsNodePresent(node));
+  if (!(node && node->GetScene()))
+    {
+    qCritical() << "ERROR: updateNodeItems: the node has been removed from the"
+                << " scene but the scene model hasn't been notified or that the"
+                << " scene model is still observing the node (in a subclass)";
+    return;
+    }
+
   QModelIndexList nodeIndexes = d->indexes(nodeUID);
   //qDebug() << "onMRMLNodeModified" << node->GetID() << nodeIndexes;
-  Q_ASSERT(nodeIndexes.count());
+  if (nodeIndexes.count() == 0)
+    {
+    qCritical() << "SceneModel::updateNodeItems: node indices not found!";
+    return;
+    }
   for (int i = 0; i < nodeIndexes.size(); ++i)
     {
     QModelIndex index = nodeIndexes[i];
@@ -1377,9 +1530,12 @@ void qMRMLSceneModel::updateNodeItems(vtkMRMLNode* node, const QString& nodeUID)
       nodeIndexes = this->indexes(node);
       int newSize = nodeIndexes.size();
       //the number of columns shouldn't change
-      Q_ASSERT(oldSize == newSize);
-      Q_UNUSED(oldSize);
-      Q_UNUSED(newSize);
+      if (oldSize != newSize)
+        {
+        qCritical() << "SceneModel::updateNodeItems: oldSize "
+                    << oldSize << " != newSize " << newSize;
+        return;
+        }
       }
     }
 }
@@ -1420,7 +1576,12 @@ void qMRMLSceneModel::onItemChanged(QStandardItem * item)
 
   // Only nodes can be changed, scene and extra items should be not editable
   vtkMRMLNode* mrmlNode = this->mrmlNodeFromItem(item);
-  Q_ASSERT(mrmlNode);
+  if (!mrmlNode)
+    {
+    qCritical() << "SceneModel::onItemChanged: "
+                << "unable to find mrml node from item!";
+    return;
+    }
   this->updateNodeFromItem(mrmlNode, item);
 }
 

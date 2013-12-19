@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 /// Qt includes
+#include <QDebug>
 #include <QFileDialog>
 
 /// SlicerQt includes
@@ -124,8 +125,11 @@ qSlicerFileDialog::IOAction qSlicerModelsDialog::action()const
 bool qSlicerModelsDialog::exec(const qSlicerIO::IOProperties& readerProperties)
 {
   Q_D(qSlicerModelsDialog);
-  Q_ASSERT(!readerProperties.contains("fileName"));
-
+  if (!readerProperties.contains("fileName"))
+    {
+    qCritical() << "Models dialog exec: no file name!";
+    return false;
+    }
   d->LoadedNodeIDs.clear();
   bool res = false;
   if (d->exec() != QDialog::Accepted)

@@ -84,7 +84,11 @@ int qSlicer@MODULENAME@ModuleWidgetGenericTest( int argc, char * argv[] )
     // Load all available modules
     foreach(const QString& name, moduleFactoryManager->instantiatedModuleNames())
       {
-      Q_ASSERT(!name.isNull());
+      if (name.isNull())
+        {
+        qCritical() << "Module name is null!";
+        return EXIT_FAILURE;
+        }
       moduleFactoryManager->loadModule(name);
       }
     }

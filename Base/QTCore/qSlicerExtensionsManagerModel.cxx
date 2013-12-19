@@ -834,7 +834,12 @@ bool qSlicerExtensionsManagerModel::isExtensionInstalled(const QString& extensio
   Q_D(const qSlicerExtensionsManagerModel);
   QModelIndexList foundIndexes = d->Model.match(
         d->Model.index(0, qSlicerExtensionsManagerModelPrivate::NameColumn), qSlicerExtensionsManagerModelPrivate::NameRole, QVariant(extensionName));
-  Q_ASSERT(foundIndexes.size() < 2);
+  if (!(foundIndexes.size() < 2))
+    {
+    qCritical() << "isExtensionInstalled: need < 2 extensions with name "
+                << extensionName << ", found  " << foundIndexes.size();
+    return false;
+    }
   return (foundIndexes.size() != 0);
 }
 
@@ -895,7 +900,12 @@ void qSlicerExtensionsManagerModel::setExtensionEnabled(const QString& extension
 
   QStandardItem * item = const_cast<QStandardItem*>(
         d->extensionItem(extensionName, qSlicerExtensionsManagerModelPrivate::EnabledColumn));
-  Q_ASSERT(item);
+  if (!item)
+    {
+    qCritical() << "setExtensionEnabled: extension item not found with name: "
+                << extensionName;
+    return;
+    }
   item->setData(value, qSlicerExtensionsManagerModelPrivate::EnabledRole);
   item->setData(value, Qt::DisplayRole);
 
@@ -962,7 +972,12 @@ qSlicerExtensionsManagerModel::ExtensionMetadataType qSlicerExtensionsManagerMod
   QList<QVariantMap> results = qMidasAPI::synchronousQuery(
         ok, this->serverUrl().toString(),
         "midas.slicerpackages.extension.list", parameters);
-  Q_ASSERT(results.count() == 1);
+  if (results.count() != 1)
+    {
+    qCritical() << "retrieveExtensionMetadata: invalid results found: "
+                << results.count() << " != 1";
+    return ExtensionMetadataType();;
+    }
   if (!ok)
     {
     d->critical(results[0]["queryError"].toString());
@@ -1023,7 +1038,11 @@ void qSlicerExtensionsManagerModel::onDownloadFinished(QNetworkReply* reply)
   Q_D(qSlicerExtensionsManagerModel);
 
   QUrl downloadUrl = reply->url();
-  Q_ASSERT(downloadUrl.hasQueryItem("items"));
+  if (!downloadUrl.hasQueryItem("items"))
+    {
+    qCritical() << "onDownloadFinished: download URL doesn't have items";
+    return;
+    }
 
   emit this->downloadFinished(reply);
 
@@ -1428,9 +1447,17 @@ qSlicerExtensionsManagerModel::filterExtensionMetadata(const ExtensionMetadataTy
 QStringList qSlicerExtensionsManagerModel::readArrayValues(
   QSettings& settings, const QString& arrayName, const QString fieldName)
 {
-  Q_ASSERT(!arrayName.isEmpty());
-  Q_ASSERT(!fieldName.isEmpty());
   QStringList listOfValues;
+  if (arrayName.isEmpty())
+    {
+    qCritical() << "readArrayValues: empty array name!";
+    return listOfValues;
+    }
+  if (fieldName.isEmpty())
+    {
+    qCritical() << "readArrayValues: empty field name!";
+    return listOfValues;
+    }
   int size = settings.beginReadArray(arrayName);
   for (int i=0; i < size; ++i)
     {
@@ -1445,8 +1472,16 @@ QStringList qSlicerExtensionsManagerModel::readArrayValues(
 void qSlicerExtensionsManagerModel::writeArrayValues(QSettings& settings, const QStringList& values,
     const QString& arrayName, const QString fieldName)
 {
-  Q_ASSERT(!arrayName.isEmpty());
-  Q_ASSERT(!fieldName.isEmpty());
+  if (arrayName.isEmpty())
+    {
+    qCritical() << "writeArrayValues: empty array name!";
+    return;
+    }
+  if (fieldName.isEmpty())
+    {
+    qCritical() << "writeArrayValues: empty field name!";
+    return;
+    }
   settings.remove(arrayName);
   settings.beginWriteArray(arrayName);
   for(int i=0; i < values.size(); ++i)

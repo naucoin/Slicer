@@ -312,7 +312,11 @@ qMRMLTreeView::~qMRMLTreeView()
 void qMRMLTreeView::setMRMLScene(vtkMRMLScene* scene)
 {
   Q_D(qMRMLTreeView);
-  Q_ASSERT(d->SortFilterModel);
+  if (!d->SortFilterModel)
+    {
+    qCritical() << "setMRMLScene: no sort filter model!";
+    return;
+    }
   vtkMRMLNode* rootNode = this->rootNode();
   // only qMRMLSceneModel needs the scene, the other proxies don't care.
   d->SceneModel->setMRMLScene(scene);
@@ -418,8 +422,17 @@ void qMRMLTreeView::setCurrentNode(vtkMRMLNode* node)
 void qMRMLTreeView::onCurrentRowChanged(const QModelIndex& index)
 {
   Q_D(qMRMLTreeView);
-  Q_ASSERT(d->SortFilterModel);
-  Q_ASSERT(this->currentNode() == d->SortFilterModel->mrmlNodeFromIndex(index));
+  if (!d->SortFilterModel)
+    {
+    qCritical() << "onCurrentRowChanged: no sort filter model!";
+    return;
+    }
+  if (this->currentNode() != d->SortFilterModel->mrmlNodeFromIndex(index))
+    {
+    qCritical() << "onCurrentRowChanged: current node doesn't match node "
+                << "in sort filter at index " << index;
+    return;
+    }
   emit currentNodeChanged(d->SortFilterModel->mrmlNodeFromIndex(index));
 }
 
@@ -427,7 +440,11 @@ void qMRMLTreeView::onCurrentRowChanged(const QModelIndex& index)
 void qMRMLTreeView::setListenNodeModifiedEvent(qMRMLSceneModel::NodeTypes listen)
 {
   Q_D(qMRMLTreeView);
-  Q_ASSERT(d->SceneModel);
+  if (!d->SceneModel)
+    {
+    qCritical() << "setListenNodeModifiedEvent: no scene model!";
+    return;
+    }
   d->SceneModel->setListenNodeModifiedEvent(listen);
 }
 
@@ -563,7 +580,7 @@ void qMRMLTreeView::editCurrentNode()
   if (!this->currentNode())
     {
     // not sure if it's a request to have a valid node.
-    Q_ASSERT(this->currentNode());
+    qCritical() << "editCurrentNode: current node is NULL";
     return;
     }
   emit editNodeRequested(this->currentNode());
@@ -670,7 +687,11 @@ void qMRMLTreeView::updateRootNode(vtkObject* node)
 qMRMLSortFilterProxyModel* qMRMLTreeView::sortFilterProxyModel()const
 {
   Q_D(const qMRMLTreeView);
-  Q_ASSERT(d->SortFilterModel);
+  if (!d->SortFilterModel)
+    {
+    qCritical() << "sortFilterProxyModel: no sort filter model";
+    return 0;
+    }
   return d->SortFilterModel;
 }
 
@@ -678,7 +699,11 @@ qMRMLSortFilterProxyModel* qMRMLTreeView::sortFilterProxyModel()const
 qMRMLSceneModel* qMRMLTreeView::sceneModel()const
 {
   Q_D(const qMRMLTreeView);
-  Q_ASSERT(d->SceneModel);
+  if (!d->SceneModel)
+    {
+    qCritical() << "sceneModel: no scene model";
+    return 0;
+    }
   return d->SceneModel;
 }
 
@@ -927,7 +952,7 @@ void qMRMLTreeView::renameCurrentNode()
 {
   if (!this->currentNode())
     {
-    Q_ASSERT(this->currentNode());
+    qCritical() << "renameCurrentNode: no current node!";
     return;
     }
   // pop up an entry box for the new name, with the old name as default
@@ -952,7 +977,7 @@ void qMRMLTreeView::deleteCurrentNode()
 
   if (!this->currentNode())
     {
-    Q_ASSERT(this->currentNode());
+    qCritical() << "deleteCurrentNode: no current node!";
     return;
     }
   this->mrmlScene()->RemoveNode(this->currentNode());

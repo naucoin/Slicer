@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QStyleOptionSlider>
@@ -156,14 +157,24 @@ void qMRMLRangeWidget::setQuantity(const QString& quantity)
 //-----------------------------------------------------------------------------
 QString qMRMLRangeWidget::quantity()const
 {
-  Q_ASSERT(this->MinSpinBox->quantity() == this->MaxSpinBox->quantity());
+  if (this->MinSpinBox->quantity() != this->MaxSpinBox->quantity())
+    {
+    qCritical() << "quantity():: min spin box quantity doesn't match max: "
+                << this->MinSpinBox->quantity()
+                << " != " << this->MaxSpinBox->quantity();
+    return QString("");
+    }
   return this->MinSpinBox->quantity();
 }
 
 // --------------------------------------------------------------------------
 vtkMRMLScene* qMRMLRangeWidget::mrmlScene()const
 {
-  Q_ASSERT(this->MinSpinBox->mrmlScene() == this->MaxSpinBox->mrmlScene());
+  if (this->MinSpinBox->mrmlScene() != this->MaxSpinBox->mrmlScene())
+    {
+    qCritical() << "mrmlScene: scene is different on min and max spin boxes! Returning 0";
+    return 0;
+    }
   return this->MinSpinBox->mrmlScene();
 }
 

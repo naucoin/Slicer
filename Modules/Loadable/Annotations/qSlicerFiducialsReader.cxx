@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // SlicerQt includes
 #include "qSlicerFiducialsReader.h"
@@ -101,7 +102,11 @@ QStringList qSlicerFiducialsReader::extensions()const
 bool qSlicerFiducialsReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerFiducialsReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Fiducials Reader: load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   if (d->AnnotationLogic.GetPointer() == 0)

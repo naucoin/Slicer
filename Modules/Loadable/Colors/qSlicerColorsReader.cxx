@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // SlicerQt includes
 #include "qSlicerColorsReader.h"
@@ -89,7 +90,11 @@ QStringList qSlicerColorsReader::extensions()const
 bool qSlicerColorsReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerColorsReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Colors reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   if (d->ColorLogic.GetPointer() == 0)

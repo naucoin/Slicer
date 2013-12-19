@@ -113,7 +113,7 @@ QString qSlicerFileNameItemDelegate::fixupFileName(const QString& fileName, cons
       }
     }
 
-  QString stippedFileName = fixup;
+  QString strippedFileName = fixup;
   if(mrmlScene)
     {
     vtkObject * object = mrmlScene;
@@ -121,11 +121,16 @@ QString qSlicerFileNameItemDelegate::fixupFileName(const QString& fileName, cons
       {
       object = mrmlScene->GetNodeByID(nodeID.toLatin1());
       }
-    Q_ASSERT(object);
-    stippedFileName = qSlicerSaveDataDialogPrivate::stripKnownExtension(fixup, object);
-    stippedFileName += extension;
+   if (!object)
+     {
+     qCritical() << "fixupFileName: unable to get node with id "
+                 << nodeID;
+     return strippedFileName;
+     }
+    strippedFileName = qSlicerSaveDataDialogPrivate::stripKnownExtension(fixup, object);
+    strippedFileName += extension;
     }
-  return stippedFileName;
+  return strippedFileName;
 }
 
 //-----------------------------------------------------------------------------
@@ -197,7 +202,11 @@ void qSlicerSaveDataDialogPrivate::setMRMLScene(vtkMRMLScene* scene)
 
   qSlicerFileNameItemDelegate * fileNameItemDelegate =
       dynamic_cast<qSlicerFileNameItemDelegate*>(this->FileWidget->itemDelegateForColumn(Self::FileNameColumn));
-  Q_ASSERT(fileNameItemDelegate);
+  if (!fileNameItemDelegate)
+    {
+    qCritical() << "setMRMLScene: no file name item delegate!";
+    return;
+    }
   fileNameItemDelegate->MRMLScene = scene;
 
   this->populateItems();
@@ -213,20 +222,34 @@ vtkMRMLScene* qSlicerSaveDataDialogPrivate::mrmlScene()const
 void qSlicerSaveDataDialogPrivate::setDirectory(const QString& newDirectory)
 {
   QDir newDir(newDirectory);
-  Q_ASSERT(newDir.exists());
-
+  if (!newDir.exists())
+    {
+    qCritical() << "setDirectory: new directory does not exist: "
+                << newDirectory;
+    return;
+    }
   const int rowCount = this->FileWidget->rowCount();
   for (int row = 0; row < rowCount; ++row)
     {
     QTableWidgetItem* selectItem = this->FileWidget->item(row, SelectColumn);
-    Q_ASSERT(selectItem);
+    if (!selectItem)
+      {
+      qCritical() << "setDirectory: unable to get selected state for row "
+                  << row;
+      return;
+      }
     if (selectItem->checkState() == Qt::Unchecked)
       {
       continue;
       }
     ctkDirectoryButton* directoryItemButton = qobject_cast<ctkDirectoryButton*>(
       this->FileWidget->cellWidget(row, FileDirectoryColumn));
-    Q_ASSERT(directoryItemButton);
+    if (!directoryItemButton)
+      {
+      qCritical() << "setDirectory: unable to get directory button for row "
+                  << row;
+      return;
+      }
     directoryItemButton->setDirectory(newDir.path());
     }
 }
@@ -432,7 +455,11 @@ void qSlicerSaveDataDialogPrivate::populateNode(vtkMRMLNode* node)
 
   qSlicerCoreIOManager* coreIOManager =
     qSlicerCoreApplication::application()->coreIOManager();
-  Q_ASSERT(coreIOManager);
+  if (!coreIOManager)
+    {
+    qCritical() << "populateNode: Unable to get core IO manager!";
+    return;
+    }
   // Must be called after nodeFileInfo() as it creates a storage node
   // that is mandatory for fileWriterFileType()
   if (coreIOManager->fileWriterFileType(node) == QString("NoFile"))
@@ -545,10 +572,20 @@ QFileInfo qSlicerSaveDataDialogPrivate::nodeFileInfo(vtkMRMLStorableNode* node)
 //-----------------------------------------------------------------------------
 QTableWidgetItem* qSlicerSaveDataDialogPrivate::createNodeNameItem(vtkMRMLStorableNode* node)
 {
+  if (!node)
+    {
+    qCritical() << "createNodeNameItem: null storable node!";
+    return 0;
+    }
   QTableWidgetItem* nodeNameItem = new QTableWidgetItem(node->GetName());
   nodeNameItem->setFlags( nodeNameItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsEnabled);
   // the tooltip is used to store the id of the nodes
-  Q_ASSERT(node->GetStorageNode());
+  if (!node->GetStorageNode())
+    {
+    qCritical() << "createNodeNameItem: node " << node->GetName()
+                << " has no storage node!";
+    return 0;
+    }
   nodeNameItem->setData(Qt::ToolTipRole, QString(node->GetID()) + " " + node->GetStorageNode()->GetID() );
   return nodeNameItem;
 }
@@ -611,8 +648,17 @@ QTableWidgetItem* qSlicerSaveDataDialogPrivate
 //-----------------------------------------------------------------------------
 QWidget* qSlicerSaveDataDialogPrivate::createFileFormatsWidget(vtkMRMLStorableNode* node, QFileInfo& fileInfo)
 {
+  if (!node)
+    {
+    qCritical() << "createFileFormatsWidget: null storable node!";
+    return 0;
+    }
   vtkMRMLStorageNode* snode = node->GetStorageNode();
-  Q_ASSERT(snode);
+  if (!snode)
+    {
+    qCritical() << "createFileFormatsWidget: node doesn't have a storage node!";
+    return 0;
+    }
   QComboBox* fileFormats = new QComboBox(this->FileWidget);
   // Add custom qSlicerSaveFile
   qSlicerCoreIOManager* coreIOManager =
@@ -782,8 +828,16 @@ bool qSlicerSaveDataDialogPrivate::saveNodes()
     QTableWidgetItem* nodeNameItem = this->FileWidget->item(row, NodeNameColumn);
     QTableWidgetItem* nodeStatusItem = this->FileWidget->item(row, NodeStatusColumn);
 
-    Q_ASSERT(selectItem);
-    Q_ASSERT(nodeNameItem);
+    if (!selectItem)
+      {
+      qCritical() << "saveNodes: no selection info for row " << row;
+      return false;
+      }
+    if (!nodeNameItem)
+      {
+      qCritical() << "saveNodes: no name info for row " << row;
+      return false;
+      }
 
     // don't save unchecked nodes
     if (selectItem->checkState() != Qt::Checked ||
@@ -839,7 +893,11 @@ bool qSlicerSaveDataDialogPrivate::saveNodes()
     // save the node
     qSlicerCoreIOManager* coreIOManager =
       qSlicerCoreApplication::application()->coreIOManager();
-    Q_ASSERT(coreIOManager);
+    if (!coreIOManager)
+      {
+      qCritical() << "saveNodes: no core IO manager!";
+      return false;
+      }
     qSlicerIO::IOFileType fileType = coreIOManager->fileWriterFileType(node);
     qSlicerIO::IOProperties savingParameters;
     if (options)
@@ -869,6 +927,11 @@ bool qSlicerSaveDataDialogPrivate::saveNodes()
 
     // clean up node after saving
     nodeNameItem->setCheckState(Qt::Unchecked);
+    if (!nodeStatusItem)
+      {
+      qCritical() << "saveNodes: no status info for row " << row;
+      return false;
+      }
     nodeStatusItem->setText("Not Modified");
     }
   return true;
@@ -878,11 +941,19 @@ bool qSlicerSaveDataDialogPrivate::saveNodes()
 QFileInfo qSlicerSaveDataDialogPrivate::file(int row)const
 {
   QTableWidgetItem* fileNameItem = this->FileWidget->item(row, FileNameColumn);
-  Q_ASSERT(fileNameItem);
+  if (!fileNameItem)
+    {
+    qCritical() << "file: no file name for row " << row;
+    return QFileInfo();
+    }
 
   ctkDirectoryButton* fileDirectoryButton = qobject_cast<ctkDirectoryButton*>(
     this->FileWidget->cellWidget(row, FileDirectoryColumn));
-  Q_ASSERT(fileDirectoryButton);
+  if (!fileDirectoryButton)
+    {
+    qCritical() << "file: no directory information for row : " << row;
+    return QFileInfo();
+    }
 
   QDir directory = fileDirectoryButton->directory();
   return QFileInfo(directory, fileNameItem->text());
@@ -896,7 +967,11 @@ vtkObject* qSlicerSaveDataDialogPrivate::object(int row)const
     return this->MRMLScene;
     }
   QTableWidgetItem* nodeNameItem = this->FileWidget->item(row, NodeNameColumn);
-  Q_ASSERT(nodeNameItem);
+  if (!nodeNameItem)
+    {
+    qCritical() << "object: no node name info for row " << row;
+    return 0;
+    }
 
   /// \todo support mrmlScene row
   QStringList nodeIDs = nodeNameItem->data(Qt::ToolTipRole).toString().split(" ");
@@ -945,7 +1020,11 @@ QString qSlicerSaveDataDialogPrivate::format(int row)const
 {
   QComboBox* fileFormatComboBox = qobject_cast<QComboBox*>(
     this->FileWidget->cellWidget(row, FileFormatColumn));
-  Q_ASSERT(fileFormatComboBox);
+  if (!fileFormatComboBox)
+    {
+    qCritical() << "format: no file format info for row " << row;
+    return QString("");
+    }
   return fileFormatComboBox->currentText();
 }
 
@@ -953,7 +1032,11 @@ QString qSlicerSaveDataDialogPrivate::format(int row)const
 QString qSlicerSaveDataDialogPrivate::type(int row)const
 {
   QTableWidgetItem* typeItem = this->FileWidget->item(row, NodeTypeColumn);
-  Q_ASSERT(typeItem);
+  if (!typeItem)
+    {
+    qCritical() << "type: no type info for row " << row;
+    return QString("");
+    }
   return typeItem->data(Self::SceneTypeRole).toString();
 }
 
@@ -1099,10 +1182,22 @@ void qSlicerSaveDataDialogPrivate::selectModifiedData()
     {
     QTableWidgetItem* statusItem = this->FileWidget->item(row, NodeStatusColumn);
     QTableWidgetItem* typeItem = this->FileWidget->item(row, NodeTypeColumn);
-    Q_ASSERT(statusItem);
-    Q_ASSERT(typeItem);
+    if (!statusItem)
+      {
+      qCritical() << "selectModifiedData: no status info for row " << row;
+      return;
+      }
+    if (!typeItem)
+      {
+      qCritical() << "selectModifiedData: no type info for row " << row;
+      return;
+      }
     QTableWidgetItem* selectItem = this->FileWidget->item(row, SelectColumn);
-    Q_ASSERT(selectItem);
+    if (!selectItem)
+      {
+      qCritical() << "selectModifiedData: no select info for row " << row;
+      return;
+      }
     selectItem->setCheckState(
       statusItem->text() == tr("Modified") &&
       typeItem->data(Self::SceneTypeRole).toString() != tr("Scene") ? Qt::Checked : Qt::Unchecked);
@@ -1117,13 +1212,21 @@ void qSlicerSaveDataDialogPrivate::selectModifiedSceneData()
   for (int row = 0; row < rowCount; ++row)
     {
     QTableWidgetItem* statusItem = this->FileWidget->item(row, NodeStatusColumn);
-    Q_ASSERT(statusItem);
+    if (!statusItem)
+      {
+      qCritical() << "selectModifiedSceneData: no status info for row " << row;
+      return;
+      }
     if (statusItem->text() != tr("Modified"))
       {
       continue;
       }
     QTableWidgetItem* selectItem = this->FileWidget->item(row, SelectColumn);
-    Q_ASSERT(selectItem);
+    if (!selectItem)
+      {
+      qCritical() << "selectModifiedSceneData: no select info for row " << row;
+      return;
+      }
     selectItem->setCheckState(
       statusItem->text() == tr("Modified") ? Qt::Checked : Qt::Unchecked);
     }
@@ -1148,7 +1251,11 @@ void qSlicerSaveDataDialogPrivate::formatChanged()
 {
   // Search for the item whose format has changed
   QComboBox* formatComboBox = qobject_cast<QComboBox*>(this->sender());
-  Q_ASSERT(formatComboBox);
+  if (!formatComboBox)
+    {
+    qCritical() << "formatChanged: sender is not a QComboBox";
+    return;
+    }
   const int rowCount = this->FileWidget->rowCount();
   int row = 0;
   for (; row < rowCount; ++row)
@@ -1158,14 +1265,23 @@ void qSlicerSaveDataDialogPrivate::formatChanged()
       break;
       }
     }
-  Q_ASSERT(row < rowCount);
+  if (!(row < rowCount))
+    {
+    qCritical() << "formatChanged: couldn't find the row of the caller,"
+                << "row " << row << " not less than rowCount " << rowCount;
+    return;
+    }
 
   // In case the combobox was editable (hack to display custom text), we now
   // don't need this property anymore.
   formatComboBox->setEditable(false);
 
   QTableWidgetItem* fileNameItem = this->FileWidget->item(row, FileNameColumn);
-  Q_ASSERT(fileNameItem);
+  if (!fileNameItem)
+    {
+    qCritical() << "formatChanged: to file name info found for row " << row;
+    return;
+    }
 
   // Set the new selected extension to the file name
   QString extension = QString::fromStdString(vtkDataFileFormatHelper::GetFileExtensionFromFormatString(
@@ -1184,7 +1300,11 @@ void qSlicerSaveDataDialogPrivate::formatChanged()
   // If the user changed the format, that means he wants to save the node
   // Select the row to mark the node to be saved.
   QTableWidgetItem* selectItem = this->FileWidget->item(row, SelectColumn);
-  Q_ASSERT(selectItem);
+  if (!selectItem)
+    {
+    qCritical() << "formatChanged: No selection info found for row " << row;
+    return;
+    }
   selectItem->setCheckState(Qt::Checked);
 
   this->updateOptionsWidget(row);
@@ -1316,8 +1436,11 @@ bool qSlicerSaveDataDialog::exec(const qSlicerIO::IOProperties& readerProperties
 {
   Q_D(qSlicerSaveDataDialog);
   Q_UNUSED(readerProperties);
-  Q_ASSERT(!readerProperties.contains("fileName"));
-
+  if (!readerProperties.contains("fileName"))
+    {
+    qCritical() << "Save Data: exec: no file name!";
+    return false;
+    }
   d->setMRMLScene(qSlicerCoreApplication::application()->mrmlScene());
   if (d->exec() != QDialog::Accepted)
     {

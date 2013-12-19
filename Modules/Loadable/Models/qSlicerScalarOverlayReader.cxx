@@ -102,7 +102,11 @@ qSlicerIOOptions* qSlicerScalarOverlayReader::options()const
 bool qSlicerScalarOverlayReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerScalarOverlayReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Scalar overlay reader load: no file name!";
+    return false;
+    }
   if (!properties.contains("modelNodeId"))
     {
     return false;
@@ -111,8 +115,12 @@ bool qSlicerScalarOverlayReader::load(const IOProperties& properties)
   QString modelNodeId = properties["modelNodeId"].toString();
   vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast(
       this->mrmlScene()->GetNodeByID(modelNodeId.toLatin1()));
-  Q_ASSERT(modelNode);
-
+  if (!modelNode)
+    {
+    qCritical() << "Scalar overlay reader load: unable to find model node "
+                << modelNodeId;
+    return false;
+    }
   if (d->ModelsLogic == 0)
     {
     return false;

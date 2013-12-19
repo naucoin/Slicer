@@ -262,8 +262,11 @@ qSlicerIOOptions* qSlicerStandardFileDialog
 bool qSlicerStandardFileDialog::exec(const qSlicerIO::IOProperties& ioProperties)
 {
   Q_D(qSlicerStandardFileDialog);
-  Q_ASSERT(!ioProperties.contains("fileName"));
-
+ if (ioProperties.contains("fileName"))
+    {
+    qCritical() << "Standard File exec reader load: no file name!";
+    return false;
+    }
   d->LoadedNodes.clear();
 
   qSlicerIO::IOProperties properties = ioProperties;
@@ -333,8 +336,8 @@ bool qSlicerStandardFileDialog::exec(const qSlicerIO::IOProperties& ioProperties
       }
     else
       {
-      Q_ASSERT(d->Action == qSlicerFileDialog::Read ||
-               d->Action == qSlicerFileDialog::Write);
+      qCritical() << "Unknown action! Valid ones are Read and Write";
+      return false;
       }
     }
 

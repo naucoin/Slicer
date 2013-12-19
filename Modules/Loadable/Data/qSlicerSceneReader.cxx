@@ -18,6 +18,9 @@
 
 ==============================================================================*/
 
+// Qt includes
+#include <QDebug>
+
 // QtCore includes
 #include "qSlicerSceneReader.h"
 #include "qSlicerSceneIOOptionsWidget.h"
@@ -77,7 +80,11 @@ qSlicerIOOptions* qSlicerSceneReader::options()const
 bool qSlicerSceneReader::load(const qSlicerIO::IOProperties& properties)
 {
   Q_D(qSlicerSceneReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Scene reader load: no file name!";
+    return false;
+    }
   QString file = properties["fileName"].toString();
   this->mrmlScene()->SetURL(file.toLatin1());
   bool clear = properties.value("clear", false).toBool();

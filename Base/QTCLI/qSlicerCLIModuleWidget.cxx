@@ -172,7 +172,12 @@ void qSlicerCLIModuleWidgetPrivate::updateUiFromCommandLineModuleNode(
 
   vtkMRMLCommandLineModuleNode * node =
     vtkMRMLCommandLineModuleNode::SafeDownCast(commandLineModuleNode);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "updateUiFromCommandLineModuleNode: "
+                << "no command line module node";
+    return;
+    }
 
   // Update parameters except if the module is running, it would prevent the
   // the user to keep the focus into the widgets each time a progress
@@ -211,7 +216,12 @@ void qSlicerCLIModuleWidgetPrivate::updateCommandLineModuleNodeFromUi(
     }
   vtkMRMLCommandLineModuleNode * node =
     vtkMRMLCommandLineModuleNode::SafeDownCast(commandLineModuleNode);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "updateCommandLineModuleNodeFromUI: "
+                << "no command line module node";
+    return;
+    }
   this->CLIModuleUIHelper->updateMRMLCommandLineModuleNode(node);
 }
 
@@ -220,7 +230,12 @@ void qSlicerCLIModuleWidgetPrivate::setDefaultNodeValue(vtkMRMLNode* commandLine
 {
   vtkMRMLCommandLineModuleNode * node =
     vtkMRMLCommandLineModuleNode::SafeDownCast(commandLineModuleNode);
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "setDefaultNodeValue: "
+                << "no command line module node";
+    return;
+    }
   // Note that node will fire a ModifyEvent.
   node->SetModuleDescription(this->logic()->GetDefaultModuleDescription());
 }
@@ -242,7 +257,11 @@ void qSlicerCLIModuleWidgetPrivate::addParameterGroups()
 void qSlicerCLIModuleWidgetPrivate::addParameterGroup(QBoxLayout* _layout,
                                                      const ModuleParameterGroup& parameterGroup)
 {
-  Q_ASSERT(_layout);
+  if (!_layout)
+    {
+    qCritical() << "addParameterGroup: no layout";
+    return;
+    }
 
   ctkCollapsibleButton * collapsibleWidget = new ctkCollapsibleButton();
   collapsibleWidget->setText(QString::fromStdString(parameterGroup.GetLabel()));
@@ -262,7 +281,11 @@ void qSlicerCLIModuleWidgetPrivate::addParameterGroup(QBoxLayout* _layout,
 void qSlicerCLIModuleWidgetPrivate::addParameters(QFormLayout* _layout,
                                                 const ModuleParameterGroup& parameterGroup)
 {
-  Q_ASSERT(_layout);
+  if (!_layout)
+    {
+    qCritical() << "addParameters: no layout";
+    return;
+    }
   // iterate over each parameter in this group
   ParameterConstIterator pBeginIt = parameterGroup.GetParameters().begin();
   ParameterConstIterator pEndIt = parameterGroup.GetParameters().end();
@@ -277,8 +300,11 @@ void qSlicerCLIModuleWidgetPrivate::addParameters(QFormLayout* _layout,
 void qSlicerCLIModuleWidgetPrivate::addParameter(QFormLayout* _layout,
                                                const ModuleParameter& moduleParameter)
 {
-  Q_ASSERT(_layout);
-
+  if (!_layout)
+    {
+    qCritical() << "addParameter: no layout";
+    return;
+    }
   if (moduleParameter.GetHidden() == "true")
     {
     return;
@@ -318,7 +344,11 @@ void qSlicerCLIModuleWidgetPrivate::onValueChanged(const QString& name, const QV
     {
     // if not, then create a default node
     this->MRMLCommandLineModuleNodeSelector->addNode();
-    Q_ASSERT(this->CommandLineModuleNode);
+    if (!this->CommandLineModuleNode)
+      {
+      qCritical() << "onValueChanged: no command line module node!";
+      return;
+      }
     }
   this->CLIModuleUIHelper->setCommandLineModuleParameter(
     this->CommandLineModuleNode, name, value);
@@ -374,7 +404,12 @@ void qSlicerCLIModuleWidget::setCurrentCommandLineModuleNode(
     }
 
   // Update the selector if this slot was called programmatically
-  Q_ASSERT(d->MRMLCommandLineModuleNodeSelector);
+  if (!d->MRMLCommandLineModuleNodeSelector)
+    {
+    qCritical() << "setCurrentCommandLineModuleNode:"
+                << " no command line module node selector!";
+    return;
+    }
   if (d->MRMLCommandLineModuleNodeSelector->currentNode()
       != commandLineModuleNode)
     {
@@ -403,7 +438,11 @@ void qSlicerCLIModuleWidget::apply(bool wait)
 {
   Q_D(qSlicerCLIModuleWidget);
   vtkMRMLCommandLineModuleNode* node = d->commandLineModuleNode();
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "apply: no command line module node";
+    return;
+    }
   d->CLIModuleUIHelper->updateMRMLCommandLineModuleNode(node);
   this->run(node, /* waitForCompletion= */ wait);
 }
@@ -413,7 +452,11 @@ void qSlicerCLIModuleWidget::cancel()
 {
   Q_D(qSlicerCLIModuleWidget);
   vtkMRMLCommandLineModuleNode* node = d->commandLineModuleNode();
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "cancel: no command line module node";
+    return;
+    }
   this->cancel(node);
 }
 
@@ -422,7 +465,11 @@ void qSlicerCLIModuleWidget::reset()
 {
   Q_D(qSlicerCLIModuleWidget);
   vtkMRMLCommandLineModuleNode* node = d->commandLineModuleNode();
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "reset: no command line module node";
+    return;
+    }
   d->setDefaultNodeValue(node);
 }
 
@@ -430,8 +477,11 @@ void qSlicerCLIModuleWidget::reset()
 void qSlicerCLIModuleWidget::run(vtkMRMLCommandLineModuleNode* parameterNode, bool waitForCompletion)
 {
   Q_D(qSlicerCLIModuleWidget);
-  Q_ASSERT(d->logic());
-
+  if (!d->logic())
+    {
+    qCritical() << "run: no logic!";
+    return;
+    }
   if (waitForCompletion)
     {
     d->logic()->ApplyAndWait(parameterNode);

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QDir>
 
 // SlicerQt includes
@@ -143,7 +144,11 @@ void qSlicerAbstractModuleFactoryManager
 ::registerFactory(qSlicerModuleFactory* factory, int priority)
 {
   Q_D(qSlicerAbstractModuleFactoryManager);
-  Q_ASSERT(!d->Factories.contains(factory));
+  if (d->Factories.contains(factory))
+    {
+    qCritical() << "registerFactory: factory already registered!";
+    return;
+    }
   d->Factories[factory] = priority;
 }
 
@@ -151,7 +156,11 @@ void qSlicerAbstractModuleFactoryManager
 void qSlicerAbstractModuleFactoryManager::unregisterFactory(qSlicerModuleFactory* factory)
 {
   Q_D(qSlicerAbstractModuleFactoryManager);
-  Q_ASSERT(d->Factories.contains(factory));
+  if (!d->Factories.contains(factory))
+    {
+    qCritical() << "unregisterFactory: factory not registered!";
+    return;
+    }
   d->Factories.remove(factory);
   delete factory;
 }
@@ -364,7 +373,12 @@ qSlicerAbstractCoreModule* qSlicerAbstractModuleFactoryManager
 ::instantiateModule(const QString& moduleName)
 {
   Q_D(qSlicerAbstractModuleFactoryManager);
-  Q_ASSERT(d->RegisteredModules.contains(moduleName));
+  if (!d->RegisteredModules.contains(moduleName))
+    {
+    qCritical() << "instantiateModule: module name not registered: "
+                << moduleName;
+    return 0;
+    }
   qSlicerModuleFactory* factory = d->RegisteredModules[moduleName];
   qSlicerAbstractCoreModule* module = factory->instantiate(moduleName);
   if (module)
@@ -431,7 +445,12 @@ void qSlicerAbstractModuleFactoryManager::uninstantiateModule(const QString& mod
     {
     qDebug() << "Uninstantiating:" << moduleName;
     }
-  Q_ASSERT(d->RegisteredModules.contains(moduleName));
+  if (!d->RegisteredModules.contains(moduleName))
+    {
+    qCritical() << "uninstantiateModule: module name not registered: "
+                << moduleName;
+    return;
+    }
   emit moduleAboutToBeUninstantiated(moduleName);
   d->RegisteredModules[moduleName]->uninstantiate(moduleName);
   emit moduleUninstantiated(moduleName);

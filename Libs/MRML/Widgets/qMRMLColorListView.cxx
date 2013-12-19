@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // QT includes
+#include <QDebug>
 #include <QSortFilterProxyModel>
 
 // qMRML includes
@@ -102,7 +103,11 @@ void qMRMLColorListView::setMRMLColorNode(vtkMRMLNode* node)
 void qMRMLColorListView::setMRMLColorNode(vtkMRMLColorNode* node)
 {
   qMRMLColorModel* mrmlModel = this->colorModel();
-  Q_ASSERT(mrmlModel);
+  if (!mrmlModel)
+    {
+      qCritical() << "setMRMLColorNode: no color model!";
+      return;
+    }
   mrmlModel->setMRMLColorNode(node);
   this->sortFilterProxyModel()->invalidate();
   this->setCurrentIndex(this->model()->index(-1,-1));
@@ -112,7 +117,11 @@ void qMRMLColorListView::setMRMLColorNode(vtkMRMLColorNode* node)
 vtkMRMLColorNode* qMRMLColorListView::mrmlColorNode()const
 {
   qMRMLColorModel* mrmlModel = this->colorModel();
-  Q_ASSERT(mrmlModel);
+  if (!mrmlModel)
+    {
+      qCritical() << "mrmlColorNode: no color model!";
+      return 0;
+    }
   return mrmlModel->mrmlColorNode();
 }
 

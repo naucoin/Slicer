@@ -1,3 +1,5 @@
+// Qt includes
+#include <QDebug>
 
 // CTK includes
 #include <ctkUtils.h>
@@ -166,7 +168,11 @@ void qSlicerTractographyInteractiveSeedingModuleWidget::onEnter()
     dnode->DisableModifiedEventOff();
 
     fiberNode = vtkMRMLFiberBundleNode::SafeDownCast(this->mrmlScene()->AddNode(fiberNode));
-    Q_ASSERT(fiberNode);
+    if (!fiberNode)
+      {
+      qCritical() << "onEnter: Invalid fiber bundle node";
+      return;
+      }
     fiberNode->SetName("FiberBundle");
 
     this->setFiberBundleNode(fiberNode);

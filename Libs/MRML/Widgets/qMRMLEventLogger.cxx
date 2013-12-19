@@ -18,6 +18,9 @@
 
 ==============================================================================*/
 
+// Qt includes
+#include <QDebug>
+
 // qMRML includes
 #include "qMRMLEventLogger_p.h"
 
@@ -181,9 +184,14 @@ QMRMLEVENTLOGGER_LISTENING_EVENT_MACRO(SceneRestored);
 #define QMRMLEVENTLOGGER_LISTEN_EVENT_MACRO(_EVENT_NAME)            \
 void qMRMLEventLogger::listen##_EVENT_NAME##Event(bool listen)      \
 {                                                                   \
-  Q_D(qMRMLEventLogger);                                         \
+  Q_D(qMRMLEventLogger);                                            \
                                                                     \
-  Q_ASSERT(!d->EventNameToConnectionIdMap.contains(#_EVENT_NAME));  \
+  if (d->EventNameToConnectionIdMap.contains(#_EVENT_NAME))         \
+    {                                                               \
+    qCritical() << "listen" << #_EVENT_NAME << "Event: "            \
+                << " already contains " << #_EVENT_NAME;            \
+    return;                                                         \
+    }                                                               \
   QString cid = d->EventNameToConnectionIdMap[#_EVENT_NAME];        \
                                                                     \
   if (listen && !d->EventToListen.contains(#_EVENT_NAME))           \

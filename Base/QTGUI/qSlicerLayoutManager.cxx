@@ -131,7 +131,13 @@ void qSlicerLayoutManager::setScriptedDisplayableManagerDirectory(
     }
   Q_D(qSlicerLayoutManager);
 
-  Q_ASSERT(QFileInfo(scriptedDisplayableManagerDirectory).isDir());
+  if (!QFileInfo(scriptedDisplayableManagerDirectory).isDir())
+    {
+    qCritical() << "setScriptedDisplayableManagerDirectory: '"
+                << scriptedDisplayableManagerDirectory
+                << "' is not a directory";
+    return;
+    }
   d->ScriptedDisplayableManagerDirectory = scriptedDisplayableManagerDirectory;
   // Disable for now as we don't have any displayable managers and
   // loading the python file on Windows 64b in Debug crashes.

@@ -480,7 +480,11 @@ void qSlicerAppMainWindowPrivate::setupRecentlyLoadedMenu(const QList<qSlicerIO:
     {
     qSlicerIO::IOProperties filePropertie = iterator.previous();
     QString fileName = filePropertie.value("fileName").toString();
-    Q_ASSERT(!fileName.isEmpty());
+    if (fileName.isEmpty())
+      {
+      qCritical() << "setupRecentlyLoadedMenu: filename is empty";
+      continue;
+      }
     QAction * action = this->RecentlyLoadedMenu->addAction(
       fileName, q, SLOT(onFileRecentLoadedActionTriggered()));
     action->setProperty("fileParameters", filePropertie);
@@ -863,7 +867,12 @@ void qSlicerAppMainWindow::on_WindowPythonInteractorAction_triggered()
 {
 #ifdef Slicer_USE_PYTHONQT
   ctkPythonConsole* console = this->pythonConsole();
-  Q_ASSERT(console);
+  if (!console)
+    {
+    qCritical() << "AppMainWindow::on_WindowPythonInteractorAction_triggered:"
+                << " unable to get python console";
+    return;
+    }
   console->show();
   console->activateWindow();
   console->raise();
@@ -951,7 +960,11 @@ void qSlicerAppMainWindow::onFileRecentLoadedActionTriggered()
   Q_D(qSlicerAppMainWindow);
 
   QAction* loadRecentFileAction = qobject_cast<QAction*>(this->sender());
-  Q_ASSERT(loadRecentFileAction);
+  if (!loadRecentFileAction)
+    {
+    qCritical() << "onFileRecentLoadedActionTriggered: sender is not an action";
+    return;
+    }
 
   // Clear menu if it applies
   if (loadRecentFileAction->property("clearMenu").isValid())
@@ -962,7 +975,11 @@ void qSlicerAppMainWindow::onFileRecentLoadedActionTriggered()
     }
 
   QVariant fileParameters = loadRecentFileAction->property("fileParameters");
-  Q_ASSERT(fileParameters.isValid());
+  if (!fileParameters.isValid())
+    {
+    qCritical() << "onFileRecentLoadedActionTriggered: file parameters invalid";
+    return;
+    }
 
   qSlicerIO::IOProperties fileProperties = fileParameters.toMap();
   qSlicerIO::IOFileType fileType =
@@ -1247,9 +1264,20 @@ void qSlicerAppMainWindow::onModuleLoaded(const QString& moduleName)
     {
     return;
     }
-
-  Q_ASSERT(action->data().toString() == module->name());
-  Q_ASSERT(action->text() == module->title());
+  if (action->data().toString() != module->name())
+    {
+    qCritical() << "onModuleLoaded: action doesn't match module name:"
+                << qPrintable(action->data().toString()) << " != "
+                << qPrintable(module->name());
+    return;
+    }
+  if (action->text() != module->title())
+    {
+    qCritical() << "onModuleLoaded: action doesn't match module title:"
+                << qPrintable(action->text()) << " != "
+                << qPrintable(module->title());
+    return;
+    }
 
   // Add action to ToolBar if it's an "allowed" action
   int index = d->FavoriteModules.indexOf(module->name());

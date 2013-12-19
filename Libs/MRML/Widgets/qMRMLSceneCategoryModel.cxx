@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLSceneCategoryModel.h"
@@ -98,7 +99,11 @@ int qMRMLSceneCategoryModel::categoryCount()const
 //------------------------------------------------------------------------------
 QStandardItem* qMRMLSceneCategoryModel::insertCategory(const QString& category, int row)
 {
-  Q_ASSERT(!category.isEmpty());
+  if (category.isEmpty())
+    {
+    qCritical() << "insertCategory: empty category string!";
+    return 0;
+    }
 
   QList<QStandardItem*> categoryItems;
   categoryItems << new QStandardItem;
@@ -107,7 +112,12 @@ QStandardItem* qMRMLSceneCategoryModel::insertCategory(const QString& category, 
   categoryItems[1]->setFlags(0);
 
   this->mrmlSceneItem()->insertRow(row, categoryItems);
-  Q_ASSERT(this->mrmlSceneItem()->columnCount() == 2);
+  if (this->mrmlSceneItem()->columnCount() != 2)
+    {
+    qCritical() << "insertCategory: column count "
+                <<  this->mrmlSceneItem()->columnCount() << " != 2";
+    return 0;
+    }
   return categoryItems[0];
 }
 
@@ -123,12 +133,21 @@ QStandardItem* qMRMLSceneCategoryModel::insertNode(vtkMRMLNode* node)
   // parents are before children
   QString category = QString(node->GetAttribute("Category"));
   QStandardItem* parentItem = this->itemFromCategory(category);
-  Q_ASSERT(parentItem);
+  if (!parentItem)
+    {
+    qCritical() << "insertNode: unable to get parent item!";
+    return 0;
+    }
   if (!category.isEmpty() && parentItem == this->mrmlSceneItem())
     {
     parentItem = this->insertCategory(category,
                                       this->preItems(parentItem).count()
                                       + this->categoryCount());
+    if (!parentItem)
+      {
+      qCritical() << "insertNode: null parent item after inserting!";
+      return 0;
+      }
     }
   //int min = this->preItems(parentItem).count();
   int max = parentItem->rowCount() - this->postItems(parentItem).count();
@@ -174,7 +193,11 @@ void qMRMLSceneCategoryModel::updateItemFromNode(QStandardItem* item, vtkMRMLNod
 void qMRMLSceneCategoryModel::updateNodeFromItem(vtkMRMLNode* node, QStandardItem* item)
 {
   this->qMRMLSceneModel::updateNodeFromItem(node, item);
-  Q_ASSERT(node != this->mrmlNodeFromItem(item->parent()));
+  if (node == this->mrmlNodeFromItem(item->parent()))
+    {
+    qCritical() << "updateNodeFromItem: node is the same as parent!";
+    return;
+    }
 
   // Don't do the following if the row is not complete (reparenting an
   // incomplete row might lead to errors). updateNodeFromItem is typically

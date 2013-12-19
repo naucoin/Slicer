@@ -20,6 +20,7 @@
 
 // QT includes
 #include <QApplication>
+#include <QDebug>
 #include <QEvent>
 #include <QHBoxLayout>
 
@@ -163,7 +164,11 @@ void qMRMLItemDelegate::setEditorData(QWidget *editor,
     {
     QColor color = index.data(this->colorRole(index)).value<QColor>();
     ctkColorPickerButton* colorPicker = qobject_cast<ctkColorPickerButton*>(editor);
-    Q_ASSERT(colorPicker);
+    if (!colorPicker)
+      {
+      qCritical() << "setEditorData: no color picker!";
+      return;
+      }
     colorPicker->blockSignals(true);
     colorPicker->setColor(color);
     colorPicker->blockSignals(false);
@@ -192,7 +197,11 @@ void qMRMLItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
   if (this->isColor(index))
     {
     ctkColorPickerButton* colorPicker = qobject_cast<ctkColorPickerButton*>(editor);
-    Q_ASSERT(colorPicker);
+    if (!colorPicker)
+      {
+      qCritical() << "setModelData: no color picker!";
+      return;
+      }
     QColor color = colorPicker->color();
     // the color role depends on what is the underlying model.
     model->setData(index, color, this->colorRole(index));

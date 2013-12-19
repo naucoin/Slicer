@@ -156,7 +156,12 @@ QList<qSlicerFileWriter*> qSlicerCoreIOManagerPrivate::writers(
           extensionWithStar.prepend("*");
           }
         QRegExp regExp(extensionWithStar, Qt::CaseInsensitive, QRegExp::Wildcard);
-        Q_ASSERT(regExp.isValid());
+        if (!regExp.isValid())
+          {
+          qCritical() << "qSlicerCoreIOManagerPrivate::writers: "
+                      << "Invalid regular expression";
+          return matchingWriters;
+          }
         if (regExp.exactMatch(file.absoluteFilePath()))
           {
           matchingNameFilters << nameFilter;
@@ -363,7 +368,11 @@ bool qSlicerCoreIOManager::loadNodes(const qSlicerIO::IOFileType& fileType,
 {
   Q_D(qSlicerCoreIOManager);
 
-  Q_ASSERT(parameters.contains("fileName"));
+  if (!parameters.contains("fileName"))
+    {
+    qCritical() << "Core IO Manager load: no file name!";
+    return false;
+    }
   if (parameters["fileName"].type() == QVariant::StringList)
     {
     bool res = true;
@@ -383,7 +392,11 @@ bool qSlicerCoreIOManager::loadNodes(const qSlicerIO::IOFileType& fileType,
       }
     return res;
     }
-  Q_ASSERT(!parameters["fileName"].toString().isEmpty());
+  if (parameters["fileName"].toString().isEmpty())
+    {
+    qCritical() << "Core IO Manager load: empty file name string";
+    return false;
+    }
 
   qSlicerIO::IOProperties parametersWithFileType = parameters;
   parametersWithFileType.insert("fileType", fileType);
@@ -453,7 +466,11 @@ vtkMRMLNode* qSlicerCoreIOManager::loadNodesAndGetFirst(
   this->loadNodes(fileType, parameters, loadedNodes.GetPointer());
 
   vtkMRMLNode* node = vtkMRMLNode::SafeDownCast(loadedNodes->GetItemAsObject(0));
-  Q_ASSERT(node);
+  if (!node)
+    {
+    qCritical() << "loadNodesAndGetFirst: failed to load nodes";
+    return 0;
+    }
 
   return node;
 }
@@ -464,7 +481,11 @@ bool qSlicerCoreIOManager::saveNodes(qSlicerIO::IOFileType fileType,
 {
   Q_D(qSlicerCoreIOManager);
 
-  Q_ASSERT(parameters.contains("fileName"));
+  if (!parameters.contains("fileName"))
+    {
+    qCritical() << "Core IO Manager save nodes: no file name!";
+    return false;
+    }
 
   // HACK - See http://www.na-mic.org/Bug/view.php?id=3322
   //        Sort writers to ensure generic ones are last.
@@ -555,14 +576,23 @@ qSlicerFileReader* qSlicerCoreIOManager::reader(const QString& ioDescription)con
       res << io;
       }
     }
-  Q_ASSERT(res.count() < 2);
+  if (!(res.count() < 2))
+    {
+    qCritical() << "Core IO Manager::reader: result count not less than 2: "
+                << res.count();
+    return 0;
+    }
   return res.count() ? res[0] : 0;
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerCoreIOManager::registerIO(qSlicerIO* io)
 {
-  Q_ASSERT(io);
+  if (!io)
+    {
+    qCritical() << "registerIO: null io, cannot register!";
+    return;
+    }
   Q_D(qSlicerCoreIOManager);
   qSlicerFileReader* fileReader = qobject_cast<qSlicerFileReader*>(io);
   qSlicerFileWriter* fileWriter = qobject_cast<qSlicerFileWriter*>(io);

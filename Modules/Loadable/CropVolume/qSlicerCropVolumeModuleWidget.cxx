@@ -84,8 +84,11 @@ void qSlicerCropVolumeModuleWidgetPrivate::showUnsupportedTransVolumeVoxelCroppi
 //-----------------------------------------------------------------------------
 bool qSlicerCropVolumeModuleWidgetPrivate::checkForVolumeParentTransform() const
 {
-  Q_ASSERT(this->InputVolumeComboBox);
-
+  if (!this->InputVolumeComboBox)
+    {
+    qCritical() << "checkForVolumeParentTransform: no input volume combo box";
+    return false;
+    }
 
   vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(this->InputVolumeComboBox->currentNode());
 
@@ -104,10 +107,14 @@ bool qSlicerCropVolumeModuleWidgetPrivate::checkForVolumeParentTransform() const
 //-----------------------------------------------------------------------------
 void qSlicerCropVolumeModuleWidgetPrivate::performROIVoxelGridAlignment()
 {
-  Q_ASSERT(this->InputVolumeComboBox);
-  Q_ASSERT(this->InputROIComboBox);
-  Q_ASSERT(this->InterpolationModeRadioButton);
-  Q_ASSERT(this->VoxelBasedModeRadioButton);
+  if (!this->InputVolumeComboBox ||
+      !this->InputROIComboBox ||
+      !this->InterpolationModeRadioButton ||
+      !this->VoxelBasedModeRadioButton)
+    {
+    qCritical() << "performROIVoxelGridAlignment: missing GUI elements!";
+    return;
+    }
 
   vtkSmartPointer<vtkMRMLVolumeNode> inputVolume = vtkMRMLVolumeNode::SafeDownCast(this->InputVolumeComboBox->currentNode());
   vtkSmartPointer<vtkMRMLAnnotationROINode> inputROI = vtkMRMLAnnotationROINode::SafeDownCast(this->InputROIComboBox->currentNode());
@@ -162,8 +169,14 @@ void qSlicerCropVolumeModuleWidgetPrivate::performROIVoxelGridAlignment()
   if(volumeTilted)
     {
       vtkSlicerCropVolumeLogic* logic = this->logic();
-      Q_ASSERT(logic);
-      logic->SnapROIToVoxelGrid(inputROI,inputVolume);
+      if (!logic)
+        {
+        qCritical() << "Crop volume logic not found!";
+        }
+      else
+        {
+        logic->SnapROIToVoxelGrid(inputROI,inputVolume);
+        }
     }
 
 }
@@ -258,7 +271,7 @@ void qSlicerCropVolumeModuleWidget::initializeParameterNode(vtkMRMLScene* scene)
     if(!this->parametersNode)
       {
       qCritical() << "FATAL ERROR: Cannot instantiate CropVolumeParameterNode";
-      Q_ASSERT(this->parametersNode);
+      return;
       }
     }
   else
@@ -306,8 +319,12 @@ void qSlicerCropVolumeModuleWidget::onApply(){
 void qSlicerCropVolumeModuleWidget::onInputVolumeChanged()
 {
   Q_D(qSlicerCropVolumeModuleWidget);
-  Q_ASSERT(d->InputVolumeComboBox);
-  Q_ASSERT(d->VoxelBasedModeRadioButton);
+  if (!d->InputVolumeComboBox ||
+      !d->VoxelBasedModeRadioButton)
+    {
+    qCritical() << "onInputVolumeChange: missing GUI elements!";
+    return;
+    }
 
   vtkMRMLNode* node = d->InputVolumeComboBox->currentNode();
   if(node)
@@ -331,7 +348,11 @@ void qSlicerCropVolumeModuleWidget::onInputVolumeChanged()
 void qSlicerCropVolumeModuleWidget::onInputROIChanged()
 {
   Q_D(qSlicerCropVolumeModuleWidget);
-  Q_ASSERT(d->VoxelBasedModeRadioButton);
+  if (!d->VoxelBasedModeRadioButton)
+    {
+    qCritical() << "onInputROIChanged: missing gui element";
+    return;
+    }
 
   vtkMRMLAnnotationROINode* node = 
     vtkMRMLAnnotationROINode::SafeDownCast(d->InputROIComboBox->currentNode());

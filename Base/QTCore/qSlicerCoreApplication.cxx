@@ -378,7 +378,11 @@ QString qSlicerCoreApplicationPrivate::discoverSlicerHomeDirectory()
     QString slicerBin = this->discoverSlicerBinDirectory();
     QDir slicerBinDir(slicerBin);
     bool cdUpRes = slicerBinDir.cdUp();
-    Q_ASSERT(cdUpRes);
+    if (!cdUpRes)
+      {
+      qCritical() << "discoverSlicerHomeDirectory: failed to change directory up";
+      return QString("");
+      }
     (void)cdUpRes;
     slicerHome = slicerBinDir.canonicalPath();
     }
@@ -397,7 +401,12 @@ QString qSlicerCoreApplicationPrivate::discoverSlicerHomeDirectory()
         }
       }
     }
-  Q_ASSERT(this->isInstalled(slicerHome) ? this->IntDir.isEmpty() : !this->IntDir.isEmpty());
+  if (!(this->isInstalled(slicerHome) ? this->IntDir.isEmpty() : !this->IntDir.isEmpty()))
+    {
+    qCritical() << "discoverSlicerHomeDirectory: invalid Slicer installation in "
+                << slicerHome;
+    return QString("");
+    }
 #endif
 
   return slicerHome;
@@ -491,7 +500,13 @@ QString qSlicerCoreApplicationPrivate::discoverSlicerBinDirectory()
     }
   slicerBin = slicerBinAsDir.path();
 #endif
-  Q_ASSERT(qSlicerUtils::pathEndsWith(slicerBin, Slicer_BIN_DIR));
+  if (!qSlicerUtils::pathEndsWith(slicerBin, Slicer_BIN_DIR))
+    {
+    qCritical() << "discoverSlicerBinDirectory: invalid path: "
+                << slicerBin << " doesn't end with "
+                << Slicer_BIN_DIR;
+    return QString("");
+    }
   return slicerBin;
 }
 
@@ -755,7 +770,12 @@ int qSlicerCoreApplication::returnCode()const
 void qSlicerCoreApplication::handlePreApplicationCommandLineArguments()
 {
   qSlicerCoreCommandOptions* options = this->coreCommandOptions();
-  Q_ASSERT(options);
+  if (!options)
+    {
+    qCritical() << "handlePreApplicationCommandLineArguments: "
+                << "no core command options!";
+    return;
+    }
 
   if (options->displayHelpAndExit())
     {
@@ -1071,7 +1091,11 @@ QString qSlicerCoreApplication::temporaryPath() const
 {
   Q_D(const qSlicerCoreApplication);
   QSettings* appSettings = this->userSettings();
-  Q_ASSERT(appSettings);
+  if (!appSettings)
+    {
+    qCritical() << "temporaryPath: no user settings, cannot get temp path.";
+    return QString("");
+    }
   QString temporaryPath = appSettings->value("TemporaryPath", this->defaultTemporaryPath()).toString();
   d->createDirectory(temporaryPath, "temporary"); // Make sure the path exists
   return temporaryPath;
@@ -1152,7 +1176,12 @@ QString qSlicerCoreApplication::slicerRevisionUserSettingsFilePath()const
 void qSlicerCoreApplication::setTemporaryPath(const QString& path)
 {
   QSettings* appSettings = this->userSettings();
-  Q_ASSERT(appSettings);
+  if (!appSettings)
+    {
+    qCritical() << "setTemporaryPath: no application settings, "
+                << "not setting temporary path";
+    return;
+    }
   appSettings->setValue("TemporaryPath", path);
   this->applicationLogic()->SetTemporaryPath(path.toLatin1());
 }
@@ -1161,7 +1190,12 @@ void qSlicerCoreApplication::setTemporaryPath(const QString& path)
 QString qSlicerCoreApplication::defaultExtensionsInstallPath() const
 {
   QSettings* appSettings = this->userSettings();
-  Q_ASSERT(appSettings);
+  if (!appSettings)
+    {
+    qCritical() << "defaultExtensionsInstallPath: no application settings, "
+                << "can't get extensions installed path";
+    return QString("");
+    }
 #ifdef Slicer_BUILD_EXTENSIONMANAGER_SUPPORT
   return QFileInfo(appSettings->fileName()).dir().filePath(Slicer_EXTENSIONS_DIRNAME);
 #else
@@ -1185,7 +1219,12 @@ void qSlicerCoreApplication::setExtensionsInstallPath(const QString& path)
     }
   this->revisionUserSettings()->setValue("Extensions/InstallPath", path);
 #ifdef Slicer_BUILD_EXTENSIONMANAGER_SUPPORT
-  Q_ASSERT(this->extensionsManagerModel());
+  if (!this->extensionsManagerModel())
+    {
+    qCritical() << "setExtensionsInstallPath: no extensions manager model"
+                << ", can't set install path";
+    return;
+    }
   this->extensionsManagerModel()->updateModel();
 #endif
 }
@@ -1437,9 +1476,9 @@ void qSlicerCoreApplication
 ::invokeEvent()
 {
   QTimer* timer = qobject_cast<QTimer*>(this->sender());
-  Q_ASSERT(timer);
   if (!timer)
     {
+    qCritical() << "invokeEvent: no timer!";
     return;
     }
   QVariant callerVariant = timer->property("caller");
@@ -1461,7 +1500,12 @@ void qSlicerCoreApplication
 ::onSlicerApplicationLogicRequest(vtkObject* appLogic, void* delay, unsigned long event)
 {
   Q_D(qSlicerCoreApplication);
-  Q_ASSERT(d->AppLogic.GetPointer() == vtkSlicerApplicationLogic::SafeDownCast(appLogic));
+  if (d->AppLogic.GetPointer() != vtkSlicerApplicationLogic::SafeDownCast(appLogic))
+    {
+    qCritical() << "onSlicerApplicationLogicRequest: "
+                << "mismatched application logic";
+    return;
+    }
   Q_UNUSED(appLogic);
   Q_UNUSED(d);
   int delayInMs = *reinterpret_cast<int *>(delay);
@@ -1519,7 +1563,11 @@ void qSlicerCoreApplication::loadTranslations(const QString& dir)
 {
 #ifdef Slicer_BUILD_I18N_SUPPORT
   qSlicerCoreApplication * app = qSlicerCoreApplication::application();
-  Q_ASSERT(app);
+  if (!app)
+    {
+    qCritical() << "loadTranslations: unable to get application";
+    return;
+    }
 
   QString localeFilter =
       QString( QString("*") + app->settings()->value("language").toString());
@@ -1551,8 +1599,11 @@ void qSlicerCoreApplication::loadLanguage()
 {
 #ifdef Slicer_BUILD_I18N_SUPPORT
   qSlicerCoreApplication * app = qSlicerCoreApplication::application();
-  Q_ASSERT(app);
-
+  if (!app)
+    {
+    qCritical() << "loadLanguage: unable to get application";
+    return;
+    }
   // we check if the application is installed or not.
   if (app->isInstalled())
     {

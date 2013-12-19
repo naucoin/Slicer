@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QStyle>
 #include <QPainter>
 
@@ -73,9 +74,9 @@ void qMRMLUtils::getTransformInCoordinateSystem(vtkMRMLNode* node, bool global,
 void qMRMLUtils::getTransformInCoordinateSystem(vtkMRMLLinearTransformNode* transformNode,
   bool global, vtkTransform* transform)
 {
-  Q_ASSERT(transform);
   if (!transform)
     {
+    qCritical() << "getTransformInCoordinateSystem: no transform!";
     return;
     }
 
@@ -87,9 +88,10 @@ void qMRMLUtils::getTransformInCoordinateSystem(vtkMRMLLinearTransformNode* tran
     }
 
   vtkMatrix4x4 *matrix = transformNode->GetMatrixTransformToParent();
-  Q_ASSERT(matrix);
   if (!matrix)
     {
+    qCritical() << "getTransformInCoordinateSystem: "
+                << "transform doesn't have transform to parent matrix!";
     return;
     }
 
@@ -108,7 +110,11 @@ void qMRMLUtils::getTransformInCoordinateSystem(vtkMRMLLinearTransformNode* tran
 //------------------------------------------------------------------------------
 int qMRMLUtils::countVisibleViewNode(vtkMRMLScene* scene)
 {
-  Q_ASSERT(scene);
+  if (!scene)
+    {
+    qCritical() << "countVisibleViewNode: null scene!";
+    return 0;
+    }
   int numberOfVisibleNodes = 0;
   const char* className = "vtkMRMLViewNode";
   int nnodes = scene->GetNumberOfNodesByClass(className);

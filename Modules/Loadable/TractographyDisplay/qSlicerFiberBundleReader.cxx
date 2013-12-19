@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QDir>
 
 // SlicerQt includes
@@ -91,7 +92,11 @@ QStringList qSlicerFiberBundleReader::extensions()const
 bool qSlicerFiberBundleReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerFiberBundleReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Fiber Bundle reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   QStringList fileNames;
@@ -100,7 +105,11 @@ bool qSlicerFiberBundleReader::load(const IOProperties& properties)
     QStringList suffixList = properties["suffix"].toStringList();
     suffixList.removeDuplicates();
     // here filename describes a directory
-    Q_ASSERT(QFileInfo(fileName).isDir());
+    if (!QFileInfo(fileName).isDir())
+      {
+      qCritical() << "Fiber Bundle reader load file " << fileName << " is not a directory";
+      return false;
+      }
     QDir dir(fileName);
     // suffix should be of style: *.png
     fileNames = dir.entryList(suffixList);

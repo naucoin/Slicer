@@ -146,10 +146,17 @@ vtkSlicerVolumesLogic* volumesLogic()
 //-----------------------------------------------------------------------------
 vtkSlicerModelsLogic* modelsLogic()
 {
-  Q_ASSERT(qSlicerCoreApplication::application()->moduleManager()->module("Models"));
-  return vtkSlicerModelsLogic::SafeDownCast(
-    qSlicerCoreApplication::application()->moduleManager()
-    ->module("Models")->logic());
+  if (qSlicerCoreApplication::application()->moduleManager()->module("Models"))
+    {
+    return vtkSlicerModelsLogic::SafeDownCast(
+      qSlicerCoreApplication::application()->moduleManager()
+      ->module("Models")->logic());
+    }
+  else
+    {
+    qCritical() << "No models module to provide models logic!";
+    return 0;
+    }
 }
 */
 //-----------------------------------------------------------------------------
@@ -554,7 +561,11 @@ void qSlicerSlicer2SceneReaderPrivate::importVolumeNode(NodeType& node)
     properties["fileNames"] = fileNames;
     volumeNode = vtkMRMLVolumeNode::SafeDownCast(
       this->ioManager()->loadNodesAndGetFirst(QString("VolumeFile"), properties));
-    Q_ASSERT(volumeNode);
+    if (!volumeNode)
+      {
+      qCritical() << "Import volume node: No volume loaded";
+      return;
+      }
     volumeNodeID = volumeNode->GetID();
     this->LoadedNodes << volumeNode->GetID();
     }
@@ -734,10 +745,19 @@ void qSlicerSlicer2SceneReaderPrivate::importVolumeNode(NodeType& node)
     }
 
   //set volumeNode [$::slicer3::MRMLScene GetNodeByID $volumeNodeID]
-  Q_ASSERT(volumeNode == q->mrmlScene()->GetNodeByID(volumeNodeID.toLatin1()));
+  if (volumeNode != q->mrmlScene()->GetNodeByID(volumeNodeID.toLatin1()))
+    {
+    qCritical() << "ImportVolumeNode: volume node not found with id "
+                << volumeNodeID;
+    return;
+    }
   volumeNode = vtkMRMLVolumeNode::SafeDownCast(q->mrmlScene()->GetNodeByID(volumeNodeID.toLatin1()));
-  Q_ASSERT(volumeNode);
-  
+  if (!volumeNode)
+    {
+    qCritical() << "ImportVolumeNode: not a volume node: "
+                << volumeNodeID;
+    return;
+    }
   // use the current top of stack (might be "" if empty, but that's okay)
   //set transformID [lindex $::S2(transformIDStack) end]
   //$volumeNode SetAndObserveTransformNodeID $transformID
@@ -747,7 +767,11 @@ void qSlicerSlicer2SceneReaderPrivate::importVolumeNode(NodeType& node)
 
   //set volumeDisplayNode [$volumeNode GetDisplayNode]
   volumeDisplayNode = vtkMRMLVolumeDisplayNode::SafeDownCast(volumeNode->GetDisplayNode());
-  Q_ASSERT(volumeDisplayNode);
+  if (!volumeDisplayNode)
+    {
+    qCritical() << "ImportVolumeNode: unable to get volume display node";
+    return;
+    }
 
   // switch -- $n(colorLUT) {
   //   "0" {
@@ -851,10 +875,18 @@ void qSlicerSlicer2SceneReaderPrivate::importModelNode(NodeType& node)
   vtkMRMLModelNode* mnode = 
     //modelsLogic()->AddModel(fileName.toLatin1());
     vtkMRMLModelNode::SafeDownCast(this->ioManager()->loadNodesAndGetFirst(QString("ModelFile"), properties));
-  Q_ASSERT(mnode);
+  if (!mnode)
+    {
+    qCritical() << "Import Model Node: Unable to load model node";
+    return;
+    }
   vtkMRMLDisplayNode* dnode = 
     mnode->GetDisplayNode();
-  Q_ASSERT(dnode);
+  if (!dnode)
+    {
+    qCritical() << "Import Model Node: Unable to get model display node";
+    return;
+    }
   this->LoadedNodes << mnode->GetID() << dnode->GetID();
 
   // if { ![info exists n(id)] } {
@@ -1027,7 +1059,11 @@ void qSlicerSlicer2SceneReaderPrivate::importModelGroupNode(NodeType& node)
     {
     cnode = vtkMRMLColorTableNode::SafeDownCast(
       q->mrmlScene()->GetNodeByID("vtkMRMLColorTableNodeSPLBrainAtlas"));
-    Q_ASSERT(cnode);
+    if (!cnode)
+      {
+      qCritical() << "Import Model Group node: unable to find SPL brain atlas color node";
+      return;
+      }
     for (int i = 0; i < cnode->GetNumberOfColors(); ++i)
       {
       if (cnode->GetColorName(i) == node["color"])
@@ -1040,10 +1076,18 @@ void qSlicerSlicer2SceneReaderPrivate::importModelGroupNode(NodeType& node)
   //set hnode [$::slicer3::MRMLScene AddNode $hnode]
   dnode = vtkMRMLModelDisplayNode::SafeDownCast(
     q->mrmlScene()->AddNode(dnode));
-  Q_ASSERT(dnode);
+  if (!dnode)
+    {
+    qCritical() << "Import Model Group Node: Unable to add model display node";
+    return;
+    }
   hnode = vtkMRMLModelHierarchyNode::SafeDownCast(
     q->mrmlScene()->AddNode(hnode));
-  Q_ASSERT(hnode);
+  if (!hnode)
+    {
+    qCritical() << "Import Model Group Node: Unable to add model hierarchy node";
+    return;
+    }
   this->LoadedNodes << dnode->GetID() << hnode->GetID();
 
   //if {$::S2_HParent_ID != ""} {
@@ -1086,7 +1130,12 @@ void qSlicerSlicer2SceneReaderPrivate::importModelRefNode(NodeType& node)
   QString id3 = this->ModelIDs[id2];
 
   //$hnode SetName [[$::slicer3::MRMLScene GetNodeByID $id3] GetName]
-  Q_ASSERT(q->mrmlScene()->GetNodeByID(id3.toLatin1()));
+  if (!q->mrmlScene()->GetNodeByID(id3.toLatin1()))
+    {
+    qCritical() << "Import Model Ref node: unable to get node with id "
+                << id3;
+    return;
+    }
   hnode->SetName(q->mrmlScene()->GetNodeByID(id3.toLatin1())->GetName());
 
   //set hnode [$::slicer3::MRMLScene AddNode $hnode]
@@ -1186,7 +1235,11 @@ void qSlicerSlicer2SceneReaderPrivate::importPointNode(NodeType& node)
 {
   //upvar $node n
   //set f [$::S2(fiducialListNode) AddFiducial]
-  Q_ASSERT(this->FiducialListNode);
+  if (!this->FiducialListNode)
+    {
+    qCritical() << "importPointNode: no fiducial list node";
+    return;
+    }
   int f = this->FiducialListNode->AddFiducial();
 
   // if { [info exists n(xyz)] } {
@@ -1323,8 +1376,17 @@ QStringList qSlicerSlicer2SceneReader::extensions()const
 bool qSlicerSlicer2SceneReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerSlicer2SceneReader);
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Slicer 2 Scene reader load: no file name!";
+    return false;
+    }
   QString file = properties["fileName"].toString();
-  Q_ASSERT(!file.isEmpty());
+  if (file.isEmpty())
+    {
+    qCritical() << "Slicer 2 Scene reader load: file name is empty";
+    return false;
+    }
 
   d->TransformIDStack.clear();
   d->FiducialListNode = 0;

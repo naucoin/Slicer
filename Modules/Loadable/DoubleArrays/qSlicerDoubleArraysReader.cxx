@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // SlicerQt includes
@@ -99,7 +100,11 @@ QStringList qSlicerDoubleArraysReader::extensions()const
 bool qSlicerDoubleArraysReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerDoubleArraysReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Double arrays reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   QString name = QFileInfo(fileName).baseName();
@@ -107,7 +112,11 @@ bool qSlicerDoubleArraysReader::load(const IOProperties& properties)
     {
     name = properties["name"].toString();
     }
-  Q_ASSERT(d->Logic);
+  if (!d->Logic)
+    {
+    qCritical() << "Double arrays reader load: no logic!";
+    return false;
+    }
   vtkMRMLDoubleArrayNode* node = d->Logic->AddDoubleArray(
     fileName.toLatin1(),
     name.toLatin1());

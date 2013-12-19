@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // SlicerQt includes
@@ -93,7 +94,11 @@ QStringList qSlicerModelsReader::extensions()const
 bool qSlicerModelsReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerModelsReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Models reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   this->setLoadedNodes(QStringList());

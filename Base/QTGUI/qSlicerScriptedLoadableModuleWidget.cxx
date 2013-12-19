@@ -120,7 +120,12 @@ bool qSlicerScriptedLoadableModuleWidget::setPythonSource(const QString& newPyth
     return false;
     }
 
-  Q_ASSERT(newPythonSource.endsWith(".py"));
+  if (!newPythonSource.endsWith(".py"))
+    {
+    qCritical() << "setPythonSource: source path doesn't end in .py: "
+                << newPythonSource;
+    return false;
+    }
 
   // Extract moduleName from the provided filename
   QString classNameToLoad = className;
@@ -192,7 +197,11 @@ bool qSlicerScriptedLoadableModuleWidget::setPythonSource(const QString& newPyth
   // Retrieve API methods
   for (int i = 0; i < Pimpl::APIMethodCount; ++i)
     {
-    Q_ASSERT(Pimpl::APIMethodNames[i]);
+    if (!Pimpl::APIMethodNames[i])
+      {
+      qCritical() << "ScriptedLoadableModuleWidget setPythonSource: missing API method name at index " << i;
+      return false;
+      }
     if (!PyObject_HasAttrString(self, Pimpl::APIMethodNames[i]))
       {
       continue;

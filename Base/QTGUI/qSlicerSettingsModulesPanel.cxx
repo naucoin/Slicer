@@ -199,7 +199,12 @@ void qSlicerSettingsModulesPanel::onHomeModuleChanged(const QString& moduleName)
 {
   Q_D(qSlicerSettingsModulesPanel);
   QAction* moduleAction = d->ModulesMenu->moduleAction(moduleName);
-  Q_ASSERT(moduleAction);
+  if (!moduleAction)
+    {
+    qCritical() << "onHomeModuleChanged: module not found: "
+                << moduleName;
+    return;
+    }
   d->HomeModuleButton->setText(moduleAction->text());
   d->HomeModuleButton->setIcon(moduleAction->icon());
 }

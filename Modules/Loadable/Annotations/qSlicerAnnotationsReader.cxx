@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // SlicerQt includes
@@ -109,7 +110,11 @@ qSlicerIOOptions* qSlicerAnnotationsReader::options()const
 bool qSlicerAnnotationsReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerAnnotationsReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Annotations Reader: load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   QString name = QFileInfo(fileName).baseName();

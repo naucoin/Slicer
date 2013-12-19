@@ -1,5 +1,6 @@
 
 // Qt includes
+#include <QDebug>
 #include <QtPlugin>
 
 // QTGUI includes
@@ -96,7 +97,11 @@ QStringList qSlicerSceneViewsModule::categories() const
 //-----------------------------------------------------------------------------
 void qSlicerSceneViewsModule::showSceneViewDialog()
 {
-  Q_ASSERT(this->widgetRepresentation());
+  if (!this->widgetRepresentation())
+    {
+    qCritical() << "showSceneViewDialog: no widget representation!";
+    return;
+    }
   dynamic_cast<qSlicerSceneViewsModuleWidget*>(this->widgetRepresentation())
     ->showSceneViewDialog();
 }

@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QSettings>
 
 // For:
@@ -102,13 +103,23 @@ public:
 //-----------------------------------------------------------------------------
 QStringList qSlicerScriptedLoadableModuleFactoryPrivate::modulePaths() const
 {
+  QStringList defaultQTModulePaths;
+
   qSlicerCoreApplication* app = qSlicerCoreApplication::application();
-  Q_ASSERT(app);
+  if (!app)
+    {
+    qCritical() << "modulePaths: no application!";
+    return defaultQTModulePaths;
+    }
 
   // slicerHome shouldn't be empty
-  Q_ASSERT(!app->slicerHome().isEmpty());
+  if (app->slicerHome().isEmpty())
+    {
+    qCritical() << "modlePaths: slicerHome is an empty string!";
+    return defaultQTModulePaths;
+    }
 
-  QStringList defaultQTModulePaths;
+
 
 #ifdef Slicer_BUILD_QTLOADABLEMODULES
   bool appendDefaultQTModulePaths = true;

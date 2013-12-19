@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // PythonQt includes
@@ -128,7 +129,12 @@ bool qSlicerScriptedFileWriter::setPythonSource(const QString& newPythonSource, 
     return false;
     }
 
-  Q_ASSERT(newPythonSource.endsWith(".py"));
+  if (!newPythonSource.endsWith(".py"))
+    {
+    qCritical() << "setPythonSource: missing .py ending: "
+                << newPythonSource;
+    return false;
+    }
 
   // Extract moduleName from the provided filename
   QString classNameToLoad = className;
@@ -186,7 +192,12 @@ bool qSlicerScriptedFileWriter::setPythonSource(const QString& newPythonSource, 
   // Retrieve API methods
   for (int i = 0; i < d->APIMethodCount; ++i)
     {
-    Q_ASSERT(d->APIMethodNames[i]);
+    if (!d->APIMethodNames[i])
+      {
+      qCritical() << "qSlicerScriptedFileWriter::setPythonSource"
+                  << ": missing API method name at index " << i;
+      return false;
+      }
     if (!PyObject_HasAttrString(self, d->APIMethodNames[i]))
       {
       continue;

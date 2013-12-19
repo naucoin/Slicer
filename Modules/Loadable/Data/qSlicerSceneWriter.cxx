@@ -90,7 +90,16 @@ bool qSlicerSceneWriter::write(const qSlicerIO::IOProperties& properties)
 {
   this->setWrittenNodes(QStringList());
 
-  Q_ASSERT(!properties["fileName"].toString().isEmpty());
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Scene write: no file name!";
+    return false;
+    }
+  if (properties["fileName"].toString().isEmpty())
+    {
+    qCritical() << "Scene write: file name is empty";
+    return false;
+    }
   QFileInfo fileInfo(properties["fileName"].toString());
   bool res = false;
   if (fileInfo.suffix() == "mrml")
@@ -162,7 +171,16 @@ bool qSlicerSceneWriter::writeToMRML(const qSlicerIO::IOProperties& properties)
   // force a write
   sceneViewNode->GetStorageNode()->WriteData(sceneViewNode);
 
-  Q_ASSERT(!properties["fileName"].toString().isEmpty());
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Scene write to MRML: no file name!";
+    return false;
+    }
+  if (properties["fileName"].toString().isEmpty())
+    {
+    qCritical() << "Scene write to MRML: file name is empty";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   this->mrmlScene()->SetURL(fileName.toLatin1());
@@ -179,7 +197,11 @@ bool qSlicerSceneWriter::writeToMRB(const qSlicerIO::IOProperties& properties)
   // be a uniquely named directory that contains a directory
   // named based on the user's selection.
   //
-
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Scene writeToMRB: no file name!";
+    return false;
+    }
   QFileInfo fileInfo(properties["fileName"].toString());
   QString basePath = fileInfo.absolutePath();
   if (!QFileInfo(basePath).isWritable())
@@ -231,7 +253,12 @@ bool qSlicerSceneWriter::writeToMRB(const qSlicerIO::IOProperties& properties)
   //
   vtkSlicerApplicationLogic* applicationLogic =
     qSlicerCoreApplication::application()->applicationLogic();
-  Q_ASSERT(this->mrmlScene() == applicationLogic->GetMRMLScene());
+  if (this->mrmlScene() != applicationLogic->GetMRMLScene())
+    {
+    qCritical() << "writeToMRB: mrml scene not same as application logic scene";
+    return false;
+    }
+
   bool retval =
     applicationLogic->SaveSceneToSlicerDataBundleDirectory(bundlePath.toLatin1(),
                                                            imageData);
@@ -312,7 +339,11 @@ bool qSlicerSceneWriter::writeToDirectory(const qSlicerIO::IOProperties& propert
 
   vtkSlicerApplicationLogic* applicationLogic =
     qSlicerCoreApplication::application()->applicationLogic();
-  Q_ASSERT(this->mrmlScene() == applicationLogic->GetMRMLScene());
+  if (this->mrmlScene() != applicationLogic->GetMRMLScene())
+    {
+    qCritical() << "writeToDirectory: mrml scene not same as application logic scene";
+    return false;
+    }
   bool retval = applicationLogic->SaveSceneToSlicerDataBundleDirectory(
     saveDirName.toLatin1(), imageData);
   if (retval)

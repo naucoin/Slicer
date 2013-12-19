@@ -19,6 +19,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 
 // qMRML includes
 #include "qMRMLSceneViewMenu_p.h"
@@ -42,7 +43,11 @@ qMRMLSceneViewMenuPrivate::qMRMLSceneViewMenuPrivate(qMRMLSceneViewMenu& object)
 void qMRMLSceneViewMenuPrivate::resetMenu()
 {
   Q_Q(qMRMLSceneViewMenu);
-  Q_ASSERT(this->MRMLScene);
+  if (!this->MRMLScene)
+    {
+    qCritical() << "resetMenu: no mrml scene defined!";
+    return;
+    }
 
   // Clear menu
   q->clear();
@@ -166,7 +171,13 @@ bool qMRMLSceneViewMenuPrivate::hasNoSceneViewItem()const
 {
   Q_Q(const qMRMLSceneViewMenu);
   QList<QAction*> actions = q->actions();
-  Q_ASSERT(actions.count() > 0); // At least one item is expected
+  // At least one item is expected
+  if (actions.count() < 1)
+    {
+    qCritical() << "hasNoSceneViewItem: at least one action is expected, have "
+                << actions.count();
+    return false;
+    }
   return (actions.at(0)->text().compare(this->NoSceneViewText) == 0);
 }
 
@@ -175,7 +186,12 @@ void qMRMLSceneViewMenuPrivate::restoreSceneView(const QString& sceneViewNodeId)
 {
   vtkMRMLSceneViewNode * sceneViewNode = vtkMRMLSceneViewNode::SafeDownCast(
       this->MRMLScene->GetNodeByID(sceneViewNodeId.toLatin1()));
-  Q_ASSERT(sceneViewNode);
+  if (!sceneViewNode)
+    {
+    qCritical() << "restoreSceneView: no scene view node found for node id "
+                << sceneViewNodeId;
+    return;
+    }
   this->MRMLScene->SaveStateForUndo();
   sceneViewNode->RestoreScene();
 }
@@ -185,7 +201,13 @@ void qMRMLSceneViewMenuPrivate::deleteSceneView(const QString& sceneViewNodeId)
 {
   vtkMRMLSceneViewNode * sceneViewNode = vtkMRMLSceneViewNode::SafeDownCast(
       this->MRMLScene->GetNodeByID(sceneViewNodeId.toLatin1()));
-  Q_ASSERT(sceneViewNode);
+  if (!sceneViewNode)
+    {
+    qCritical() << "deleteSceneView: no scene view node found for node id "
+                << sceneViewNodeId;
+    return;
+    }
+
   this->MRMLScene->SaveStateForUndo();
   this->MRMLScene->RemoveNode(sceneViewNode);
 }

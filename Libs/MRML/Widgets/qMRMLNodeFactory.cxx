@@ -64,28 +64,30 @@ CTK_GET_CPP(qMRMLNodeFactory, vtkMRMLScene*, mrmlScene, MRMLScene);
 vtkMRMLNode* qMRMLNodeFactory::createNode(const QString& className)
 {
   Q_D(qMRMLNodeFactory);
-  
+
   if (!d->MRMLScene || className.isEmpty())
-    {
-    return 0; 
-    }
-  vtkSmartPointer<vtkMRMLNode> node; 
-  node.TakeReference( d->MRMLScene->CreateNodeByClass( className.toLatin1() ) );
-
-  Q_ASSERT_X(node, "createNode",
-             QString("Failed to create node of type [%1]").arg(className).toLatin1());
-
-  if (node == 0)
     {
     return 0;
     }
-  
+  vtkSmartPointer<vtkMRMLNode> node;
+  node.TakeReference( d->MRMLScene->CreateNodeByClass( className.toLatin1() ) );
+
+  if (node == 0)
+    {
+    qCritical() << "createNode: Failed to create node of type " << className;
+    return 0;
+    }
+
   emit this->nodeInstantiated(node);
   // Optionally adding the node into a scene must be done only in
   // signal nodeInitialized. It's a bit arbitrary and feel free to remove
   // the restriction.
-  Q_ASSERT(node->GetScene() == 0);
-  
+  if (node->GetScene() != 0)
+    {
+    qCritical() << "createNode: node has been added to a scene already!";
+    return 0;
+    }
+
   QString baseName;
   if (d->BaseNames.contains(className) &&
       !d->BaseNames[className].isEmpty())
@@ -116,20 +118,28 @@ vtkMRMLNode* qMRMLNodeFactory::createNode(const QString& className)
   if (!node->GetScene())
     {
     vtkMRMLNode* nodeAdded = d->MRMLScene->AddNode(node);
-    Q_ASSERT(nodeAdded == node ||
-             node->GetSingletonTag() != 0);
+    if (!(nodeAdded == node ||
+          node->GetSingletonTag() != 0))
+      {
+      qCritical() << "createNode: failed to add the node to the scene";
+      return 0;
+      }
     node = nodeAdded;
     }
   emit this->nodeAdded(node);
 
-  return node; 
+  return node;
 }
 
 //------------------------------------------------------------------------------
 vtkMRMLNode* qMRMLNodeFactory::createNode(vtkMRMLScene* scene, const QString& className,
                                           const QHash<QString,QString>& attributes)
 {
-  Q_ASSERT(scene);
+  if (!scene)
+    {
+    qCritical() << "createNode: no scene!";
+    return 0;
+    }
   QScopedPointer<qMRMLNodeFactory> factory(new qMRMLNodeFactory());
   factory->setMRMLScene(scene);
   // Loop over attribute map and update the factory

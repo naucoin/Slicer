@@ -16,6 +16,7 @@
 ==============================================================================*/
 
 // Qt includes
+#include <QDebug>
 #include <QFileInfo>
 
 // SlicerQt includes
@@ -99,7 +100,11 @@ bool qSlicerMarkupsReader::load(const IOProperties& properties)
   Q_D(qSlicerMarkupsReader);
 
   // get the properties
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Markups reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   QString name = QFileInfo(fileName).baseName();

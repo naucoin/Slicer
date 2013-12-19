@@ -130,12 +130,16 @@ QTreeWidgetItem * qSlicerExtensionsManageWidgetPrivate::extensionItem(const QStr
 {
   QList<QTreeWidgetItem*> items =
       this->ExtensionList->findItems(extensionName, Qt::MatchExactly, Self::NameColumn);
-  Q_ASSERT(items.count() < 2);
   if (items.count() == 1)
     {
     return items.at(0);
     }
-  return 0;
+  else
+    {
+    qCritical() << "extensionItem: didn't find just one extension with name "
+                << extensionName << ", found "<< items.count();
+    return 0;
+    }
 }
 
 namespace
@@ -237,7 +241,12 @@ void qSlicerExtensionsManageWidgetPrivate::addExtensionItem(const ExtensionMetad
     qCritical() << "Missing metadata identified with 'extensionname' key";
     return;
     }
-  Q_ASSERT(this->extensionItem(extensionName) == 0);
+  if (this->extensionItem(extensionName) != 0)
+    {
+    qCritical() << "addExtensionItem: already have an extension item with name "
+                << extensionName;
+    return;
+    }
   QString description = metadata.value("description").toString();
   QString extensionSlicerRevision = metadata.value("slicer_revision").toString();
   bool enabled = QVariant::fromValue(metadata.value("enabled")).toBool();
@@ -407,10 +416,20 @@ void qSlicerExtensionsManageWidget::onExtensionScheduledForUninstall(const QStri
 {
   Q_D(qSlicerExtensionsManageWidget);
   QTreeWidgetItem * item = d->extensionItem(extensionName);
-  Q_ASSERT(item);
+  if (!item)
+    {
+    qCritical() << "onExtensionScheduledForUninstall: could not find extension "
+                << extensionName;
+    return;
+    }
   qSlicerExtensionsButtonBox * buttonBox =
       dynamic_cast<qSlicerExtensionsButtonBox*>(d->ExtensionList->itemWidget(item, qSlicerExtensionsManageWidgetPrivate::ButtonsColumn));
-  Q_ASSERT(buttonBox);
+  if (!buttonBox)
+    {
+    qCritical() << "onExtensionScheduledForUninstall: no button box found for "
+                << extensionName;
+    return;
+    }
   buttonBox->CancelScheduledForUninstallButton->setVisible(true);
   buttonBox->ScheduleForUninstallButton->setVisible(false);
 }
@@ -420,10 +439,22 @@ void qSlicerExtensionsManageWidget::onExtensionCancelledScheduleForUninstall(con
 {
   Q_D(qSlicerExtensionsManageWidget);
   QTreeWidgetItem * item = d->extensionItem(extensionName);
-  Q_ASSERT(item);
+  if (!item)
+    {
+    qCritical() << "onExtensionCancelledScheduledForUninstall: "
+                << "could not find extension "
+                << extensionName;
+    return;
+    }
   qSlicerExtensionsButtonBox * buttonBox =
       dynamic_cast<qSlicerExtensionsButtonBox*>(d->ExtensionList->itemWidget(item, qSlicerExtensionsManageWidgetPrivate::ButtonsColumn));
-  Q_ASSERT(buttonBox);
+  if (!buttonBox)
+    {
+    qCritical() << "onExtensionCancelledScheduledForUninstall: "
+                << " no button box found for "
+                << extensionName;
+    return;
+    }
   buttonBox->CancelScheduledForUninstallButton->setVisible(false);
   buttonBox->ScheduleForUninstallButton->setVisible(true);
 }
@@ -433,10 +464,23 @@ void qSlicerExtensionsManageWidget::onModelExtensionEnabledChanged(const QString
 {
   Q_D(qSlicerExtensionsManageWidget);
   QTreeWidgetItem * item = d->extensionItem(extensionName);
-  Q_ASSERT(item);
+  if (!item)
+    {
+    qCritical() << "onModelExtensionEnabledChanged: "
+                << "extension not found: "
+                << extensionName;
+    return;
+    }
   qSlicerExtensionsButtonBox * buttonBox =
       dynamic_cast<qSlicerExtensionsButtonBox*>(d->ExtensionList->itemWidget(item, qSlicerExtensionsManageWidgetPrivate::ButtonsColumn));
-  Q_ASSERT(buttonBox);
+  if (!buttonBox)
+    {
+    qCritical() << "onModelExtensionEnabledChanged: "
+                << " no button box found for "
+                << extensionName;
+    return;
+    }
+
   buttonBox->EnableButton->setVisible(!enabled);
   buttonBox->DisableButton->setVisible(enabled);
   item->setIcon(qSlicerExtensionsManageWidgetPrivate::IconColumn,

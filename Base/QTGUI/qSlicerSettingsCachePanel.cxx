@@ -214,7 +214,11 @@ void qSlicerSettingsCachePanel::setForceRedownload(bool force)
 void qSlicerSettingsCachePanel::clearCache()
 {
   Q_D(qSlicerSettingsCachePanel);
-  Q_ASSERT(d->CacheManager);
+  if (!d->CacheManager)
+    {
+    qCritical() << "clearCache: no cache manager!";
+    return;
+    }
   d->CacheManager->ClearCache();
   //this->updateFromCacheManager();
 }

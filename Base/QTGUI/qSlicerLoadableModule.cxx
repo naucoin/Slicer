@@ -148,7 +148,11 @@ void qSlicerLoadableModule::setup()
 #ifndef QT_NO_DEBUG
   Q_D(qSlicerLoadableModule);
 #endif
-  Q_ASSERT(d != 0);
+  if (d == 0)
+    {
+    qCritical() << "qSlicerLoadableModule::setup: invalid private class!";
+    return;
+    }
 
 #ifdef Slicer_USE_PYTHONQT
   qSlicerCoreApplication * app = qSlicerCoreApplication::application();

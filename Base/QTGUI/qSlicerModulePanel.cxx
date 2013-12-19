@@ -95,7 +95,12 @@ void qSlicerModulePanel::setModule(const QString& moduleName)
   if (!moduleName.isEmpty())
     {
     module = this->moduleManager()->module(moduleName);
-    Q_ASSERT(module);
+    if (!module)
+      {
+      qCritical() << "setModule: module not found: "
+                  << moduleName;
+      return;
+      }
     }
   this->setModule(module);
 }
@@ -131,7 +136,11 @@ void qSlicerModulePanel::setModule(qSlicerAbstractCoreModule* module)
 //---------------------------------------------------------------------------
 void qSlicerModulePanel::addModule(qSlicerAbstractCoreModule* module)
 {
-  Q_ASSERT(module);
+  if (!module)
+    {
+    qCritical() << "addModule: null module!";
+    return;
+    }
 
   qSlicerAbstractModuleWidget* moduleWidget =
     dynamic_cast<qSlicerAbstractModuleWidget*>(module->widgetRepresentation());
@@ -142,7 +151,11 @@ void qSlicerModulePanel::addModule(qSlicerAbstractCoreModule* module)
     return;
     }
 
-  Q_ASSERT(!moduleWidget->moduleName().isEmpty());
+  if (moduleWidget->moduleName().isEmpty())
+    {
+    qCritical() << "addModule: module name is empty!";
+    return;
+    }
 
   Q_D(qSlicerModulePanel);
 
@@ -160,7 +173,11 @@ void qSlicerModulePanel::addModule(qSlicerAbstractCoreModule* module)
   // Insert module in the panel
   QBoxLayout* scrollAreaLayout =
     qobject_cast<QBoxLayout*>(scrollAreaContents->layout());
-  Q_ASSERT(scrollAreaLayout);
+  if (!scrollAreaLayout)
+    {
+    qCritical() << "addModule: null scroll area layout!";
+    return;
+    }
   scrollAreaLayout->insertWidget(1, moduleWidget,1);
 
   moduleWidget->setSizePolicy(QSizePolicy::Minimum, moduleWidget->sizePolicy().verticalPolicy());
@@ -200,17 +217,28 @@ void qSlicerModulePanel::addModule(qSlicerAbstractCoreModule* module)
 //---------------------------------------------------------------------------
 void qSlicerModulePanel::removeModule(qSlicerAbstractCoreModule* module)
 {
-  Q_ASSERT(module);
-
+  if (!module)
+    {
+    qCritical() << "removeModule: null module!";
+    return;
+    }
   qSlicerAbstractModuleWidget * moduleWidget =
     dynamic_cast<qSlicerAbstractModuleWidget*>(module->widgetRepresentation());
-  Q_ASSERT(moduleWidget);
+  if (!moduleWidget)
+    {
+    qCritical() << "removeModule: null module widget!";
+    return;
+    }
 
   Q_D(qSlicerModulePanel);
 
   QBoxLayout* scrollAreaLayout =
     qobject_cast<QBoxLayout*>(d->ScrollArea->widget()->layout());
-  Q_ASSERT(scrollAreaLayout);
+  if (!scrollAreaLayout)
+    {
+    qCritical() << "removeModule: null scroll area layout!";
+    return;
+    }
   int index = scrollAreaLayout->indexOf(moduleWidget);
   if (index == -1)
     {

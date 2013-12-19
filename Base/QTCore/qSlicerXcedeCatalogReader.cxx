@@ -1302,7 +1302,11 @@ QStringList qSlicerXcedeCatalogReader::extensions()const
 bool qSlicerXcedeCatalogReader::load(const qSlicerIO::IOProperties& properties)
 {
   Q_D(qSlicerXcedeCatalogReader);
-  Q_ASSERT(properties.contains("fileName"));
+  if (!properties.contains("fileName"))
+    {
+    qCritical() << "Xcede Catalog reader load: no file name!";
+    return false;
+    }
   QString fileName = properties["fileName"].toString();
 
   d->LoadedNodes.clear();

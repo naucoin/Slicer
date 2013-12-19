@@ -22,6 +22,7 @@
 #include "ui_qSlicerLabelMapVolumeDisplayWidget.h"
 
 // Qt includes
+#include <QDebug>
 
 // MRML includes
 #include "vtkMRMLColorNode.h"
@@ -139,6 +140,11 @@ void qSlicerLabelMapVolumeDisplayWidget::setColorNode(vtkMRMLNode* colorNode)
     {
     return;
     }
-  Q_ASSERT(vtkMRMLColorNode::SafeDownCast(colorNode));
+  if (!vtkMRMLColorNode::SafeDownCast(colorNode))
+    {
+    qCritical() << "setColorNode: not a color node: "
+                << colorNode->GetClassName();
+    return;
+    }
   displayNode->SetAndObserveColorNodeID(colorNode->GetID());
 }
