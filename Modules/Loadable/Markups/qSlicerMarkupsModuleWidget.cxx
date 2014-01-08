@@ -53,6 +53,8 @@
 // VTK includes
 #include <vtkNew.h>
 
+#include <math.h>
+
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_Markups
@@ -430,7 +432,7 @@ qSlicerMarkupsModuleWidget::qSlicerMarkupsModuleWidget(QWidget* _parent)
 {
   this->pToAddShortcut = 0;
 
-  this->volumeSpacingScaleFactor = 5.0;
+  this->volumeSpacingScaleFactor = 10.0;
 }
 
 
@@ -882,6 +884,9 @@ void qSlicerMarkupsModuleWidget::updateMaximumScaleFromVolumes()
       }
     }
   double maxScale = maxSliceSpacing * this->volumeSpacingScaleFactor;
+  // round it up to nearest multiple of 10
+  maxScale = ceil(maxScale / 10.0) * 10.0;
+
   if (maxScale > d->glyphScaleSliderWidget->maximum())
     {
     d->glyphScaleSliderWidget->setMaximum(maxScale);

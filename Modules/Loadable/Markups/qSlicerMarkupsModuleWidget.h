@@ -224,7 +224,7 @@ protected:
 
   /// A multiplication factor to apply to the maximum volume slice spacing when determining what the maximum value for the scale sliders should be.
   /// \sa updateMaximumScaleFromVolumes
-  /// Default: 5.0
+  /// Default: 10.0
   double volumeSpacingScaleFactor;
 
 private:
