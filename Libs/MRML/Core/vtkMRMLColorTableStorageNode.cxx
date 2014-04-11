@@ -85,11 +85,19 @@ int vtkMRMLColorTableStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
     while (fstr.good())
       {
       fstr.getline(line, 1024);
-      
+
       // does it start with a #?
       if (line[0] == '#')
         {
         vtkDebugMacro("Comment line, skipping:\n\"" << line << "\"");
+        // sanity check: does the procedural header match?
+        if (strncmp(line, "# Color procedural file", 23) == 0)
+          {
+          vtkErrorMacro("ReadDataInternal:\nfound a comment that this file "
+                        << " is a procedural color file, returning:\n"
+                        << line);
+          return 0;
+          }
         }
       else
         {
