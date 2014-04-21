@@ -16,6 +16,8 @@ class qSlicerSceneViewsModuleWidgetPrivate;
 
 class vtkMRMLNode;
 
+class QUrl;
+
 /// \ingroup Slicer_QtModules_SceneViews
 class Q_SLICER_QTMODULES_SCENEVIEWS_EXPORT qSlicerSceneViewsModuleWidget :
   public qSlicerAbstractModuleWidget
@@ -26,6 +28,11 @@ public:
     typedef qSlicerAbstractModuleWidget Superclass;
     qSlicerSceneViewsModuleWidget(QWidget *parent=0);
     ~qSlicerSceneViewsModuleWidget();
+
+  /// Set up the GUI from mrml when entering
+  virtual void enter();
+  /// Disconnect from scene when exiting
+  virtual void exit();
 
 public slots:
     /// a public slot allowing other modules to open up the scene view capture
@@ -47,8 +54,13 @@ protected slots:
   void moveDownSelected();
   void moveUpSelected();
 
+  /// Respond to scene events
+  void onMRMLSceneEvent(vtkObject*, vtkObject* node);
+
   /// respond to mrml events
   void updateFromMRMLScene();
+
+  void captureLinkClicked(const QUrl &url);
 
 protected:
   QScopedPointer<qSlicerSceneViewsModuleWidgetPrivate> d_ptr;

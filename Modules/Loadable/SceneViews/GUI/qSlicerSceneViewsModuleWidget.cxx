@@ -5,28 +5,34 @@
 #include "ctkCollapsibleButton.h"
 
 // QT includes
+#include <QBuffer>
 #include <QButtonGroup>
-#include <QList>
-#include <QFontMetrics>
-#include <QMessageBox>
-#include <QTextBrowser>
 #include <QFile>
-#include <QLineEdit>
 #include <QFileDialog>
-#include <QPrintDialog>
-#include <QPrinter>
+#include <QFontMetrics>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsRectItem>
-#include <QBuffer>
 #include <QImageWriter>
+#include <QLineEdit>
+#include <QList>
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QPrintDialog>
+#include <QPrinter>
 #include <QStatusBar>
+#include <QTextBrowser>
+#include <QWebFrame>
+#include <QUrl>
 
 // MRML includes
 #include "vtkMRMLScene.h"
+#include "vtkMRMLSceneViewNode.h"
 
 // VTK includes
 #include "vtkCollection.h"
+#include "vtkImageData.h"
+#include "vtkNew.h"
+#include "vtkPNGWriter.h"
 #include "vtkSmartPointer.h"
 
 // GUI includes
@@ -54,6 +60,8 @@ public:
   qSlicerSceneViewsModuleDialog* sceneViewDialog();
 
   QPointer<qSlicerSceneViewsModuleDialog> SceneViewDialog;
+
+  QString htmlFromSceneView(vtkMRMLSceneViewNode *sceneView);
 };
 
 //-----------------------------------------------------------------------------
@@ -143,6 +151,68 @@ void qSlicerSceneViewsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   q->qvtkConnect(this->logic()->GetMRMLScene(), vtkMRMLScene::EndBatchProcessEvent,
                  this->hierarchyTreeView, SLOT(onSceneEndBatchProcessEvent()));
 
+
+  this->sceneViewsWebView->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOn);
+  // capture link clicked
+  this->sceneViewsWebView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+  QObject::connect(this->sceneViewsWebView, SIGNAL(linkClicked(const QUrl &)),
+                    q, SLOT(captureLinkClicked(QUrl)));
+}
+
+//-----------------------------------------------------------------------------
+QString qSlicerSceneViewsModuleWidgetPrivate::htmlFromSceneView(vtkMRMLSceneViewNode *sceneView)
+{
+  QString html;
+
+  if (!sceneView)
+    {
+    return html;
+    }
+  QString name = sceneView->GetName();
+  QString id = sceneView->GetID();
+  QString description = sceneView->GetSceneViewDescription().c_str();
+  // replace any carriage returns with html line breaks
+  description.replace(QString("\n"),
+                      QString("<br>\n"));
+  QString tempDir = qSlicerApplication::application()->defaultTemporaryPath();
+  QString thumbnailPath = tempDir + "/" + id + ".png";
+  /// tbd: always write out the image?
+  // if (!QFile::exists(thumbnailPath))
+    {
+    //qDebug() << "writing out file " << thumbnailPath;
+    vtkNew<vtkPNGWriter> writer;
+    writer->SetFileName(thumbnailPath.toLatin1());
+    writer->SetInput( sceneView->GetScreenShot() );
+    try
+      {
+      writer->Write();
+      }
+    catch (...)
+      {
+      qWarning() << "Unable to write file " << thumbnailPath;
+      }
+    }
+  QString restoreImagePath = QString("qrc:///Icons/Restore.png");
+
+  html = "<li>";
+  html += " <div style=\"width:100%;overflow-x:hidden;overflow-y:hidden;background-image:none;\">\n";
+  html += "  <div style=\"float:left; width:200px; margin:5px;\">\n";
+  html += "   <a href=\"Edit " + id + "\">\n";
+  html += "    <img src=\"file://" + thumbnailPath + "\" ";
+  html += "style=\"visibility:visible; max-width:200; max-height:none; ";
+  html += "display:block; image-rendering:auto; width:auto; height:auto; ";
+  html += "margin-left:14px; margin-top:0px; opacity:1;\">\n";
+  html += "   </a>\n";
+  html += "  </div>\n";
+  html += "  <div style=\"margin-left: 220px;\">";
+  html += "   <h3><a href=\"Restore " + id  + "\"><img src=\"" + restoreImagePath + "\"></a> ";
+  html += "   " + name + "</h3>\n";
+  html += "   " + description + "\n";
+  html += "  </div>\n";
+  html += " </div>\n";
+  html += "</li>\n";
+
+  return html;
 }
 
 //-----------------------------------------------------------------------------
@@ -210,14 +280,122 @@ void qSlicerSceneViewsModuleWidget::editSceneView(const QString& mrmlId)
   Q_D(qSlicerSceneViewsModuleWidget);
   d->sceneViewDialog()->loadNode(mrmlId);
   d->sceneViewDialog()->exec();
+  this->updateFromMRMLScene();
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
 {
+  Q_D(qSlicerSceneViewsModuleWidget);
+
   // logic will be listening for this event as well and filling in missing
   // hierarchy nodes, so just refresh the tree
   this->updateTreeViewModel();
+
+  int numSceneViews = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLSceneViewNode");
+  QString headerHtml;
+  headerHtml = "<html>";
+  headerHtml += "<head></head>";
+  headerHtml += "<body>";
+  headerHtml += " <div id=\"modalDialog\" style=\"display:none;\"></div>";
+  headerHtml += " <div class=\"MainDialog\" style=\"display:none;\"></div>";
+  headerHtml += " <div class=\"category\"></div>";
+  headerHtml += " <div id=\"container_main\">";
+  headerHtml += "  <div id=\"extension_banner\"></div>";
+  headerHtml += "  <div class=\"left_column\"></div>";
+  headerHtml += "  <div class=\"right_content\">";
+  headerHtml += "   <div class=\"content_header\">Scene Views ("
+    + QString::number(numSceneViews) + "):</div>";
+  headerHtml += "   <div class=\"screenshots\" style=\"width:100%;\">";
+  headerHtml += "    <ul>";
+
+  QString htmlPage = headerHtml;
+
+  for (int i = 0; i < numSceneViews; ++i)
+    {
+    vtkMRMLNode *mrmlNode = this->mrmlScene()->GetNthNodeByClass(i, "vtkMRMLSceneViewNode");
+    if (!mrmlNode)
+      {
+      continue;
+      }
+    vtkMRMLSceneViewNode *sceneView = vtkMRMLSceneViewNode::SafeDownCast(mrmlNode);
+    QString sceneViewHtml = d->htmlFromSceneView(sceneView);
+    htmlPage += sceneViewHtml;
+    }
+  QString footerHtml;
+  footerHtml = "    </ul>\n";
+  footerHtml += "   </div>\n";
+  footerHtml += "  </div>\n";
+  footerHtml += " </body>\n";
+  footerHtml += "</html>\n";
+  htmlPage += footerHtml;
+
+  QString baseURL;
+  d->sceneViewsWebView->setHtml(htmlPage, baseURL);
+  d->sceneViewsWebView->show();
+
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::enter()
+{
+  this->Superclass::enter();
+
+  // set up mrml scene observations so that the GUI gets updated
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeAddedEvent,
+                    this, SLOT(onMRMLSceneEvent(vtkObject*, vtkObject*)));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeRemovedEvent,
+                    this, SLOT(onMRMLSceneEvent(vtkObject*, vtkObject*)));
+
+  this->updateFromMRMLScene();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::exit()
+{
+  this->Superclass::exit();
+
+  // qDebug() << "exit widget";
+
+  // remove mrml scene observations, don't need to update the GUI while the
+  // module is not showing
+  this->qvtkDisconnectAll();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::onMRMLSceneEvent(vtkObject*, vtkObject* node)
+{
+  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
+    {
+    return;
+    }
+  vtkMRMLSceneViewNode* sceneViewNode = vtkMRMLSceneViewNode::SafeDownCast(node);
+  if (sceneViewNode)
+    {
+    this->updateFromMRMLScene();
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::captureLinkClicked(const QUrl &url)
+{
+  QString toParse = url.toString();
+
+  QStringList operationAndID = toParse.split(" ");
+  QString operation = operationAndID[0];
+  QString id = operationAndID[1];
+  if (operation == QString("Edit"))
+    {
+    this->editSceneView(id);
+    }
+  else if (operation == QString("Restore"))
+    {
+    this->restoreSceneView(id);
+    }
+  else
+    {
+    qWarning() << "caputreLinkClicked: unsupported operation: " << operation;
+    }
 }
 
 //-----------------------------------------------------------------------------
