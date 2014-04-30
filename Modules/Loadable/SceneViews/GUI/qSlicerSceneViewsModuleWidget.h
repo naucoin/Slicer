@@ -49,6 +49,10 @@ public slots:
     /// Update the scene view model
     void updateTreeViewModel();
 
+    /// scene was closed or imported or restored or finished batch
+    /// processing, reset as necessary
+    void onMRMLSceneReset();
+
 protected slots:
 
   void moveDownSelected();
@@ -66,6 +70,8 @@ protected:
   QScopedPointer<qSlicerSceneViewsModuleWidgetPrivate> d_ptr;
 
   virtual void setup();
+
+  void removeTemporaryFiles();
 
 private:
   Q_DECLARE_PRIVATE(qSlicerSceneViewsModuleWidget);

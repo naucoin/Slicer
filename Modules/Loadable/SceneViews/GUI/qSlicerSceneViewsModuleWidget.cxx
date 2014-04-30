@@ -31,6 +31,7 @@
 // VTK includes
 #include "vtkCollection.h"
 #include "vtkImageData.h"
+#include "vtkImageResize.h"
 #include "vtkNew.h"
 #include "vtkPNGWriter.h"
 #include "vtkSmartPointer.h"
@@ -177,12 +178,20 @@ QString qSlicerSceneViewsModuleWidgetPrivate::htmlFromSceneView(vtkMRMLSceneView
   QString tempDir = qSlicerApplication::application()->defaultTemporaryPath();
   QString thumbnailPath = tempDir + "/" + id + ".png";
   /// tbd: always write out the image?
-  // if (!QFile::exists(thumbnailPath))
+  if (!QFile::exists(thumbnailPath))
     {
-    //qDebug() << "writing out file " << thumbnailPath;
     vtkNew<vtkPNGWriter> writer;
     writer->SetFileName(thumbnailPath.toLatin1());
-    writer->SetInput( sceneView->GetScreenShot() );
+    vtkNew<vtkImageResize> resizeFilter;
+    resizeFilter->SetResizeMethodToOutputDimensions();
+    resizeFilter->SetInput(sceneView->GetScreenShot());
+    // try to keep the aspect ratio while setting a height
+    int dims[3];
+    sceneView->GetScreenShot()->GetDimensions(dims);
+    float newHeight = 200;
+    float newWidth = (newHeight/(float)(dims[0])) * (float)(dims[1]);
+    resizeFilter->SetOutputDimensions(newHeight, newWidth, 1);
+    writer->SetInput(resizeFilter->GetOutput());
     try
       {
       writer->Write();
@@ -193,6 +202,7 @@ QString qSlicerSceneViewsModuleWidgetPrivate::htmlFromSceneView(vtkMRMLSceneView
       }
     }
   QString restoreImagePath = QString("qrc:///Icons/Restore.png");
+  QString deleteImagePath = QString("qrc:///Icons/Delete.png");
 
   html = "<li>";
   html += " <div style=\"width:100%;overflow-x:hidden;overflow-y:hidden;background-image:none;\">\n";
@@ -206,8 +216,13 @@ QString qSlicerSceneViewsModuleWidgetPrivate::htmlFromSceneView(vtkMRMLSceneView
   html += "  </div>\n";
   html += "  <div style=\"margin-left: 220px;\">";
   html += "   <h3><a href=\"Restore " + id  + "\"><img src=\"" + restoreImagePath + "\"></a> ";
-  html += "   " + name + "</h3>\n";
+  html += "   " + name;
+  html += "    <a href=\"Delete " + id  + "\"><img src=\"" + deleteImagePath + "\"></a> ";
+  html += "   </h3>\n";
+  // don't underline the link
+  html += "   <a href=\"Edit " + id + "\" style=\"text-decoration:none;\">\n";
   html += "   " + description + "\n";
+  html += "   </a>\n";
   html += "  </div>\n";
   html += " </div>\n";
   html += "</li>\n";
@@ -292,11 +307,16 @@ void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
   // hierarchy nodes, so just refresh the tree
   this->updateTreeViewModel();
 
+  // clear the cache so new thumbnails will be used
+  d->sceneViewsWebView->settings()->clearMemoryCaches();
+
   int numSceneViews = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLSceneViewNode");
+  QString createImagePath = QString("qrc:///Icons/Camera.png");
+
   QString headerHtml;
   headerHtml = "<html>";
   headerHtml += "<head></head>";
-  headerHtml += "<body>";
+  headerHtml += "<body link=\"000000\">";
   headerHtml += " <div id=\"modalDialog\" style=\"display:none;\"></div>";
   headerHtml += " <div class=\"MainDialog\" style=\"display:none;\"></div>";
   headerHtml += " <div class=\"category\"></div>";
@@ -304,7 +324,9 @@ void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
   headerHtml += "  <div id=\"extension_banner\"></div>";
   headerHtml += "  <div class=\"left_column\"></div>";
   headerHtml += "  <div class=\"right_content\">";
-  headerHtml += "   <div class=\"content_header\">Scene Views ("
+  headerHtml += "   <div class=\"content_header\">";
+  headerHtml += "    <a href=\"Create\"><img src=\"" + createImagePath + "\"></a> ";
+  headerHtml += "     Scene Views ("
     + QString::number(numSceneViews) + "):</div>";
   headerHtml += "   <div class=\"screenshots\" style=\"width:100%;\">";
   headerHtml += "    <ul>";
@@ -346,7 +368,20 @@ void qSlicerSceneViewsModuleWidget::enter()
                     this, SLOT(onMRMLSceneEvent(vtkObject*, vtkObject*)));
   this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::NodeRemovedEvent,
                     this, SLOT(onMRMLSceneEvent(vtkObject*, vtkObject*)));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent,
+                    this, SLOT(onMRMLSceneReset()));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndImportEvent,
+                    this, SLOT(onMRMLSceneReset()));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndRestoreEvent,
+                    this, SLOT(onMRMLSceneReset()));
+  this->qvtkConnect(this->mrmlScene(), vtkMRMLScene::EndBatchProcessEvent,
+                    this, SLOT(onMRMLSceneReset()));
 
+  // this call needed for the case of a scene with scene views having been
+  // loaded while not in the scene views module, clear out the old thumbnails.
+  this->removeTemporaryFiles();
+
+  // and update the web view
   this->updateFromMRMLScene();
 }
 
@@ -377,13 +412,55 @@ void qSlicerSceneViewsModuleWidget::onMRMLSceneEvent(vtkObject*, vtkObject* node
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::onMRMLSceneReset()
+{
+  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
+    {
+    return;
+    }
+
+  // clear temp files to avoid thumbnail clashes with reused node ids
+  this->removeTemporaryFiles();
+
+  // update the web view
+  this->updateFromMRMLScene();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::removeTemporaryFiles()
+{
+  Q_D(qSlicerSceneViewsModuleWidget);
+
+  QString tempDirectoryPath = qSlicerApplication::application()->defaultTemporaryPath();
+  // look for files with vtkMRMLSceneViewNodeX.png file names
+  QDir tempDir = QDir(tempDirectoryPath);
+  QStringList filters;
+  filters << "vtkMRMLSceneViewNode*.png";
+  tempDir.setNameFilters(filters);
+  QStringList fileList = tempDir.entryList();
+  for (int i = 0; i < fileList.size(); ++i)
+    {
+    QString imagePath = tempDir.absoluteFilePath(fileList.at(i));
+    if (!QFile::remove(imagePath))
+      {
+      qWarning() << "Error removing scene view thumbnail file " << imagePath;
+      }
+    }
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerSceneViewsModuleWidget::captureLinkClicked(const QUrl &url)
 {
   QString toParse = url.toString();
 
   QStringList operationAndID = toParse.split(" ");
   QString operation = operationAndID[0];
-  QString id = operationAndID[1];
+  QString id;
+  if (operationAndID.size() > 1)
+    {
+    // Create doesn't need an id
+    id = operationAndID[1];
+    }
   if (operation == QString("Edit"))
     {
     this->editSceneView(id);
@@ -391,6 +468,14 @@ void qSlicerSceneViewsModuleWidget::captureLinkClicked(const QUrl &url)
   else if (operation == QString("Restore"))
     {
     this->restoreSceneView(id);
+    }
+  else if (operation == QString("Delete"))
+    {
+    this->mrmlScene()->RemoveNode(this->mrmlScene()->GetNodeByID(id.toLatin1()));
+    }
+  else if (operation == QString("Create"))
+    {
+    this->showSceneViewDialog();
     }
   else
     {
@@ -403,6 +488,7 @@ void qSlicerSceneViewsModuleWidget::captureLinkClicked(const QUrl &url)
 //-----------------------------------------------------------------------------
 void qSlicerSceneViewsModuleWidget::updateTreeViewModel()
 {
+  return;
   Q_D(qSlicerSceneViewsModuleWidget);
 
   if (d->logic() && d->logic()->GetMRMLScene() &&
