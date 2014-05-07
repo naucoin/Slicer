@@ -7,6 +7,7 @@
 // QT includes
 #include <QBuffer>
 #include <QButtonGroup>
+#include <QDebug>
 #include <QFile>
 #include <QFileDialog>
 #include <QFontMetrics>
@@ -118,42 +119,9 @@ void qSlicerSceneViewsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   Q_Q(qSlicerSceneViewsModuleWidget);
   this->Ui_qSlicerSceneViewsModuleWidget::setupUi(widget);
 
-  QObject::connect(this->hierarchyTreeView,
-                   SIGNAL(restoreSceneViewRequested(QString)),
-                   q, SLOT(restoreSceneView(QString)));
-  QObject::connect(this->hierarchyTreeView,
-                   SIGNAL(editSceneViewRequested(QString)),
-                   q, SLOT(editSceneView(QString)));
-
-  // setup the hierarchy treeWidget
-  this->hierarchyTreeView->setLogic(this->logic());
-  this->hierarchyTreeView->setMRMLScene(this->logic()->GetMRMLScene());
-  // setMRMLScene calls setRoot
-
-  q->connect(this->moveDownSelectedButton, SIGNAL(clicked()),
-             q, SLOT(moveDownSelected()));
-  q->connect(this->moveUpSelectedButton, SIGNAL(clicked()),
-             q, SLOT(moveUpSelected()));
-
-  QObject::connect(this->deleteSelectedButton, SIGNAL(clicked()),
-                   this->hierarchyTreeView, SLOT(deleteSelected()));
-
-  QObject::connect(this->sceneView, SIGNAL(clicked()),
-                   q, SLOT(showSceneViewDialog()));
-
-  q->connect(q, SIGNAL(mrmlSceneChanged(vtkMRMLScene*)),
-             this->hierarchyTreeView, SLOT(setMRMLScene(vtkMRMLScene*)));
-
-  // listen to some mrml events
-  q->qvtkConnect(this->logic()->GetMRMLScene(), vtkMRMLScene::EndImportEvent,
-                 this->hierarchyTreeView, SLOT(onSceneEndImportEvent()));
-  q->qvtkConnect(this->logic()->GetMRMLScene(), vtkMRMLScene::EndRestoreEvent,
-                 this->hierarchyTreeView, SLOT(onSceneEndRestoreEvent()));
-  q->qvtkConnect(this->logic()->GetMRMLScene(), vtkMRMLScene::EndBatchProcessEvent,
-                 this->hierarchyTreeView, SLOT(onSceneEndBatchProcessEvent()));
-
-
+  //this->sceneViewsWebView->setMRMLScene(q->mrmlScene());
   this->sceneViewsWebView->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOn);
+
   // capture link clicked
   this->sceneViewsWebView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
   QObject::connect(this->sceneViewsWebView, SIGNAL(linkClicked(const QUrl &)),
@@ -184,14 +152,22 @@ QString qSlicerSceneViewsModuleWidgetPrivate::htmlFromSceneView(vtkMRMLSceneView
     writer->SetFileName(thumbnailPath.toLatin1());
     vtkNew<vtkImageResize> resizeFilter;
     resizeFilter->SetResizeMethodToOutputDimensions();
+#if (VTK_MAJOR_VERSION <= 5)
     resizeFilter->SetInput(sceneView->GetScreenShot());
+#else
+    resizeFilter->SetInputConnection(sceneView->GetScreenShot());
+#endif
     // try to keep the aspect ratio while setting a height
     int dims[3];
     sceneView->GetScreenShot()->GetDimensions(dims);
     float newHeight = 200;
     float newWidth = (newHeight/(float)(dims[0])) * (float)(dims[1]);
     resizeFilter->SetOutputDimensions(newHeight, newWidth, 1);
+#if (VTK_MAJOR_VERSION <= 5)
     writer->SetInput(resizeFilter->GetOutput());
+#else
+    writer->SetInputConnection(resizeFilter->GetOutputPort()));
+#endif
     try
       {
       writer->Write();
@@ -252,31 +228,26 @@ void qSlicerSceneViewsModuleWidget::setup()
   this->Superclass::setup();
   d->setupUi(this);
 
-  this->updateTreeViewModel();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerSceneViewsModuleWidget::moveDownSelected()
+void qSlicerSceneViewsModuleWidget::moveDownSelected(QString mrmlId)
 {
   Q_D(qSlicerSceneViewsModuleWidget);
 
-  const char* id = d->logic()->MoveSceneViewDown(
-    d->hierarchyTreeView->firstSelectedNode().toLatin1());
+  const char* id = d->logic()->MoveSceneViewDown(mrmlId.toLatin1());
 
-  d->hierarchyTreeView->clearSelection();
-  d->hierarchyTreeView->setSelectedNode(id);
+  this->updateFromMRMLScene();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerSceneViewsModuleWidget::moveUpSelected()
+void qSlicerSceneViewsModuleWidget::moveUpSelected(QString mrmlId)
 {
   Q_D(qSlicerSceneViewsModuleWidget);
 
-  const char* id = d->logic()->MoveSceneViewUp(
-    d->hierarchyTreeView->firstSelectedNode().toLatin1());
+  const char* id = d->logic()->MoveSceneViewUp(mrmlId.toLatin1());
 
-  d->hierarchyTreeView->clearSelection();
-  d->hierarchyTreeView->setSelectedNode(id);
+  this->updateFromMRMLScene();
 }
 
 //-----------------------------------------------------------------------------
@@ -302,10 +273,6 @@ void qSlicerSceneViewsModuleWidget::editSceneView(const QString& mrmlId)
 void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
 {
   Q_D(qSlicerSceneViewsModuleWidget);
-
-  // logic will be listening for this event as well and filling in missing
-  // hierarchy nodes, so just refresh the tree
-  this->updateTreeViewModel();
 
   // clear the cache so new thumbnails will be used
   d->sceneViewsWebView->settings()->clearMemoryCaches();
@@ -479,31 +446,8 @@ void qSlicerSceneViewsModuleWidget::captureLinkClicked(const QUrl &url)
     }
   else
     {
-    qWarning() << "caputreLinkClicked: unsupported operation: " << operation;
+    qWarning() << "captureLinkClicked: unsupported operation: " << operation;
     }
-}
-
-//-----------------------------------------------------------------------------
-// Refresh the hierarchy tree after an sceneView was added or modified.
-//-----------------------------------------------------------------------------
-void qSlicerSceneViewsModuleWidget::updateTreeViewModel()
-{
-  return;
-  Q_D(qSlicerSceneViewsModuleWidget);
-
-  if (d->logic() && d->logic()->GetMRMLScene() &&
-      d->logic()->GetMRMLScene()->IsBatchProcessing())
-    {
-    // scene is updating, return
-    return;
-    }
-  //qDebug("updateTreeViewModel");
-
-  // use lazy update to trigger a refresh after batch processing
-  d->hierarchyTreeView->sceneModel()->setLazyUpdate(true);
-
-  // set mrml scene calls expand all and set root
-  d->hierarchyTreeView->setMRMLScene(d->logic()->GetMRMLScene());
 }
 
 //-----------------------------------------------------------------------------

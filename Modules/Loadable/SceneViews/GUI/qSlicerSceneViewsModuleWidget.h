@@ -46,17 +46,14 @@ public slots:
     /// User clicked on property edit button
     void editSceneView(const QString& mrmlId);
 
-    /// Update the scene view model
-    void updateTreeViewModel();
-
     /// scene was closed or imported or restored or finished batch
     /// processing, reset as necessary
     void onMRMLSceneReset();
 
 protected slots:
 
-  void moveDownSelected();
-  void moveUpSelected();
+  void moveDownSelected(QString mrmlId);
+  void moveUpSelected(QString mrmlId);
 
   /// Respond to scene events
   void onMRMLSceneEvent(vtkObject*, vtkObject* node);
