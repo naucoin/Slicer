@@ -119,7 +119,7 @@ void qSlicerSceneViewsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   Q_Q(qSlicerSceneViewsModuleWidget);
   this->Ui_qSlicerSceneViewsModuleWidget::setupUi(widget);
 
-  //this->sceneViewsWebView->setMRMLScene(q->mrmlScene());
+  this->sceneViewsWebView->setMRMLScene(q->mrmlScene());
   this->sceneViewsWebView->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOn);
 
   // capture link clicked
