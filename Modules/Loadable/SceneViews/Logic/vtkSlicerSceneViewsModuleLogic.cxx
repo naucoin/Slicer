@@ -191,8 +191,9 @@ void vtkSlicerSceneViewsModuleLogic::ModifySceneView(vtkStdString id, const char
 
   vtkStdString descriptionString = vtkStdString(description);
   viewNode->SetSceneViewDescription(descriptionString);
-  viewNode->SetScreenShotType(screenshotType);
-  viewNode->SetScreenShot(screenshot);
+  // only the text is allowed to be modified, not the screen shot type nor the
+  // screen shot image, so don't resave them
+  // see also qMRMLScreenShotDialog::grabScreenShot()
 
   // TODO: Listen to the node directly, probably in OnMRMLSceneNodeAddedEvent
   this->OnMRMLNodeModified(viewNode);
