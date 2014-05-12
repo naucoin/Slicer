@@ -114,7 +114,7 @@ void qSlicerSceneViewsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   this->Ui_qSlicerSceneViewsModuleWidget::setupUi(widget);
 
   this->sceneViewsWebView->setMRMLScene(q->mrmlScene());
-  this->sceneViewsWebView->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOn);
+  this->sceneViewsWebView->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
 
   // capture link clicked
   this->sceneViewsWebView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
@@ -283,8 +283,6 @@ void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
   headerHtml = "<html>";
   headerHtml += "<head></head>";
   headerHtml += "<body link=\"000000\">";
-  headerHtml += " <div style=\"display:none;\"></div>";
-  headerHtml += " <div style=\"display:none;\"></div>";
   headerHtml += " <div>";
   headerHtml += "  <a href=\"Create\"><img src=\"" + createImagePath + "\"></a> ";
   headerHtml += "   Scene Views ("
