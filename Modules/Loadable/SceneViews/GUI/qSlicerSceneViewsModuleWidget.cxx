@@ -86,12 +86,6 @@ qSlicerSceneViewsModuleDialog* qSlicerSceneViewsModuleWidgetPrivate::sceneViewDi
 
     // pass a pointer to the logic class
     this->SceneViewDialog->setLogic(this->logic());
-
-    // create slots which listen to events fired by the OK and CANCEL button on the dialog
-    //this->connect(this->SceneViewDialog, SIGNAL(rejected()),
-    //              this->SceneViewDialog, SLOT(hide()));
-    //this->connect(this->SceneViewDialog, SIGNAL(accepted()),
-    //              this->SceneViewDialog, SLOT(hide()));
     }
   return this->SceneViewDialog;
 }
@@ -126,6 +120,10 @@ void qSlicerSceneViewsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   this->sceneViewsWebView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
   QObject::connect(this->sceneViewsWebView, SIGNAL(linkClicked(const QUrl &)),
                     q, SLOT(captureLinkClicked(QUrl)));
+  // restore scroll bar position when the contents have been changed
+  QObject::connect(this->sceneViewsWebView->page()->mainFrame(),
+                   SIGNAL(contentsSizeChanged(const QSize &)),
+                   q, SLOT(restoreScrollPosition(QSize)));
 }
 
 //-----------------------------------------------------------------------------
@@ -187,10 +185,10 @@ QString qSlicerSceneViewsModuleWidgetPrivate::htmlFromSceneView(vtkMRMLSceneView
   html += "    <img src=\"file://" + thumbnailPath + "\" ";
   html += "style=\"visibility:visible; max-width:200; max-height:none; ";
   html += "display:block; image-rendering:auto; width:auto; height:auto; ";
-  html += "margin-left:14px; margin-top:0px; opacity:1;\">\n";
+  html += "margin-left:10px; margin-top:0px; opacity:1;\">\n";
   html += "   </a>\n";
   html += "  </div>\n";
-  html += "  <div style=\"margin-left: 220px;\">";
+  html += "  <div style=\"margin-left: 240px;\">";
   html += "   <h3><a href=\"Restore " + id  + "\"><img src=\"" + restoreImagePath + "\"></a> ";
   html += "   " + name;
   html += "    <a href=\"Delete " + id  + "\"><img src=\"" + deleteImagePath + "\"></a> ";
@@ -214,6 +212,7 @@ qSlicerSceneViewsModuleWidget::qSlicerSceneViewsModuleWidget(QWidget* parent) :
   qSlicerAbstractModuleWidget(parent)
   , d_ptr(new qSlicerSceneViewsModuleWidgetPrivate(*this))
 {
+  this->savedScrollPosition = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -284,18 +283,13 @@ void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
   headerHtml = "<html>";
   headerHtml += "<head></head>";
   headerHtml += "<body link=\"000000\">";
-  headerHtml += " <div id=\"modalDialog\" style=\"display:none;\"></div>";
-  headerHtml += " <div class=\"MainDialog\" style=\"display:none;\"></div>";
-  headerHtml += " <div class=\"category\"></div>";
-  headerHtml += " <div id=\"container_main\">";
-  headerHtml += "  <div id=\"extension_banner\"></div>";
-  headerHtml += "  <div class=\"left_column\"></div>";
-  headerHtml += "  <div class=\"right_content\">";
-  headerHtml += "   <div class=\"content_header\">";
-  headerHtml += "    <a href=\"Create\"><img src=\"" + createImagePath + "\"></a> ";
-  headerHtml += "     Scene Views ("
+  headerHtml += " <div style=\"display:none;\"></div>";
+  headerHtml += " <div style=\"display:none;\"></div>";
+  headerHtml += " <div>";
+  headerHtml += "  <a href=\"Create\"><img src=\"" + createImagePath + "\"></a> ";
+  headerHtml += "   Scene Views ("
     + QString::number(numSceneViews) + "):</div>";
-  headerHtml += "   <div class=\"screenshots\" style=\"width:100%;\">";
+  headerHtml += "   <div style=\"width:100%;\">";
   headerHtml += "    <ul>";
 
   QString htmlPage = headerHtml;
@@ -313,13 +307,16 @@ void qSlicerSceneViewsModuleWidget::updateFromMRMLScene()
     }
   QString footerHtml;
   footerHtml = "    </ul>\n";
-  footerHtml += "   </div>\n";
   footerHtml += "  </div>\n";
   footerHtml += " </body>\n";
   footerHtml += "</html>\n";
   htmlPage += footerHtml;
 
   QString baseURL;
+  // save the scroll bar position so can restore it once the html
+  // has been rendered
+  this->savedScrollPosition = d->sceneViewsWebView->page()->mainFrame()->scrollBarValue(Qt::Vertical);
+
   d->sceneViewsWebView->setHtml(htmlPage, baseURL);
   d->sceneViewsWebView->show();
 
@@ -450,6 +447,12 @@ void qSlicerSceneViewsModuleWidget::captureLinkClicked(const QUrl &url)
     }
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerSceneViewsModuleWidget::restoreScrollPosition(const QSize &size)
+{
+  Q_D(qSlicerSceneViewsModuleWidget);
+  d->sceneViewsWebView->page()->mainFrame()->setScrollBarValue(Qt::Vertical, this->savedScrollPosition);
+}
 //-----------------------------------------------------------------------------
 // SceneView functionality
 //-----------------------------------------------------------------------------

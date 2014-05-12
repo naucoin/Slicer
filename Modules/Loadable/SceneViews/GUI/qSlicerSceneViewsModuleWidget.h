@@ -63,6 +63,11 @@ protected slots:
 
   void captureLinkClicked(const QUrl &url);
 
+  /// When the html changes, try to go back to any previous scroll position.
+  /// Connected to contents size changed signal.
+  /// /sa savedScrollPosition
+  void restoreScrollPosition(const QSize &size);
+
 protected:
   QScopedPointer<qSlicerSceneViewsModuleWidgetPrivate> d_ptr;
 
@@ -73,6 +78,8 @@ protected:
 private:
   Q_DECLARE_PRIVATE(qSlicerSceneViewsModuleWidget);
   Q_DISABLE_COPY(qSlicerSceneViewsModuleWidget);
+
+  int savedScrollPosition;
 
 };
 
