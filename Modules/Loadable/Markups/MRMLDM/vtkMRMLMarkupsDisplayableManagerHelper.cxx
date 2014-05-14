@@ -492,6 +492,12 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PlaceSeed(double x, double y, vtkRe
     seedWidget->SetInteractor(interactor);
     seedWidget->SetCurrentRenderer(renderer);
 
+#if (VTK_MAJOR_VERSION >= 6)
+    if (seedWidget->GetPickingManager())
+      {
+      seedWidget->GetPickingManager()->EnabledOn();
+      }
+#endif
     seedWidget->CompleteInteraction();
     seedWidget->ManagesCursorOff();
     seedWidget->ProcessEventsOff();

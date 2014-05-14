@@ -182,6 +182,13 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager3D::CreateWidget(vtk
   seedWidget->SetInteractor(this->GetInteractor());
   seedWidget->SetCurrentRenderer(this->GetRenderer());
 
+#if (VTK_MAJOR_VERSION >= 6)
+    if (seedWidget->GetPickingManager())
+      {
+      seedWidget->GetPickingManager()->EnabledOn();
+      }
+#endif
+
   vtkDebugMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
 
   seedWidget->CompleteInteraction();
