@@ -141,6 +141,8 @@ void qSlicerColorsModuleWidget::setup()
 
   d->VTKScalarBar->setScalarBarWidget(d->ScalarBarWidget);
 
+  d->ScalarBarWidget->GetScalarBarActor()->SetDrawAnnotations(d->UseColorNameAsLabelCheckBox->isChecked());
+
   connect(d->ColorTableComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
           this, SLOT(onMRMLColorNodeChanged(vtkMRMLNode*)));
   connect(d->NumberOfColorsSpinBox, SIGNAL(editingFinished()),
@@ -149,7 +151,15 @@ void qSlicerColorsModuleWidget::setup()
           this, SLOT(setLookupTableRange(double,double)));
   connect(d->CopyColorNodeButton, SIGNAL(clicked()),
           this, SLOT(copyCurrentColorNode()));
-
+#if (VTK_MAJOR_VERSION <= 5)
+  d->UseColorNameAsLabelCheckBox->SetEnabled(0);
+  d->ShowColorTableAnnotationsCheckBox->SetEnabled(0);
+#else
+  connect(d->UseColorNameAsLabelCheckBox, SIGNAL(toggled(bool)),
+    this, SLOT(setUseColorNameAsLabel(bool)));
+  connect(d->ShowColorTableAnnotationsCheckBox, SIGNAL(toggled(bool)),
+    this, SLOT(setShowColorTableAnnotations(bool)));
+#endif
   qSlicerApplication * app = qSlicerApplication::application();
   if (app && app->layoutManager())
     {
@@ -250,6 +260,9 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
       d->LUTRangeWidget->setEnabled(false);
       d->LUTRangeWidget->setValues(0.,0.);
       }
+#if (VTK_MAJOR_VERSION >= 6)
+    this->updateAnnotations();
+#endif
     }
   else if (procColorNode != NULL)
     {
@@ -372,3 +385,66 @@ void qSlicerColorsModuleWidget::copyCurrentColorNode()
     d->ColorTableComboBox->setCurrentNode(colorNode);
     }
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerColorsModuleWidget::setUseColorNameAsLabel(bool useColorName)
+{
+#if (VTK_MAJOR_VERSION < 6)
+  Q_UNUSED(useColorName);
+#else
+//  Q_D(qSlicerColorsModuleWidget);
+  Q_UNUSED(useColorName);
+  this->updateAnnotations();
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerColorsModuleWidget::setShowColorTableAnnotations(bool showAnnotations)
+{
+#if (VTK_MAJOR_VERSION < 6)
+  Q_UNUSED(showAnnotations);
+#else
+  Q_D(qSlicerColorsModuleWidget);
+  if (showAnnotations)
+    {
+    d->ScalarBarWidget->GetScalarBarActor()->SetDrawAnnotations(1);
+    this->updateAnnotations();
+    }
+  else
+    {
+    d->ScalarBarWidget->GetScalarBarActor()->SetDrawAnnotations(0);
+    }
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerColorsModuleWidget::updateAnnotations()
+{
+#if (VTK_MAJOR_VERSION >= 6)
+  Q_D(qSlicerColorsModuleWidget);
+
+  if (d->ScalarBarWidget->GetScalarBarActor()->GetDrawAnnotations())
+    {
+    vtkScalarsToColors *lut = d->ScalarBarWidget->GetScalarBarActor()->GetLookupTable();
+    if (lut->GetNumberOfAnnotatedValues() !=
+        d->ScalarBarWidget->GetScalarBarActor()->GetNumberOfLabels())
+      {
+      lut->ResetAnnotations();
+      int numLabels = d->ScalarBarWidget->GetScalarBarActor()->GetNumberOfLabels();
+      vtkMRMLColorNode* colorNode = vtkMRMLColorNode::SafeDownCast(
+        d->ColorTableComboBox->currentNode());
+      for (int i = 0;
+           i < numLabels;
+           ++i)
+        {
+        double index = static_cast<double>(i) / (numLabels - 1)*(colorNode->GetNumberOfColors()-1);
+        int colorIndex = static_cast<int>(index + 0.5);
+        lut->SetAnnotation(colorIndex,
+                           colorNode->GetColorName(colorIndex));
+        }
+      }
+    }
+#endif
+}
+
+

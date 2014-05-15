@@ -46,6 +46,8 @@ public slots:
   void updateNumberOfColors();
   void setLookupTableRange(double min, double max);
   void copyCurrentColorNode();
+  void setShowColorTableAnnotations(bool);
+  void setUseColorNameAsLabel(bool);
 
 protected slots:
   void onMRMLColorNodeChanged(vtkMRMLNode* newColorNode);
@@ -53,6 +55,7 @@ protected slots:
 protected:
   virtual void setup();
   virtual void setMRMLScene(vtkMRMLScene *scene);
+  void updateAnnotations();
 
 protected:
   QScopedPointer<qSlicerColorsModuleWidgetPrivate> d_ptr;
