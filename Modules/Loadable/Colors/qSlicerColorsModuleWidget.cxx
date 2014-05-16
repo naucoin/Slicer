@@ -141,7 +141,9 @@ void qSlicerColorsModuleWidget::setup()
 
   d->VTKScalarBar->setScalarBarWidget(d->ScalarBarWidget);
 
+#if (VTK_MAJOR_VERSION >= 6)
   d->ScalarBarWidget->GetScalarBarActor()->SetDrawAnnotations(d->UseColorNameAsLabelCheckBox->isChecked());
+#endif
 
   connect(d->ColorTableComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
           this, SLOT(onMRMLColorNodeChanged(vtkMRMLNode*)));
@@ -152,8 +154,8 @@ void qSlicerColorsModuleWidget::setup()
   connect(d->CopyColorNodeButton, SIGNAL(clicked()),
           this, SLOT(copyCurrentColorNode()));
 #if (VTK_MAJOR_VERSION <= 5)
-  d->UseColorNameAsLabelCheckBox->SetEnabled(0);
-  d->ShowColorTableAnnotationsCheckBox->SetEnabled(0);
+  d->UseColorNameAsLabelCheckBox->setEnabled(0);
+  d->ShowColorTableAnnotationsCheckBox->setEnabled(0);
 #else
   connect(d->UseColorNameAsLabelCheckBox, SIGNAL(toggled(bool)),
     this, SLOT(setUseColorNameAsLabel(bool)));
