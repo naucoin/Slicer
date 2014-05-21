@@ -12,6 +12,9 @@ set(${KIT}_SRCS
   vtkMRML${MODULE_NAME}FiducialNode.cxx
   vtkMRML${MODULE_NAME}Node.cxx
   vtkMRML${MODULE_NAME}FiducialStorageNode.cxx
+  vtkMRML${MODULE_NAME}RulerDisplayNode.cxx
+  vtkMRML${MODULE_NAME}RulerNode.cxx
+  vtkMRML${MODULE_NAME}RulerStorageNode.cxx
   vtkMRML${MODULE_NAME}StorageNode.cxx
   )
 

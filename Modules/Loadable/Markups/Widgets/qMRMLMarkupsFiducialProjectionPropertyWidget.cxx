@@ -98,6 +98,12 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 ::setMRMLFiducialNode(vtkMRMLMarkupsFiducialNode* fiducialNode)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
+
+  if (!fiducialNode)
+    {
+    return;
+    }
+
   vtkMRMLMarkupsDisplayNode* displayNode
     = fiducialNode->GetMarkupsDisplayNode();
 

@@ -13,6 +13,10 @@ set(KIT_TEST_SRCS
   vtkMRMLMarkupsFiducialStorageNodeTest1.cxx
   vtkMRMLMarkupsFiducialStorageNodeTest2.cxx
   vtkMRMLMarkupsFiducialStorageNodeTest3.cxx
+  vtkMRMLMarkupsRulerDisplayNodeTest1.cxx
+  vtkMRMLMarkupsRulerNodeTest1.cxx
+  vtkMRMLMarkupsRulerStorageNodeTest1.cxx
+  vtkMRMLMarkupsRulerStorageNodeTest2.cxx
   vtkMRMLMarkupsStorageNodeTest1.cxx
   vtkSlicerMarkupsLogicTest1.cxx
   vtkSlicerMarkupsLogicTest2.cxx
@@ -33,14 +37,18 @@ SIMPLE_TEST( vtkMRMLMarkupsDisplayNodeTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsFiducialNodeTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest1 )
 SIMPLE_TEST( vtkMRMLMarkupsNodeTest2 )
+SIMPLE_TEST( vtkMRMLMarkupsRulerDisplayNodeTest1 )
+SIMPLE_TEST( vtkMRMLMarkupsRulerNodeTest1 )
 
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest1 ${TEMP}/markupsFiducialStorageNode.fcsv )
+SIMPLE_TEST( vtkMRMLMarkupsRulerStorageNodeTest1 ${TEMP}/markupsRulerStorageNode.rcsv )
 
 # test legacy Slicer3 fcsv file
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest2 ${INPUT}/slicer3.fcsv )
 
-# test Slicer4 annotation acsv file
+# test Slicer4 annotation acsv files
 SIMPLE_TEST( vtkMRMLMarkupsFiducialStorageNodeTest3 ${INPUT}/slicer4.acsv )
+SIMPLE_TEST( vtkMRMLMarkupsRulerStorageNodeTest2 ${INPUT}/slicer4Ruler.acsv )
 
 SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 )
 

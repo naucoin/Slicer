@@ -11,6 +11,16 @@ slicerMacroBuildScriptedModule(
 slicer_add_python_unittest(SCRIPT AddManyMarkupsFiducialTest.py
                            SLICER_ARGS --disable-cli-modules)
 
+# Test adding many rulers
+slicerMacroBuildScriptedModule(
+  NAME AddManyMarkupsRulerTest
+  SCRIPTS AddManyMarkupsRulerTest.py
+  RESOURCES ${MARKUPS_PYTHON_RESOURCES}
+  )
+slicer_add_python_unittest(SCRIPT AddManyMarkupsRulerTest.py
+                           SLICER_ARGS --disable-cli-modules)
+
+
 # Test scene views
 slicer_add_python_test(SCRIPT MarkupsSceneViewRestoreTestSimple.py
                        SLICER_ARGS --disable-cli-modules)

@@ -64,10 +64,11 @@ typedef struct
 /// \ingroup Slicer_QtModules_Markups
 class  VTK_SLICER_MARKUPS_MODULE_MRML_EXPORT vtkMRMLMarkupsNode : public vtkMRMLDisplayableNode
 {
-  /// Make the storage node a friend so that ReadDataInternal can set the markup
+  /// Make the storage nodes friends so that ReadDataInternal can set the markup
   /// ids
   friend class vtkMRMLMarkupsStorageNode;
   friend class vtkMRMLMarkupsFiducialStorageNode;
+  friend class vtkMRMLMarkupsRulerStorageNode;
 
 public:
   static vtkMRMLMarkupsNode *New();
