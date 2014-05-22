@@ -83,10 +83,23 @@ public:
   std::string AddNewFiducialNode(const char *name = "F", vtkMRMLScene *scene = NULL);
 
   /// Add a new fiducial to the currently active list at the given RAS
-  /// coordinates (default 0,0,0). Will create a list is one is not active.
+  /// coordinates (default 0,0,0). Will create a list if one is not active.
   /// Returns -1 on failure, index of the added fiducial
   /// on success.
   int AddFiducial(double r=0.0, double a=0.0, double s=0.0);
+
+  /// Create a new markups ruler node and associated display node, adding both to
+  /// the scene. If the scene argument is null use the scene set on the logic
+  /// class, and also make it the active on on the selection node, otherwise
+  /// add to the passed scene.
+  /// On success, return the id, on failure return an empty string.
+  std::string AddNewRulerNode(const char *name = "R", vtkMRMLScene *scene = NULL);
+
+  /// Add a new ruler to the currently active list at the given two RAS
+  /// coordinates (default 0,0,0 - 1,1,1). Will create a list if one is not active.
+  /// Returns -1 on failure, index of the added ruler on success.
+  int AddRuler(double r1=0.0, double a1=0.0, double s1=0.0,
+               double r2=1.0, double a2=1.0, double s2=1.0);
 
   /// jump the slice windows to the given coordinate
   void JumpSlicesToLocation(double x, double y, double z, bool centered);
@@ -168,6 +181,13 @@ public:
   /// the top level heirarchy nodes intact as they may be parents to ruler or
   /// ROIs but deletes the 1:1 hierarchy nodes.
   void ConvertAnnotationFiducialsToMarkups();
+
+  /// Searches the scene for annotation ruler nodes, collecting a list
+  /// of annotation hierarchy nodes. Then iterates through those heirarchy nodes
+  /// and moves the rulers that are under them into new markups nodes. Leaves
+  /// the top level heirarchy nodes intact as they may be parents to fiducial or
+  /// ROIs but deletes the 1:1 hierarchy nodes.
+  void ConvertAnnotationRulersToMarkups();
 
   /// Iterate over the markups in the list and reset the markup labels using
   /// the current MarkupLabelFormat setting. Try to keep current numbering.

@@ -23,11 +23,15 @@
 #include "vtkMRMLMarkupsFiducialNode.h"
 #include "vtkMRMLMarkupsFiducialStorageNode.h"
 #include "vtkMRMLMarkupsNode.h"
+#include "vtkMRMLMarkupsRulerDisplayNode.h"
+#include "vtkMRMLMarkupsRulerNode.h"
 #include "vtkMRMLMarkupsStorageNode.h"
 
 // Annotation MRML includes
 #include "vtkMRMLAnnotationFiducialNode.h"
+#include "vtkMRMLAnnotationLineDisplayNode.h"
 #include "vtkMRMLAnnotationPointDisplayNode.h"
+#include "vtkMRMLAnnotationRulerNode.h"
 #include "vtkMRMLAnnotationTextDisplayNode.h"
 
 // MRML includes
@@ -334,7 +338,7 @@ std::string vtkSlicerMarkupsLogic::GetActiveListID()
     }
 
   char *activePlaceNodeID = selectionNode->GetActivePlaceNodeID();
-  // is there no active fiducial list?
+  // is there no active markup list?
   if (activePlaceNodeID == NULL)
     {
     vtkDebugMacro("GetListID: no active place node");
@@ -394,10 +398,24 @@ std::string vtkSlicerMarkupsLogic::AddNewDisplayNodeForMarkupsNode(vtkMRMLNode *
     }
 
   // create the display node
-  vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::New();
+  vtkMRMLMarkupsDisplayNode *displayNode = NULL;
+  if (displayableNode->IsA("vtkMRMLMarkupsFiducialNode"))
+    {
+    displayNode = vtkMRMLMarkupsDisplayNode::New();
+    }
+  else if (displayableNode->IsA("vtkMRMLMarkupsRulerNode"))
+    {
+    displayNode = vtkMRMLMarkupsRulerDisplayNode::New();
+    }
+  else
+    {
+    vtkErrorMacro("AddNewDisplayNodeForMarkupsNode: unknown node type " <<
+                  displayableNode->GetClassName());
+    return id;
+    }
   // set it from the defaults
   this->SetDisplayNodeToDefaults(displayNode);
-  vtkDebugMacro("AddNewDisplayNodeForMarkupsNode: set display node to defaults");
+
 
   // add it to the scene
   //mrmlNode->GetScene()->AddNode(displayNode);
@@ -524,6 +542,106 @@ int vtkSlicerMarkupsLogic::AddFiducial(double r, double a, double s)
   vtkDebugMacro("AddFiducial: adding a fiducial to the list " << listID);
   // add the point to the active fiducial list
   return fiducialNode->AddFiducial(r,a,s);
+}
+
+//---------------------------------------------------------------------------
+int vtkSlicerMarkupsLogic::AddRuler(double r1, double a1, double s1,
+                                    double r2, double a2, double s2)
+{
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("AddRuler: no scene defined!");
+    return -1;
+    }
+
+  // get the active list id
+  std::string listID = this->GetActiveListID();
+
+  // is there no active ruler list?
+  if (listID.size() == 0)
+    {
+    vtkDebugMacro("AddRuler: no list is active, adding one first!");
+    std::string newListID = this->AddNewRulerNode();
+    if (newListID.size() == 0)
+      {
+      vtkErrorMacro("AddRuler: failed to add a new ruler list to the scene.");
+      return -1;
+      }
+    // try to get the id again
+    listID = this->GetActiveListID();
+    if (listID.size() == 0)
+      {
+      vtkErrorMacro("AddRuler: failed to create a new list to add to!");
+      return -1;
+      }
+    }
+
+  // get the active list
+  vtkMRMLNode *listNode = this->GetMRMLScene()->GetNodeByID(listID.c_str());
+  if (!listNode)
+    {
+    vtkErrorMacro("AddRuler: failed to get the active list with id " << listID);
+    return -1;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(listNode);
+  if (!rulerNode)
+    {
+    vtkErrorMacro("AddRuler: active list is not a ruler list: " << listNode->GetClassName());
+    return -1;
+    }
+  vtkDebugMacro("AddRuler: adding a ruler to the list " << listID);
+  // add the point to the active ruler list
+  return rulerNode->AddRuler(r1,a1,s1,r2,a2,s2);
+}
+
+//---------------------------------------------------------------------------
+std::string vtkSlicerMarkupsLogic::AddNewRulerNode(const char *name, vtkMRMLScene *scene)
+{
+  std::string id;
+
+  if (!scene && !this->GetMRMLScene())
+    {
+    vtkErrorMacro("AddNewMarkupsNode: no scene to add a markups node to!");
+    return id;
+    }
+
+  vtkMRMLScene *addToThisScene;
+  if (scene)
+    {
+    addToThisScene = scene;
+    }
+  else
+    {
+    addToThisScene = this->GetMRMLScene();
+    }
+
+  // create and add the node
+  vtkMRMLMarkupsRulerNode *mnode = vtkMRMLMarkupsRulerNode::New();
+  addToThisScene->AddNode(mnode);
+
+  // add a display node
+  std::string displayID = this->AddNewDisplayNodeForMarkupsNode(mnode);
+
+  if (displayID.compare("") != 0)
+    {
+    // get the node id to return
+    id = std::string(mnode->GetID());
+    if (name != NULL)
+      {
+      mnode->SetName(name);
+      }
+    // if adding to this scene (could be adding to a scene view during conversion)
+    // make it active so mouse mode tool bar clicks will add new fids to
+    // this list
+    if (addToThisScene == this->GetMRMLScene())
+      {
+      this->SetActiveListID(mnode);
+      }
+    }
+  // clean up
+  mnode->Delete();
+
+  return id;
 }
 
 //---------------------------------------------------------------------------
@@ -976,7 +1094,6 @@ bool vtkSlicerMarkupsLogic::CopyNthMarkupToNewList(int n, vtkMRMLMarkupsNode *ma
   return true;
 }
 
-
 //---------------------------------------------------------------------------
 void vtkSlicerMarkupsLogic::ConvertAnnotationFiducialsToMarkups()
 {
@@ -1173,6 +1290,233 @@ void vtkSlicerMarkupsLogic::ConvertAnnotationFiducialsToMarkups()
         if (textDisplayNode)
           {
           scene->RemoveNode(textDisplayNode);
+          }
+        // is there a storage node?
+        vtkMRMLStorageNode *storageNode = annotNode->GetStorageNode();
+        if (storageNode)
+          {
+          scene->RemoveNode(storageNode);
+          }
+        // now remove the annotation node
+        scene->RemoveNode(annotNode);
+        }
+      children->RemoveAllItems();
+      children->Delete();
+      }
+    hierarchyNodeIDs->Delete();
+    } // end of looping over the scene
+  sceneViews->RemoveAllItems();
+  sceneViews->Delete();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::ConvertAnnotationRulersToMarkups()
+{
+  if (!this->GetMRMLScene())
+    {
+    return;
+    }
+
+  // there can be annotation rulers in the main scene, as well as in scene
+  // view scenes, so collect all of those in one vector to iterate over
+  std::vector<vtkMRMLScene *> scenes;
+  scenes.push_back(this->GetMRMLScene());
+
+  vtkCollection *sceneViews = this->GetMRMLScene()->GetNodesByClass("vtkMRMLSceneViewNode");
+  int numberOfSceneViews = sceneViews->GetNumberOfItems();
+  for (int n = 0; n < numberOfSceneViews; ++n)
+    {
+    vtkMRMLSceneViewNode *sceneView =
+      vtkMRMLSceneViewNode::SafeDownCast(sceneViews->GetItemAsObject(n));
+    if (sceneView && sceneView->GetStoredScene())
+      {
+      scenes.push_back(sceneView->GetStoredScene());
+      }
+    }
+
+  vtkDebugMacro("ConvertAnnotationRulersToMarkups: Have " << scenes.size()
+                << " scenes to check for annotation ruler hierarchies");
+
+  // now iterate over this scene and the scene view scenes to get out the
+  // annotation rulers that need to be converted
+  for (unsigned int s = 0; s < scenes.size(); ++s)
+    {
+    vtkMRMLScene *scene = scenes[s];
+
+    vtkCollection *annotationRulers = scene->GetNodesByClass("vtkMRMLAnnotationRulerNode");
+    int numberOfAnnotationRulers = annotationRulers->GetNumberOfItems();
+
+    if (numberOfAnnotationRulers == 0)
+      {
+      annotationRulers->Delete();
+      continue;
+      }
+
+
+    // go through all the annotation rulers and collect their hierarchies
+    vtkStringArray *hierarchyNodeIDs = vtkStringArray::New();
+
+    for (int n = 0; n < numberOfAnnotationRulers; ++n)
+      {
+      vtkMRMLNode *mrmlNode =
+        vtkMRMLNode::SafeDownCast(annotationRulers->GetItemAsObject(n));
+      if (!mrmlNode)
+        {
+        continue;
+        }
+      vtkMRMLHierarchyNode *oneToOneHierarchyNode =
+        vtkMRMLHierarchyNode::GetAssociatedHierarchyNode(mrmlNode->GetScene(),
+                                                         mrmlNode->GetID());
+      if (!oneToOneHierarchyNode)
+        {
+        continue;
+        }
+      char * parentNodeID = oneToOneHierarchyNode->GetParentNodeID();
+      // is it not already in the list of annotation hierarchy node ids?
+      vtkIdType id = hierarchyNodeIDs->LookupValue(parentNodeID);
+      if (id == -1)
+        {
+        vtkDebugMacro("Found unique annotation hierarchy node, id = " << parentNodeID);
+        hierarchyNodeIDs->InsertNextValue(parentNodeID);
+        }
+      }
+
+    annotationRulers->RemoveAllItems();
+    annotationRulers->Delete();
+
+    if (hierarchyNodeIDs->GetNumberOfValues() == 0)
+      {
+      hierarchyNodeIDs->Delete();
+      return;
+      }
+    else
+      {
+      vtkDebugMacro("Converting " << hierarchyNodeIDs->GetNumberOfValues()
+                    << " annotation hierarchies to markup lists");
+      }
+    // now iterate over the hierarchies that have rulers in them and convert
+    // them to markups lists
+    for (int i = 0; i < hierarchyNodeIDs->GetNumberOfValues(); ++i)
+      {
+      vtkMRMLNode *mrmlNode = NULL;
+      vtkMRMLHierarchyNode *hierarchyNode = NULL;
+      mrmlNode = scene->GetNodeByID(hierarchyNodeIDs->GetValue(i));
+      if (!mrmlNode)
+        {
+        continue;
+        }
+
+      hierarchyNode = vtkMRMLHierarchyNode::SafeDownCast(mrmlNode);
+      if (!hierarchyNode)
+        {
+        continue;
+        }
+
+      // create a markups fiducial list with this name
+      std::string markupsListID = this->AddNewRulerNode(hierarchyNode->GetName(), scene);
+      vtkMRMLMarkupsRulerNode *markupsNode = NULL;
+      mrmlNode = scene->GetNodeByID(markupsListID.c_str());
+      if (!mrmlNode)
+        {
+        continue;
+        }
+      markupsNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+      if (!markupsNode)
+        {
+        continue;
+        }
+      // now get the rulers in this annotation hierarchy
+      vtkCollection *children = vtkCollection::New();
+      hierarchyNode->GetAssociatedChildrendNodes(children, "vtkMRMLAnnotationRulerNode");
+      vtkDebugMacro("Found " << children->GetNumberOfItems() << " annot rulers in this hierarchy");
+      for (int c = 0; c < children->GetNumberOfItems(); ++c)
+        {
+        vtkMRMLAnnotationRulerNode *annotNode;
+        annotNode = vtkMRMLAnnotationRulerNode::SafeDownCast(children->GetItemAsObject(c));
+        if (!annotNode)
+          {
+          continue;
+          }
+        double p1[3], p2[3];
+        annotNode->GetPosition1(p1);
+        annotNode->GetPosition2(p2);
+        int rulerIndex = markupsNode->AddRuler(p1[0], p1[1], p1[2],
+                                               p2[0], p2[1], p2[2]);
+        vtkDebugMacro("Added a ruler at index " << rulerIndex);
+        markupsNode->SetNthMarkupLabel(rulerIndex, std::string(annotNode->GetName()));
+        char *desc = annotNode->GetDescription();
+        if (desc)
+          {
+          markupsNode->SetNthMarkupDescription(rulerIndex,std::string(desc));
+          }
+        markupsNode->SetNthMarkupSelected(rulerIndex, annotNode->GetSelected());
+        markupsNode->SetNthMarkupVisibility(rulerIndex,
+                                            annotNode->GetDisplayVisibility());
+        markupsNode->SetNthMarkupLocked(rulerIndex, annotNode->GetLocked());
+        const char *assocNodeID = annotNode->GetAttribute("AssociatedNodeID");
+        if (assocNodeID)
+          {
+          markupsNode->SetNthMarkupAssociatedNodeID(rulerIndex, assocNodeID);
+          }
+
+        // get the display nodes
+        vtkMRMLAnnotationPointDisplayNode *pointDisplayNode = NULL;
+        vtkMRMLAnnotationTextDisplayNode *textDisplayNode = NULL;
+        vtkMRMLAnnotationLineDisplayNode *lineDisplayNode = NULL;
+        pointDisplayNode = annotNode->GetAnnotationPointDisplayNode();
+        textDisplayNode = annotNode->GetAnnotationTextDisplayNode();
+        lineDisplayNode = annotNode->GetAnnotationLineDisplayNode();
+
+        if (c == 0)
+          {
+          // use the first display node to get display settings
+          vtkMRMLMarkupsRulerDisplayNode *markupDisplayNode = markupsNode->GetMarkupsRulerDisplayNode();
+          if (!markupDisplayNode || !pointDisplayNode
+              || !textDisplayNode || !lineDisplayNode)
+            {
+            continue;
+            }
+          markupDisplayNode->SetColor(pointDisplayNode->GetColor());
+          markupDisplayNode->SetSelectedColor(pointDisplayNode->GetSelectedColor());
+          markupDisplayNode->SetGlyphScale(pointDisplayNode->GetGlyphScale());
+          markupDisplayNode->SetTextScale(textDisplayNode->GetTextScale());
+          // use the line display node label visibility instead
+          // markupDisplayNode->SetTextVisibility(textDisplayNode->GetVisibility());
+          markupDisplayNode->SetOpacity(pointDisplayNode->GetOpacity());
+          markupDisplayNode->SetPower(pointDisplayNode->GetPower());
+          markupDisplayNode->SetAmbient(pointDisplayNode->GetAmbient());
+          markupDisplayNode->SetDiffuse(pointDisplayNode->GetDiffuse());
+          markupDisplayNode->SetSpecular(pointDisplayNode->GetSpecular());
+          markupDisplayNode->SetSliceProjection(pointDisplayNode->GetSliceProjection());
+          markupDisplayNode->SetSliceProjectionColor(pointDisplayNode->GetProjectedColor());
+          markupDisplayNode->SetSliceProjectionOpacity(pointDisplayNode->GetProjectedOpacity());
+          // ruler specific
+          markupDisplayNode->SetTextVisibility(lineDisplayNode->GetLabelVisibility());
+          }
+        //
+        // clean up the no longer needed annotation nodes
+        //
+        // remove the 1:1 hierarchy node
+        vtkMRMLHierarchyNode *oneToOneHierarchyNode =
+          vtkMRMLHierarchyNode::GetAssociatedHierarchyNode(annotNode->GetScene(),
+                                                           annotNode->GetID());
+        if (oneToOneHierarchyNode)
+          {
+          scene->RemoveNode(oneToOneHierarchyNode);
+          }
+
+        // remove the display nodes
+        if (pointDisplayNode)
+          {
+        scene->RemoveNode(pointDisplayNode);
+          }
+        if (textDisplayNode)
+          {
+          scene->RemoveNode(textDisplayNode);
+          }
+        if (lineDisplayNode)
+          {
+          scene->RemoveNode(lineDisplayNode);
           }
         // is there a storage node?
         vtkMRMLStorageNode *storageNode = annotNode->GetStorageNode();

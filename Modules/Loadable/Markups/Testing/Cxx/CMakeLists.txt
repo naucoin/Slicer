@@ -21,6 +21,8 @@ set(KIT_TEST_SRCS
   vtkSlicerMarkupsLogicTest1.cxx
   vtkSlicerMarkupsLogicTest2.cxx
   vtkSlicerMarkupsLogicTest3.cxx
+  vtkSlicerMarkupsLogicTest4.cxx
+  vtkSlicerMarkupsLogicTest5.cxx
   vtkMarkupsAnnotationSceneTest.cxx
   )
 
@@ -56,6 +58,8 @@ SIMPLE_TEST( vtkMRMLMarkupsStorageNodeTest1 )
 SIMPLE_TEST( vtkSlicerMarkupsLogicTest1 )
 SIMPLE_TEST( vtkSlicerMarkupsLogicTest2 )
 SIMPLE_TEST( vtkSlicerMarkupsLogicTest3 )
+SIMPLE_TEST( vtkSlicerMarkupsLogicTest4 )
+SIMPLE_TEST( vtkSlicerMarkupsLogicTest5 )
 
 # test Slicer4 annotation fiducials in a mrml file
 # TODO: remove this after annotation fiducials have been removed
