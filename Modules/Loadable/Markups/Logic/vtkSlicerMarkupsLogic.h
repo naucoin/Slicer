@@ -118,6 +118,9 @@ public:
   double GetDefaultMarkupsDisplayNodeTextScale();
   void SetDefaultMarkupsDisplayNodeTextScale(double scale);
 
+  int GetDefaultMarkupsDisplayNodeTextVisibility();
+  void SetDefaultMarkupsDisplayNodeTextVisibility(int visibility);
+
   double GetDefaultMarkupsDisplayNodeOpacity();
   void SetDefaultMarkupsDisplayNodeOpacity(double opacity);
 

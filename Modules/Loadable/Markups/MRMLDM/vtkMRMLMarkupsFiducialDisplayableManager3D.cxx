@@ -367,9 +367,15 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
     {
     handleRep->VisibilityOn();
     handleRep->HandleVisibilityOn();
-    if (textString.compare("") != 0)
+    // hide the text if text visibility is turned off for this list
+    if (displayNode->GetTextVisibility() &&
+        textString.compare("") != 0)
       {
       handleRep->LabelVisibilityOn();
+      }
+    else
+      {
+      handleRep->LabelVisibilityOff();
       }
     seedWidget->GetSeed(n)->EnabledOn();
     }

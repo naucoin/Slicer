@@ -30,6 +30,7 @@
 
 class vtkStringArray;
 class vtkMatrix4x4;
+class vtkMRMLMarkupsDisplayNode;
 
 /// see doxygen enabled comment in class description
 typedef struct
@@ -115,6 +116,9 @@ public:
 
   /// Create default storage node or NULL if does not have one
   virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
+
+  /// Return a cast display node, returns null if none
+  vtkMRMLMarkupsDisplayNode *GetMarkupsDisplayNode();
 
   /// Access to a VTK string array, not currently used
   int AddText(const char *newText);

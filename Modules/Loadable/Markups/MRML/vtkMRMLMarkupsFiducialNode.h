@@ -72,9 +72,6 @@ public:
   /// Create default storage node or NULL if does not have one
   virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
-  /// Return a cast display node, returns null if none
-  vtkMRMLMarkupsDisplayNode *GetMarkupsDisplayNode();
-
   // Wrapping some of the generic markup methods
 
   /// Get the number of fiducials in this node

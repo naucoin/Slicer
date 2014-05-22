@@ -27,6 +27,8 @@ int vtkMRMLMarkupsDisplayNodeTest1(int , char * [] )
 
   TEST_SET_GET_DOUBLE_RANGE(node1, TextScale, 0.0, 100.0);
 
+  TEST_SET_GET_BOOLEAN(node1, TextVisibility);
+
   TEST_SET_GET_INT_RANGE(node1, GlyphType, -1, 10);
 
   // min glyph type

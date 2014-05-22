@@ -123,6 +123,7 @@ public slots:
   void onUnselectedColorPickerButtonChanged(QColor qcolor);
   void onGlyphTypeComboBoxChanged(QString value);
   void onGlyphScaleSliderWidgetChanged(double value);
+  void onTextVisibleInvisiblePushButtonClicked();
   void onTextScaleSliderWidgetChanged(double value);
   void onOpacitySliderWidgetChanged(double value);
 
@@ -158,9 +159,11 @@ public slots:
   void onActiveMarkupMRMLNodeAdded(vtkMRMLNode *markupsNode);
 
   /// Toggle the markups node visibility flag
-  void onListVisibileInvisiblePushButtonClicked();
+  void onListVisibleInvisiblePushButtonClicked();
   /// Update the icon and tool tip on the list visibility button
-  void updateListVisibileInvisiblePushButton(int visibleFlag);
+  void updateListVisibleInvisiblePushButton(int visibleFlag);
+  /// Update the icon and tool tip on the text visibility button
+  void updateTextVisibleInvisiblePushButton(int visibleFlag);
 
   /// Toggle the markups node locked flag
   void onListLockedUnlockedPushButtonClicked();

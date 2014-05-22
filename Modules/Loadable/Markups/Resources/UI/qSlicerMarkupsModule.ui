@@ -37,6 +37,7 @@
        <property name="nodeTypes">
         <stringlist>
          <string>vtkMRMLMarkupsFiducialNode</string>
+         <string>vtkMRMLMarkupsRulerNode</string>
         </stringlist>
        </property>
        <property name="baseName">
@@ -74,7 +75,7 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QPushButton" name="listVisibileInvisiblePushButton">
+      <widget class="QPushButton" name="listVisibleInvisiblePushButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -657,14 +658,14 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="6" column="0">
           <widget class="QLabel" name="textScaleLabel">
            <property name="text">
             <string>Text Scale</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="ctkSliderWidget" name="textScaleSliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -674,14 +675,14 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
           <widget class="QLabel" name="opacityLabel">
            <property name="text">
             <string>Opacity</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="7" column="1">
           <widget class="ctkSliderWidget" name="opacitySliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -691,7 +692,7 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="8" column="1">
           <widget class="QPushButton" name="resetToDefaultDisplayPropertiesPushButton">
            <property name="toolTip">
             <string>Use default display properties.</string>
@@ -701,7 +702,7 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="9" column="1">
           <widget class="QPushButton" name="saveToDefaultDisplayPropertiesPushButton">
            <property name="toolTip">
             <string>Save current display property settings to defaults, will be saved for when Slicer restarts (see Application Settings)</string>
@@ -711,7 +712,7 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="0" colspan="2">
+         <item row="10" column="0" colspan="2">
           <widget class="ctkCollapsibleGroupBox" name="pointFiducialProjectionPropertiesGroupBox">
            <property name="title">
             <string>Fiducial Projection</string>
@@ -737,6 +738,24 @@
           <widget class="QLabel" name="listDisplayNodeViewLabel">
            <property name="text">
             <string>Views</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="textVisibilityLabel">
+           <property name="text">
+            <string>Label Visibility</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QPushButton" name="textVisibleInvisiblePushButton">
+           <property name="toolTip">
+            <string>Click to hide this markup's labels</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:Icons/Medium/SlicerVisible.png</normaloff>:Icons/Medium/SlicerVisible.png</iconset>
            </property>
           </widget>
          </item>

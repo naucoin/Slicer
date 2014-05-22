@@ -610,9 +610,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
     handleRep->SetUniformScale(displayNode->GetGlyphScale()*this->GetScaleFactor2D());
 
     /// if the text is visible
+    bool textVisibile = displayNode->GetTextVisibility();
     std::string textString = fiducialNode->GetNthFiducialLabel(n);
     // update the text string
-
     if (textString.compare(handleRep->GetLabelText()) != 0)
       {
       handleRep->SetLabelText(textString.c_str());
@@ -650,17 +650,22 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       {
       handleRep->VisibilityOn();
       handleRep->HandleVisibilityOn();
-      if (textString.compare("") != 0)
+      if (textVisibile &&
+          textString.compare("") != 0)
         {
         handleRep->LabelVisibilityOn();
+        }
+      else
+        {
+        handleRep->LabelVisibilityOff();
         }
       seedWidget->GetSeed(n)->EnabledOn();
       // if the fiducial is visible, turn off projection
       vtkSeedWidget* fiducialSeed = vtkSeedWidget::SafeDownCast(this->Helper->GetPointProjectionWidget(fiducialNode->GetNthMarkupID(n)));
       if (fiducialSeed && fiducialSeed->GetSeed(0))
-    {
+        {
         fiducialSeed->GetSeed(0)->Off();
-    }
+        }
       }
     else
       {

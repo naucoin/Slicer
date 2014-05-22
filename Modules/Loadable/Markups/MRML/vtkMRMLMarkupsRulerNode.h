@@ -72,8 +72,6 @@ public:
   /// Create default storage node or NULL if does not have one
   virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
-  /// Return a cast display node, returns null if none
-  vtkMRMLMarkupsDisplayNode *GetMarkupsDisplayNode();
   /// Returns a ruler display node, null if none
   vtkMRMLMarkupsRulerDisplayNode *GetMarkupsRulerDisplayNode();
 

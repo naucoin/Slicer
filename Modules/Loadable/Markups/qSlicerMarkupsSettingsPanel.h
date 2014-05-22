@@ -37,6 +37,7 @@ class Q_SLICER_QTMODULES_MARKUPS_EXPORT qSlicerMarkupsSettingsPanel
   Q_PROPERTY(QColor defaultSelectedColor READ defaultSelectedColor WRITE setDefaultSelectedColor NOTIFY defaultSelectedColorChanged)
   Q_PROPERTY(double defaultGlyphScale READ defaultGlyphScale WRITE setDefaultGlyphScale NOTIFY defaultGlyphScaleChanged)
   Q_PROPERTY(double defaultTextScale READ defaultTextScale WRITE setDefaultTextScale NOTIFY defaultTextScaleChanged)
+  Q_PROPERTY(double defaultTextVisibility READ defaultTextVisibility WRITE setDefaultTextVisibility NOTIFY defaultTextVisibilityChanged)
   Q_PROPERTY(double defaultOpacity READ defaultOpacity WRITE setDefaultOpacity NOTIFY defaultOpacityChanged)
 
 public:
@@ -53,6 +54,7 @@ public:
   /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeGlyphType
   /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeGlyphScale
   /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeTextScale
+  /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeTextVisibility
   /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeOpacity
   /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeColor
   /// \sa vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeSelectedColor
@@ -64,6 +66,7 @@ public:
   QColor defaultSelectedColor() const;
   double defaultGlyphScale() const;
   double defaultTextScale() const;
+  int defaultTextVisibility() const;
   double defaultOpacity() const;
 
 public slots:
@@ -72,6 +75,7 @@ public slots:
   void setDefaultSelectedColor(const QColor color);
   void setDefaultGlyphScale(const double scale);
   void setDefaultTextScale(const double scale);
+  void setDefaultTextVisibility(const int visibility);
   void setDefaultOpacity(const double scale);
 
 signals:
@@ -80,6 +84,7 @@ signals:
   void defaultSelectedColorChanged(QColor);
   void defaultGlyphScaleChanged(const double);
   void defaultTextScaleChanged(const double);
+  void defaultTextVisibilityChanged(const int);
   void defaultOpacityChanged(const double);
 
 protected slots:
@@ -99,6 +104,9 @@ protected slots:
 
   void onDefaultTextScaleChanged(double);
   void updateMarkupsLogicDefaultTextScale();
+
+  void onDefaultTextVisibilityChanged(bool);
+  void updateMarkupsLogicDefaultTextVisibility();
 
   void onDefaultOpacityChanged(double);
   void updateMarkupsLogicDefaultOpacity();

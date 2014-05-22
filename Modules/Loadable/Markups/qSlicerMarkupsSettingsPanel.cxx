@@ -116,6 +116,8 @@ void qSlicerMarkupsSettingsPanel
                          "defaultGlyphScale", SIGNAL(defaultGlyphScaleChanged(double)));
   this->registerProperty("Markups/TextScale", this,
                          "defaultTextScale", SIGNAL(defaultTextScaleChanged(double)));
+  this->registerProperty("Markups/TextVisibility", this,
+                         "defaultTextVisibility", SIGNAL(defaultTextVisibilityChanged(double)));
   this->registerProperty("Markups/Opacity", this,
                          "defaultOpacity", SIGNAL(defaultOpacityChanged(double)));
 }
@@ -162,6 +164,11 @@ void qSlicerMarkupsSettingsPanel
   QObject::connect(d->defaultTextScaleSliderWidget, SIGNAL(valueChanged(double)),
                    this, SLOT(onDefaultTextScaleChanged(double)),Qt::UniqueConnection);
   d->defaultTextScaleSliderWidget->setValue(textScale);
+
+  int textVisibility = d->MarkupsLogic->GetDefaultMarkupsDisplayNodeTextVisibility();
+  QObject::connect(d->defaultTextVisibilityCheckBox, SIGNAL(toggled(bool)),
+                   this, SLOT(onDefaultTextVisibilityChanged(bool)),Qt::UniqueConnection);
+  d->defaultTextVisibilityCheckBox->setChecked(textVisibility);
 
   double opacity = d->MarkupsLogic->GetDefaultMarkupsDisplayNodeOpacity();
   QObject::connect(d->defaultOpacitySliderWidget, SIGNAL(valueChanged(double)),
@@ -225,6 +232,20 @@ double qSlicerMarkupsSettingsPanel::defaultTextScale()const
 }
 
 // --------------------------------------------------------------------------
+int qSlicerMarkupsSettingsPanel::defaultTextVisibility()const
+{
+  Q_D(const qSlicerMarkupsSettingsPanel);
+
+  int textVisibility = 0;
+  if (d->defaultTextVisibilityCheckBox->isChecked())
+    {
+    textVisibility = 1;
+    }
+
+  return textVisibility;
+}
+
+// --------------------------------------------------------------------------
 double qSlicerMarkupsSettingsPanel::defaultOpacity()const
 {
   Q_D(const qSlicerMarkupsSettingsPanel);
@@ -272,11 +293,19 @@ void qSlicerMarkupsSettingsPanel::setDefaultGlyphScale(const double glyphScale)
 }
 
 // --------------------------------------------------------------------------
-void qSlicerMarkupsSettingsPanel::setDefaultTextScale(const double glyphScale)
+void qSlicerMarkupsSettingsPanel::setDefaultTextScale(const double scale)
 {
   Q_D(qSlicerMarkupsSettingsPanel);
 
-  d->defaultTextScaleSliderWidget->setValue(glyphScale);
+  d->defaultTextScaleSliderWidget->setValue(scale);
+}
+
+// --------------------------------------------------------------------------
+void qSlicerMarkupsSettingsPanel::setDefaultTextVisibility(const int visibility)
+{
+  Q_D(qSlicerMarkupsSettingsPanel);
+
+  d->defaultTextVisibilityCheckBox->setChecked(visibility);
 }
 
 // --------------------------------------------------------------------------
@@ -383,6 +412,26 @@ void qSlicerMarkupsSettingsPanel::onDefaultTextScaleChanged(double scale)
   Q_UNUSED(scale);
   this->updateMarkupsLogicDefaultTextScale();
   emit defaultTextScaleChanged(this->defaultTextScale());
+}
+
+// --------------------------------------------------------------------------
+void qSlicerMarkupsSettingsPanel::updateMarkupsLogicDefaultTextVisibility()
+{
+  Q_D(qSlicerMarkupsSettingsPanel);
+
+  if (d->MarkupsLogic == 0)
+    {
+    return;
+    }
+  d->MarkupsLogic->SetDefaultMarkupsDisplayNodeTextVisibility(this->defaultTextVisibility());
+}
+
+// --------------------------------------------------------------------------
+void qSlicerMarkupsSettingsPanel::onDefaultTextVisibilityChanged(bool visibility)
+{
+  Q_UNUSED(visibility);
+  this->updateMarkupsLogicDefaultTextVisibility();
+  emit defaultTextVisibilityChanged(this->defaultTextVisibility());
 }
 
 // --------------------------------------------------------------------------

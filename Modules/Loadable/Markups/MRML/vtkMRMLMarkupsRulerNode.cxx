@@ -140,18 +140,6 @@ vtkMRMLStorageNode* vtkMRMLMarkupsRulerNode::CreateDefaultStorageNode()
 }
 
 //-------------------------------------------------------------------------
-vtkMRMLMarkupsDisplayNode *vtkMRMLMarkupsRulerNode::GetMarkupsDisplayNode()
-{
-  vtkMRMLDisplayNode *displayNode = this->GetDisplayNode();
-  if (displayNode &&
-      displayNode->IsA("vtkMRMLMarkupsDisplayNode"))
-    {
-    return vtkMRMLMarkupsDisplayNode::SafeDownCast(displayNode);
-    }
-  return NULL;
-}
-
-//-------------------------------------------------------------------------
 vtkMRMLMarkupsRulerDisplayNode *vtkMRMLMarkupsRulerNode::GetMarkupsRulerDisplayNode()
 {
   vtkMRMLDisplayNode *displayNode = this->GetDisplayNode();

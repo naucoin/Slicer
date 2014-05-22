@@ -781,6 +781,18 @@ void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeTextScale(double scale)
 }
 
 //---------------------------------------------------------------------------
+int vtkSlicerMarkupsLogic::GetDefaultMarkupsDisplayNodeTextVisibility()
+{
+  return this->DefaultMarkupsDisplayNode->GetTextVisibility();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerMarkupsLogic::SetDefaultMarkupsDisplayNodeTextVisibility(int visibility)
+{
+  this->DefaultMarkupsDisplayNode->SetTextVisibility(visibility);
+}
+
+//---------------------------------------------------------------------------
 double vtkSlicerMarkupsLogic::GetDefaultMarkupsDisplayNodeOpacity()
 {
   return this->DefaultMarkupsDisplayNode->GetOpacity();
@@ -896,6 +908,7 @@ void vtkSlicerMarkupsLogic::SetDisplayNodeToDefaults(vtkMRMLMarkupsDisplayNode *
   displayNode->SetGlyphType(this->GetDefaultMarkupsDisplayNodeGlyphType());
   displayNode->SetGlyphScale(this->GetDefaultMarkupsDisplayNodeGlyphScale());
   displayNode->SetTextScale(this->GetDefaultMarkupsDisplayNodeTextScale());
+  displayNode->SetTextVisibility(this->GetDefaultMarkupsDisplayNodeTextVisibility());
   displayNode->SetSliceProjection(this->GetDefaultMarkupsDisplayNodeSliceProjection());
   displayNode->SetSliceProjectionColor(this->GetDefaultMarkupsDisplayNodeSliceProjectionColor());
   displayNode->SetSliceProjectionOpacity(this->GetDefaultMarkupsDisplayNodeSliceProjectionOpacity());
@@ -1130,6 +1143,7 @@ void vtkSlicerMarkupsLogic::ConvertAnnotationFiducialsToMarkups()
           markupDisplayNode->SetSelectedColor(pointDisplayNode->GetSelectedColor());
           markupDisplayNode->SetGlyphScale(pointDisplayNode->GetGlyphScale());
           markupDisplayNode->SetTextScale(textDisplayNode->GetTextScale());
+          markupDisplayNode->SetTextVisibility(textDisplayNode->GetVisibility());
           markupDisplayNode->SetOpacity(pointDisplayNode->GetOpacity());
           markupDisplayNode->SetPower(pointDisplayNode->GetPower());
           markupDisplayNode->SetAmbient(pointDisplayNode->GetAmbient());

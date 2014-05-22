@@ -333,6 +333,18 @@ vtkMRMLStorageNode* vtkMRMLMarkupsNode::CreateDefaultStorageNode()
   return vtkMRMLStorageNode::SafeDownCast(vtkMRMLMarkupsStorageNode::New());
 }
 
+//-------------------------------------------------------------------------
+vtkMRMLMarkupsDisplayNode *vtkMRMLMarkupsNode::GetMarkupsDisplayNode()
+{
+  vtkMRMLDisplayNode *displayNode = this->GetDisplayNode();
+  if (displayNode &&
+      displayNode->IsA("vtkMRMLMarkupsDisplayNode"))
+    {
+    return vtkMRMLMarkupsDisplayNode::SafeDownCast(displayNode);
+    }
+  return NULL;
+}
+
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsNode::SetLocked(int locked)
 {

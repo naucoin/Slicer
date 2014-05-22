@@ -115,6 +115,18 @@ public:
     ResetToDefaultsEvent = 19001,
   };
 
+  /// Set the visibility of the label text
+  /// \sa TextVisibility, GetTextVisibility(), TextVisibilityOn(),
+  /// TextVisibilityOff()
+  vtkSetMacro(TextVisibility, int);
+  /// Get the visibility of the label text
+  /// \sa TextVisibility, SetTextVisibility(), TextVisibilityOn(),
+  /// TextVisibilityOff()
+  vtkGetMacro(TextVisibility, int);
+  /// Set the visibility of the label text
+  /// \sa TextVisibility, SetTextVisibility(), GetTextVisibility(),
+  vtkBooleanMacro(TextVisibility, int);
+
   /// Set SliceProjection flag that controls if the projection of markups
   /// is visible or not in 2D viewers on slices on which it is normally
   /// not visible.
@@ -187,6 +199,11 @@ protected:
   int GlyphType;
   double GlyphScale;
   static const char* GlyphTypesNames[GlyphMax+2];
+  /// Indicates if the label text is visible
+  /// True by default
+  /// \sa SetTextVisibility(), GetTextVisibility(), TextVisibilityOn(),
+  /// TextVisibilityOff()
+  int TextVisibility;
 
   int SliceProjection;
   double SliceProjectionColor[3];

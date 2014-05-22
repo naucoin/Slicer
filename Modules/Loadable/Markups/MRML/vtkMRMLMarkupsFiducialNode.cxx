@@ -138,18 +138,6 @@ vtkMRMLStorageNode* vtkMRMLMarkupsFiducialNode::CreateDefaultStorageNode()
 }
 
 //-------------------------------------------------------------------------
-vtkMRMLMarkupsDisplayNode *vtkMRMLMarkupsFiducialNode::GetMarkupsDisplayNode()
-{
-  vtkMRMLDisplayNode *displayNode = this->GetDisplayNode();
-  if (displayNode &&
-      displayNode->IsA("vtkMRMLMarkupsDisplayNode"))
-    {
-    return vtkMRMLMarkupsDisplayNode::SafeDownCast(displayNode);
-    }
-  return NULL;
-}
-
-//-------------------------------------------------------------------------
 int vtkMRMLMarkupsFiducialNode::AddFiducial(double x, double y, double z)
 {
   vtkVector3d point;

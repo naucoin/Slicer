@@ -71,6 +71,7 @@ vtkMRMLMarkupsDisplayNode::vtkMRMLMarkupsDisplayNode()
 
   // markup display node settings
   this->TextScale = 3.4;
+  this->TextVisibility = 1;
   this->GlyphType = vtkMRMLMarkupsDisplayNode::Sphere3D;
   this->GlyphScale = 2.1;
 
@@ -95,6 +96,7 @@ void vtkMRMLMarkupsDisplayNode::WriteXML(ostream& of, int nIndent)
   Superclass::WriteXML(of, nIndent);
 
   of << " textScale=\"" << this->TextScale << "\"";
+  of << " textVisibility=\"" << this->TextVisibility << "\"";
   of << " glyphScale=\"" << this->GlyphScale << "\"";
   of << " glyphType=\"" << this->GlyphType << "\"";
 
@@ -128,6 +130,12 @@ void vtkMRMLMarkupsDisplayNode::ReadXMLAttributes(const char** atts)
       std::stringstream ss;
       ss << attValue;
       ss >> this->TextScale;
+      }
+    else if (!strcmp(attName, "textVisibility"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->TextVisibility;
       }
     else if (!strcmp(attName, "glyphType"))
       {
@@ -181,6 +189,7 @@ void vtkMRMLMarkupsDisplayNode::Copy(vtkMRMLNode *anode)
   vtkMRMLMarkupsDisplayNode *node = (vtkMRMLMarkupsDisplayNode *)anode;
 
   this->SetTextScale(node->TextScale);
+  this->SetTextVisibility(node->TextVisibility);
   this->SetGlyphType(node->GlyphType);
   this->SetGlyphScale(node->GlyphScale);
   this->SetSliceProjection(node->SliceProjection);
@@ -232,6 +241,7 @@ void vtkMRMLMarkupsDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
   Superclass::PrintSelf(os,indent);
 
   os << indent << "Text scale: " << this->TextScale << "\n";
+  os << indent << "Text visibility: " << this->TextVisibility << "\n";
   os << indent << "Glyph scale: (";
   os << this->GlyphScale << ")\n";
   os << indent << "Glyph type: ";
