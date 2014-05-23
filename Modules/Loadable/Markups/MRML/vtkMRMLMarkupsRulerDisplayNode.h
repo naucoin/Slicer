@@ -64,14 +64,21 @@ public:
                                    unsigned long /*event*/,
                                    void * /*callData*/ );
 
+  // Get/Set macros for the first point glyph color
+  vtkSetVector3Macro(PointColor1, double);
+  vtkGetVector3Macro(PointColor1, double);
+
+  // Get/Set macros for the first point glyph selected color
+  vtkSetVector3Macro(SelectedPointColor1, double);
+  vtkGetVector3Macro(SelectedPointColor1, double);
 
   // Get/Set macros for the second point glyph color
-  vtkSetVector3Macro(Color2, double);
-  vtkGetVector3Macro(Color2, double);
+  vtkSetVector3Macro(PointColor2, double);
+  vtkGetVector3Macro(PointColor2, double);
 
   // Get/Set macros for the second point glyph selected color
-  vtkSetVector3Macro(SelectedColor2, double);
-  vtkGetVector3Macro(SelectedColor2, double);
+  vtkSetVector3Macro(SelectedPointColor2, double);
+  vtkGetVector3Macro(SelectedPointColor2, double);
 
   // Get/Set macros for the line color
   vtkSetVector3Macro(LineColor, double);
@@ -81,14 +88,73 @@ public:
   vtkSetVector3Macro(SelectedLineColor, double);
   vtkGetVector3Macro(SelectedLineColor, double);
 
+  /// Get/Set for ruler line thickness
+  vtkSetMacro(LineThickness, double);
+  vtkGetMacro(LineThickness, double);
+
+  /// Set SliceProjection to Dashed
+  inline void SliceProjectionDashedOn();
+
+  /// Set SliceProjection to Plain
+  inline void SliceProjectionDashedOff();
+
+  /// Set line colored when parallel to slice plane
+  inline void SliceProjectionColoredWhenParallelOn();
+
+  /// Set line color unchanged when parallel to slice plane
+  inline void SliceProjectionColoredWhenParallelOff();
+
+  /// Set line thicker when on top of the plane, thiner when under
+  inline void SliceProjectionThickerOnTopOn();
+
+  /// Set line thickness uniform
+  inline void SliceProjectionThickerOnTopOff();
+
+  /// Set projection color as ruler color
+  ///\sa SetProjectedColor
+  inline void SliceProjectionUseRulerColorOn();
+
+  /// Manually set projection color
+  ///\sa SetProjectedColor
+  inline void SliceProjectionUseRulerColorOff();
+
+  /// ProjectionDashed : Set projected line dashed
+  /// ProjectionColoredWhenParallel : Set projected line
+  /// colored when parallel to slice plane
+  /// ProjectionThickerOnTop : Set projected line thicker
+  /// on top of the plane, thiner when under
+  /// Projection Off, Dashed, ColoredWhenParallel,
+  /// ThickerOnTop and UseRulerColor by default
+  /// \enum ProjectionFlag
+  enum ProjectionFlag
+  {
+  ProjectionDashed = 0x02,
+  ProjectionColoredWhenParallel = 0x04,
+  ProjectionThickerOnTop = 0x08,
+  ProjectionUseRulerColor = 0x10
+  };
+
+  /// Get/Set the thickness of the line under the plane
+  /// Default: 1.0
+  vtkSetMacro(UnderLineThickness, double);
+  vtkGetMacro(UnderLineThickness, double);
+
+  /// Get/Set the thickness of the line over the plane
+  /// Default: 3.0
+  vtkSetMacro(OverLineThickness, double);
+  vtkGetMacro(OverLineThickness, double);
+
 protected:
   vtkMRMLMarkupsRulerDisplayNode();
   ~vtkMRMLMarkupsRulerDisplayNode();
   vtkMRMLMarkupsRulerDisplayNode( const vtkMRMLMarkupsRulerDisplayNode& );
   void operator= ( const vtkMRMLMarkupsRulerDisplayNode& );
-  /// holds the color information for the second glyph
-  double Color2[3];
-  double SelectedColor2[3];
+
+  /// holds the color information for the glyphs
+  double PointColor1[3];
+  double SelectedPointColor1[3];
+  double PointColor2[3];
+  double SelectedPointColor2[3];
 
   /// color of the ruler line
   double LineColor[3];
@@ -96,6 +162,76 @@ protected:
   double SelectedLineColor[3];
 
 
+  /// thickness of the ruler line
+  double LineThickness;
+
+  /// projection settings
+  double UnderLineThickness;
+  double OverLineThickness;
 };
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionDashedOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsRulerDisplayNode::ProjectionDashed);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionDashedOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsRulerDisplayNode::ProjectionDashed);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionColoredWhenParallelOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsRulerDisplayNode::ProjectionColoredWhenParallel);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionColoredWhenParallelOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsRulerDisplayNode::ProjectionColoredWhenParallel);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionThickerOnTopOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsRulerDisplayNode::ProjectionThickerOnTop);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionThickerOnTopOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsRulerDisplayNode::ProjectionThickerOnTop);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionUseRulerColorOn()
+{
+  this->SetSliceProjection( this->GetSliceProjection() |
+                            vtkMRMLMarkupsRulerDisplayNode::ProjectionUseRulerColor);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsRulerDisplayNode
+::SliceProjectionUseRulerColorOff()
+{
+  this->SetSliceProjection( this->GetSliceProjection() &
+                            ~vtkMRMLMarkupsRulerDisplayNode::ProjectionUseRulerColor);
+}
 
 #endif

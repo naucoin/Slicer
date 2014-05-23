@@ -25,11 +25,18 @@ int vtkMRMLMarkupsRulerDisplayNodeTest1(int , char * [] )
 
   EXERCISE_BASIC_DISPLAY_MRML_METHODS( vtkMRMLMarkupsRulerDisplayNode, node1 );
 
-  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, Color2, 0.0, 1.0);
-  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, SelectedColor2, 0.0, 1.0);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, PointColor1, 0.0, 1.0);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, SelectedPointColor1, 0.0, 1.0);
+
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, PointColor2, 0.0, 1.0);
+  TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, SelectedPointColor2, 0.0, 1.0);
 
   TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, LineColor, 0.0, 1.0);
   TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, SelectedLineColor, 0.0, 1.0);
+
+  TEST_SET_GET_DOUBLE_RANGE(node1, LineThickness, -1.0, 10.0);
+  TEST_SET_GET_DOUBLE_RANGE(node1, UnderLineThickness, -1.0, 5.0);
+  TEST_SET_GET_DOUBLE_RANGE(node1, OverLineThickness, -1.0, 8.0);
 
   return EXIT_SUCCESS;
 }

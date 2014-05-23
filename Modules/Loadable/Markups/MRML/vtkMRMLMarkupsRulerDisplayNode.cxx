@@ -30,7 +30,7 @@ vtkMRMLNodeNewMacro(vtkMRMLMarkupsRulerDisplayNode);
 //----------------------------------------------------------------------------
 vtkMRMLMarkupsRulerDisplayNode::vtkMRMLMarkupsRulerDisplayNode()
 {
-    // model display node settings
+  // model display node settings
   this->SetVisibility(1);
   this->SetVectorVisibility(0);
   this->SetScalarVisibility(0);
@@ -39,26 +39,6 @@ vtkMRMLMarkupsRulerDisplayNode::vtkMRMLMarkupsRulerDisplayNode()
   this->Color[0] = 0.4;
   this->Color[1] = 1.0;
   this->Color[2] = 1.0;
-
-  this->Color2[0] = 0.4;
-  this->Color2[1] = 1.0;
-  this->Color2[2] = 1.0;
-
-  this->LineColor[0] = 0.4;
-  this->LineColor[1] = 1.0;
-  this->LineColor[2] = 1.0;
-
-  this->SelectedColor[0] = 1.0;
-  this->SelectedColor[1] = 0.5;
-  this->SelectedColor[2] = 0.5;
-
-  this->SelectedColor2[0] = 1.0;
-  this->SelectedColor2[1] = 0.5;
-  this->SelectedColor2[2] = 0.5;
-
-  this->SelectedLineColor[0] = 1.0;
-  this->SelectedLineColor[1] = 0.5;
-  this->SelectedLineColor[2] = 0.5;
 
   this->SetName("");
   this->Opacity = 1.0;
@@ -72,8 +52,48 @@ vtkMRMLMarkupsRulerDisplayNode::vtkMRMLMarkupsRulerDisplayNode()
   this->GlyphType = vtkMRMLMarkupsRulerDisplayNode::Sphere3D;
   this->GlyphScale = 2.1;
 
+  // markup ruler display node settings
+  this->PointColor1[0] = 0.9;
+  this->PointColor1[1] = 0.5;
+  this->PointColor1[2] = 0.5;
+
+  this->PointColor2[0] = 0.9;
+  this->PointColor2[1] = 0.7;
+  this->PointColor2[2] = 0.9;
+
+  this->LineColor[0] = 1.0;
+  this->LineColor[1] = 1.0;
+  this->LineColor[2] = 1.0;
+
+  this->SelectedColor[0] = 1.0;
+  this->SelectedColor[1] = 0.5;
+  this->SelectedColor[2] = 0.5;
+
+  this->SelectedPointColor1[0] = 1.0;
+  this->SelectedPointColor1[1] = 0.5;
+  this->SelectedPointColor1[2] = 0.5;
+
+  this->SelectedPointColor2[0] = 1.0;
+  this->SelectedPointColor2[1] = 0.5;
+  this->SelectedPointColor2[2] = 0.5;
+
+  this->SelectedLineColor[0] = 1.0;
+  this->SelectedLineColor[1] = 0.5;
+  this->SelectedLineColor[2] = 0.5;
+
+  this->LineThickness = 1.0;
+
   // projection settings
-  this->SliceProjection = (vtkMRMLMarkupsRulerDisplayNode::ProjectionOff);
+  this->SliceProjection = (vtkMRMLMarkupsDisplayNode::ProjectionOff |
+                           vtkMRMLMarkupsRulerDisplayNode::ProjectionDashed |
+                           vtkMRMLMarkupsRulerDisplayNode::ProjectionColoredWhenParallel |
+                           vtkMRMLMarkupsRulerDisplayNode::ProjectionThickerOnTop |
+                           vtkMRMLMarkupsRulerDisplayNode::ProjectionUseRulerColor);
+
+  this->UnderLineThickness = 1.0;
+  this->OverLineThickness = 3.0;
+  /// bug 2375: don't show the slice intersection until it's correct
+  this->SliceIntersectionVisibility = 0;
 }
 
 //----------------------------------------------------------------------------
@@ -86,31 +106,47 @@ void vtkMRMLMarkupsRulerDisplayNode::WriteXML(ostream& of, int nIndent)
 {
   Superclass::WriteXML(of, nIndent);
 
- if (this->Color2)
+  if (this->PointColor1)
     {
-    of << " color2=\"" << this->Color2[0] << " "
-       << this->Color2[1] << " "
-       << this->Color2[2] << "\"";
+    of << " pointColor1=\"" << this->PointColor1[0] << " "
+       << this->PointColor1[1] << " "
+       << this->PointColor1[2] << "\"";
     }
- if (this->SelectedColor2)
+  if (this->SelectedPointColor1)
     {
-    of << " selectedColor2=\"" << this->SelectedColor2[0] << " "
-       << this->SelectedColor2[1] << " "
-       << this->SelectedColor2[2] << "\"";
+    of << " selectedPointColor1=\"" << this->SelectedPointColor1[0] << " "
+       << this->SelectedPointColor1[1] << " "
+       << this->SelectedPointColor1[2] << "\"";
+    }
+  if (this->PointColor2)
+    {
+    of << " pointcolor2=\"" << this->PointColor2[0] << " "
+       << this->PointColor2[1] << " "
+       << this->PointColor2[2] << "\"";
+    }
+  if (this->SelectedPointColor2)
+    {
+    of << " selectedPointColor2=\"" << this->SelectedPointColor2[0] << " "
+       << this->SelectedPointColor2[1] << " "
+       << this->SelectedPointColor2[2] << "\"";
     }
 
- if (this->LineColor)
+  if (this->LineColor)
     {
     of << " lineColor=\"" << this->LineColor[0] << " "
        << this->LineColor[1] << " "
        << this->LineColor[2] << "\"";
     }
- if (this->SelectedLineColor)
+  if (this->SelectedLineColor)
     {
     of << " selectedLineColor=\"" << this->SelectedLineColor[0] << " "
        << this->SelectedLineColor[1] << " "
        << this->SelectedLineColor[2] << "\"";
     }
+
+  of << " lineThickness=\"" << this->LineThickness << "\"";
+  of << " underLineThickness=\"" << this->UnderLineThickness << "\"";
+  of << " overLineThickness=\"" << this->OverLineThickness << "\"";
 }
 
 //----------------------------------------------------------------------------
@@ -127,21 +163,37 @@ void vtkMRMLMarkupsRulerDisplayNode::ReadXMLAttributes(const char** atts)
     attName = *(atts++);
     attValue = *(atts++);
 
-    if (!strcmp(attName, "color2"))
+    if (!strcmp(attName, "pointColor1"))
       {
       std::stringstream ss;
       ss << attValue;
-      ss >> this->Color2[0];
-      ss >> this->Color2[1];
-      ss >> this->Color2[2];
+      ss >> this->PointColor1[0];
+      ss >> this->PointColor1[1];
+      ss >> this->PointColor1[2];
       }
-    else if (!strcmp(attName, "selectedColor2"))
+    else if (!strcmp(attName, "selectedPointColor1"))
       {
       std::stringstream ss;
       ss << attValue;
-      ss >> this->SelectedColor2[0];
-      ss >> this->SelectedColor2[1];
-      ss >> this->SelectedColor2[2];
+      ss >> this->SelectedPointColor1[0];
+      ss >> this->SelectedPointColor1[1];
+      ss >> this->SelectedPointColor1[2];
+      }
+    else if (!strcmp(attName, "pointColor2"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->PointColor2[0];
+      ss >> this->PointColor2[1];
+      ss >> this->PointColor2[2];
+      }
+    else if (!strcmp(attName, "selectedPointColor2"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->SelectedPointColor2[0];
+      ss >> this->SelectedPointColor2[1];
+      ss >> this->SelectedPointColor2[2];
       }
     else if (!strcmp(attName, "lineColor"))
       {
@@ -158,6 +210,24 @@ void vtkMRMLMarkupsRulerDisplayNode::ReadXMLAttributes(const char** atts)
       ss >> this->SelectedLineColor[0];
       ss >> this->SelectedLineColor[1];
       ss >> this->SelectedLineColor[2];
+      }
+    else if (!strcmp(attName, "lineThickness"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->LineThickness;
+      }
+    else if (!strcmp(attName, "underLineThickness"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->UnderLineThickness;
+      }
+    else if (!strcmp(attName, "overLineThickness"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->OverLineThickness;
       }
     }
 
@@ -176,31 +246,46 @@ void vtkMRMLMarkupsRulerDisplayNode::Copy(vtkMRMLNode *anode)
 
   vtkMRMLMarkupsRulerDisplayNode *node = (vtkMRMLMarkupsRulerDisplayNode *)anode;
 
-  this->SetColor2(node->GetColor2());
-  this->SetSelectedColor2(node->GetSelectedColor2());
+  this->SetPointColor1(node->GetPointColor1());
+  this->SetSelectedPointColor1(node->GetSelectedPointColor1());
+
+  this->SetPointColor2(node->GetPointColor2());
+  this->SetSelectedPointColor2(node->GetSelectedPointColor2());
 
   this->SetLineColor(node->GetLineColor());
   this->SetSelectedLineColor(node->GetSelectedLineColor());
 
+  this->SetLineThickness(node->LineThickness);
+  this->SetUnderLineThickness(node->GetUnderLineThickness());
+  this->SetOverLineThickness(node->GetOverLineThickness());
+
   this->EndModify(disabledModify);
 }
-
-
 
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsRulerDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   Superclass::PrintSelf(os,indent);
 
-  os << indent << "Color2: (";
-  os << this->Color2[0] << ","
-     << this->Color2[1] << ","
-     << this->Color2[2] << ")" << "\n";
+  os << indent << "PointColor1: (";
+  os << this->PointColor1[0] << ","
+     << this->PointColor1[1] << ","
+     << this->PointColor1[2] << ")" << "\n";
 
-  os << indent << "SelectedColor2: (";
-  os << this->SelectedColor2[0] << ","
-     << this->SelectedColor2[1] << ","
-     << this->SelectedColor2[2] << ")" << "\n";
+  os << indent << "SelectedPointColor1: (";
+  os << this->SelectedPointColor1[0] << ","
+     << this->SelectedPointColor1[1] << ","
+     << this->SelectedPointColor1[2] << ")" << "\n";
+
+  os << indent << "PointColor2: (";
+  os << this->PointColor2[0] << ","
+     << this->PointColor2[1] << ","
+     << this->PointColor2[2] << ")" << "\n";
+
+  os << indent << "SelectedPointColor2: (";
+  os << this->SelectedPointColor2[0] << ","
+     << this->SelectedPointColor2[1] << ","
+     << this->SelectedPointColor2[2] << ")" << "\n";
 
   os << indent << "LineColor: (";
   os << this->LineColor[0] << ","
@@ -211,6 +296,10 @@ void vtkMRMLMarkupsRulerDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
   os << this->SelectedLineColor[0] << ","
      << this->SelectedLineColor[1] << ","
      << this->SelectedLineColor[2] << ")" << "\n";
+
+  os << indent << "Line Thickness   : " << this->LineThickness << "\n";
+  os << indent << "Under Line Thickness: " << this->UnderLineThickness << "\n";
+  os << indent << "Over Line Thickness: " << this->OverLineThickness << "\n";
 }
 
 //---------------------------------------------------------------------------
