@@ -576,12 +576,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="convertAnnotationFiducialsPushButton">
+       <widget class="QPushButton" name="convertAnnotationsPushButton">
         <property name="toolTip">
-         <string>Uses annotation fiducial hierarchies to make markup lists. Removes the annotations once they've been moved.</string>
+         <string>Uses annotation hierarchies to make markup lists. Removes the annotations once they've been moved.</string>
         </property>
         <property name="text">
-         <string>Convert Annotation Fiducials</string>
+         <string>Convert Annotations</string>
         </property>
        </widget>
       </item>

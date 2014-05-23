@@ -111,12 +111,12 @@ public slots:
   void onPKeyActivated();
 
   /// Called from enter and on import/add mrml events to ask if the user
-  /// wishes to convert annotation fiducial heirarchies into markups list nodes.
+  /// wishes to convert annotation ruler and fiducial heirarchies into markups list nodes.
   /// \sa enter(), onMRMLSceneEndImportEvent(), onMRMLSceneEndBatchProcessEvent()
-  void checkForAnnotationFiducialConversion();
-  /// Uses the Logic to do the conversion from annotation fiducials, moving
+  void checkForAnnotationConversion();
+  /// Uses the Logic to do the conversion from annotation fiducials and rulers, moving
   /// them from hierarchies to Markups list nodes
-  void convertAnnotationFiducialsToMarkups();
+  void convertAnnotationsToMarkups();
 
   /// Display property slots
   void onSelectedColorPickerButtonChanged(QColor qcolor);

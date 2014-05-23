@@ -365,8 +365,8 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   //
   // set up the convert annotations button
   //
-  QObject::connect(this->convertAnnotationFiducialsPushButton, SIGNAL(clicked()),
-                   q, SLOT(convertAnnotationFiducialsToMarkups()));
+  QObject::connect(this->convertAnnotationsPushButton, SIGNAL(clicked()),
+                   q, SLOT(convertAnnotationsToMarkups()));
 
   //
   // set up the table
@@ -514,7 +514,7 @@ void qSlicerMarkupsModuleWidget::enter()
   // install some shortcuts for use while in this module
   this->installShortcuts();
 
-  this->checkForAnnotationFiducialConversion();
+  this->checkForAnnotationConversion();
 
   // check the max scales against volume spacing, they might need to be updated
   this->updateMaximumScaleFromVolumes();
@@ -523,41 +523,55 @@ void qSlicerMarkupsModuleWidget::enter()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::checkForAnnotationFiducialConversion()
+void qSlicerMarkupsModuleWidget::checkForAnnotationConversion()
 {
-  // check to see if there are any annotation fiducial nodes
+  // check to see if there are any annotation fiducial or ruler nodes
   // and offer to import them as markups
   int numFids = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLAnnotationFiducialNode");
+  int numRulers = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLAnnotationRulerNode");
   int numSceneViews = this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLSceneViewNode");
+  if (numFids == 0 && numRulers == 0)
+    {
+    // nothing to convert, return
+    return;
+    }
+
+  ctkMessageBox convertMsgBox;
+  convertMsgBox.setWindowTitle("Convert Annotation hierarchies to Markups list nodes?");
+  QString labelText;
   if (numFids > 0)
     {
-    ctkMessageBox convertMsgBox;
-    convertMsgBox.setWindowTitle("Convert Annotation hierarchies to Markups list nodes?");
-    QString labelText = QString("Convert ")
+    labelText += QString("Convert ")
       + QString::number(numFids)
-      + QString(" Annotation fiducials to Markups list nodes?")
-      + QString(" Moves all Annotation fiducials out of hierarchies (deletes")
-      + QString(" the nodes, but leaves the hierarchies in case rulers or")
-      + QString(" ROIs are mixed in) and into Markups fiducial list nodes.");
-    if (numSceneViews > 0)
-      {
-      labelText += QString(" Iterates through ")
-        + QString::number(numSceneViews)
-        + QString(" Scene Views and converts any fiducials saved in those")
-        + QString(" scenes into Markups as well.");
-      }
-    // don't show again check box conflicts with informative text, so use
-    // a long text
-    convertMsgBox.setText(labelText);
-    convertMsgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    convertMsgBox.setDefaultButton(QMessageBox::Yes);
-    convertMsgBox.setDontShowAgainVisible(true);
-    convertMsgBox.setDontShowAgainSettingsKey("Markups/AlwaysConvertAnnotationFiducials");
-    int ret = convertMsgBox.exec();
-    if (ret == QMessageBox::Yes)
-      {
-      this->convertAnnotationFiducialsToMarkups();
-      }
+      + QString(" Annotation fiducials to Markups list nodes?");
+    }
+  if (numRulers > 0)
+    {
+    labelText +=  QString("Convert ")
+      + QString::number(numRulers)
+      + QString(" Annotation rulers to Markups list nodes?");
+    }
+  labelText += QString(" Moves all Annotation fiducials and rulers out of hierarchies")
+    + QString("  (deletes the nodes, but leaves the hierarchies in case ROIs")
+    + QString(" are mixed in) and into Markups list nodes.");
+  if (numSceneViews > 0)
+    {
+    labelText += QString(" Iterates through ")
+      + QString::number(numSceneViews)
+      + QString(" Scene Views and converts any fiducials and rulers saved in those")
+      + QString(" scenes into Markups as well.");
+    }
+  // don't show again check box conflicts with informative text, so use
+  // a long text
+  convertMsgBox.setText(labelText);
+  convertMsgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  convertMsgBox.setDefaultButton(QMessageBox::Yes);
+  convertMsgBox.setDontShowAgainVisible(true);
+  convertMsgBox.setDontShowAgainSettingsKey("Markups/AlwaysConvertAnnotations");
+  int ret = convertMsgBox.exec();
+  if (ret == QMessageBox::Yes)
+    {
+    this->convertAnnotationsToMarkups();
     }
 }
 
@@ -586,11 +600,12 @@ void qSlicerMarkupsModuleWidget::removeShortcuts()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidget::convertAnnotationFiducialsToMarkups()
+void qSlicerMarkupsModuleWidget::convertAnnotationsToMarkups()
 {
   if (this->markupsLogic())
     {
     this->markupsLogic()->ConvertAnnotationFiducialsToMarkups();
+    this->markupsLogic()->ConvertAnnotationRulersToMarkups();
     }
 }
 
@@ -1136,14 +1151,14 @@ void qSlicerMarkupsModuleWidget::onNodeRemovedEvent(vtkObject* scene, vtkObject*
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onMRMLSceneEndImportEvent()
 {
-  this->checkForAnnotationFiducialConversion();
+  this->checkForAnnotationConversion();
   this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onMRMLSceneEndRestoreEvent()
 {
-  this->checkForAnnotationFiducialConversion();
+  this->checkForAnnotationConversion();
   this->updateWidgetFromMRML();
 }
 
@@ -1154,7 +1169,7 @@ void qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent()
     {
     return;
     }
-  this->checkForAnnotationFiducialConversion();
+  this->checkForAnnotationConversion();
   // qDebug() << "qSlicerMarkupsModuleWidget::onMRMLSceneEndBatchProcessEvent";
   std::string selectionNodeID = (this->markupsLogic() ? this->markupsLogic()->GetSelectionNodeID() : std::string(""));
   vtkMRMLNode *node = this->mrmlScene()->GetNodeByID(selectionNodeID.c_str());
