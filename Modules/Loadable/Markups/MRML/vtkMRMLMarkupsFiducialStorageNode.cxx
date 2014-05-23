@@ -105,10 +105,10 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
     }
   if (!displayNode)
     {
-    vtkWarningMacro("ReadDataInternal: no display node!");
+    vtkDebugMacro("ReadDataInternal: no display node!");
     if (this->GetScene())
       {
-      vtkWarningMacro("ReadDataInternal: adding a new display node.");
+      vtkDebugMacro("ReadDataInternal: adding a new display node.");
       displayNode = vtkMRMLMarkupsDisplayNode::New();
       this->GetScene()->AddNode(displayNode);
       markupsNode->SetAndObserveDisplayNodeID(displayNode->GetID());
@@ -208,14 +208,20 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
               // annotation fiducial line format = point|x|y|z|sel|vis
               // label
               getline(ss, component, '|');
-              if (component.size())
+              // make sure it's a point line, may be trying to load an annotation
+              // ruler file that has other non commented lines
+              if (component.compare("point") != 0)
                 {
-                vtkDebugMacro("Got point string = " << component.c_str());
-                // use the file name for the point label
-                std::string filenameName = vtksys::SystemTools::GetFilenameName(this->GetFileName());
-                label = vtksys::SystemTools::GetFilenameWithoutExtension(filenameName);
-                markupsNode->SetNthMarkupLabel(thisMarkupNumber,label);
+                vtkWarningMacro("ReadData: fiducial file has a line prefix != 'point': "
+                                << component.c_str());
+                fstr.close();
+                return 0;
                 }
+              vtkDebugMacro("Got point string = " << component.c_str());
+              // use the file name for the point label
+              std::string filenameName = vtksys::SystemTools::GetFilenameName(this->GetFileName());
+              label = vtksys::SystemTools::GetFilenameWithoutExtension(filenameName);
+              markupsNode->SetNthMarkupLabel(thisMarkupNumber,label);
 
               // x,y,z
               getline(ss, component, '|');

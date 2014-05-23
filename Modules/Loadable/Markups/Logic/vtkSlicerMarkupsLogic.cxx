@@ -25,6 +25,7 @@
 #include "vtkMRMLMarkupsNode.h"
 #include "vtkMRMLMarkupsRulerDisplayNode.h"
 #include "vtkMRMLMarkupsRulerNode.h"
+#include "vtkMRMLMarkupsRulerStorageNode.h"
 #include "vtkMRMLMarkupsStorageNode.h"
 
 // Annotation MRML includes
@@ -186,10 +187,18 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
   this->GetMRMLScene()->RegisterNodeClass(fidNode);
   fidNode->Delete();
 
+  vtkMRMLMarkupsRulerNode* rulerNode = vtkMRMLMarkupsRulerNode::New();
+  this->GetMRMLScene()->RegisterNodeClass(rulerNode);
+  rulerNode->Delete();
+
   // Display nodes
   vtkMRMLMarkupsDisplayNode* markupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode);
   markupsDisplayNode->Delete();
+
+  vtkMRMLMarkupsRulerDisplayNode* markupsRulerDisplayNode = vtkMRMLMarkupsRulerDisplayNode::New();
+  this->GetMRMLScene()->RegisterNodeClass(markupsRulerDisplayNode);
+  markupsRulerDisplayNode->Delete();
 
   // Storage Nodes
   vtkMRMLMarkupsStorageNode* markupsStorageNode = vtkMRMLMarkupsStorageNode::New();
@@ -199,6 +208,10 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
   vtkMRMLMarkupsFiducialStorageNode* markupsFiducialStorageNode = vtkMRMLMarkupsFiducialStorageNode::New();
   this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode);
   markupsFiducialStorageNode->Delete();
+
+  vtkMRMLMarkupsRulerStorageNode* markupsRulerStorageNode = vtkMRMLMarkupsRulerStorageNode::New();
+  this->GetMRMLScene()->RegisterNodeClass(markupsRulerStorageNode);
+  markupsRulerStorageNode->Delete();
 }
 
 //---------------------------------------------------------------------------
@@ -740,6 +753,46 @@ char * vtkSlicerMarkupsLogic::LoadMarkupsFiducials(const char *fileName, const c
   if (storageNode->ReadData(fidNode.GetPointer()))
     {
     nodeID = fidNode->GetID();
+    }
+
+  // turn off batch processing
+  this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
+
+  return nodeID;
+
+}
+
+//---------------------------------------------------------------------------
+char * vtkSlicerMarkupsLogic::LoadMarkupsRulers(const char *fileName, const char *rulersName)
+{
+  char *nodeID = NULL;
+  std::string idList;
+  if (!fileName)
+    {
+    vtkErrorMacro("LoadMarkupsRulers: null file name, cannot load");
+    return nodeID;
+    }
+
+  vtkDebugMacro("LoadMarkupsRulers, file name = " << fileName << ", rulersName = " << (rulersName ? rulersName : "null"));
+
+  // turn on batch processing
+  this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
+
+  // make a storage node and ruler node and set the file name
+  vtkNew<vtkMRMLMarkupsRulerStorageNode> storageNode;
+  storageNode->SetFileName(fileName);
+  vtkNew<vtkMRMLMarkupsRulerNode> rulersNode;
+  rulersNode->SetName(rulersName);
+
+  // add the nodes to the scene and set up the observation on the storage node
+  this->GetMRMLScene()->AddNode(storageNode.GetPointer());
+  this->GetMRMLScene()->AddNode(rulersNode.GetPointer());
+  rulersNode->SetAndObserveStorageNodeID(storageNode->GetID());
+
+  // read the file
+  if (storageNode->ReadData(rulersNode.GetPointer()))
+    {
+    nodeID = rulersNode->GetID();
     }
 
   // turn off batch processing

@@ -106,10 +106,11 @@ public:
   /// jump the slice windows to the nth markup with the mrml id id
   void JumpSlicesToNthPointInMarkup(const char *id, int n, bool centered = false);
 
-  /// Load a markups fiducial list from fileName, return NULL on error, node ID string
-  /// otherwise. Adds the appropriate storage and display nodes to the scene
-  /// as well.
+  /// Load a markups fiducial or ruler list from fileName, return NULL on error,
+  /// node ID string otherwise. Adds the appropriate storage and display nodes
+  /// to the scene as well.
   char *LoadMarkupsFiducials(const char *fileName, const char *fidsName);
+  char *LoadMarkupsRulers(const char *fileName, const char *rulersName);
 
   /// Utility methods to operate on all markups in a markups node
   void SetAllMarkupsVisibility(vtkMRMLMarkupsNode *node, bool flag);

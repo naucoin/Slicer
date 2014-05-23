@@ -105,10 +105,10 @@ int vtkMRMLMarkupsRulerStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
     }
   if (!displayNode)
     {
-    vtkWarningMacro("ReadDataInternal: no display node!");
+    vtkDebugMacro("ReadDataInternal: no display node!");
     if (this->GetScene())
       {
-      vtkWarningMacro("ReadDataInternal: adding a new display node.");
+      vtkDebugMacro("ReadDataInternal: adding a new display node.");
       displayNode = vtkMRMLMarkupsDisplayNode::New();
       this->GetScene()->AddNode(displayNode);
       markupsNode->SetAndObserveDisplayNodeID(displayNode->GetID());
@@ -168,7 +168,7 @@ int vtkMRMLMarkupsRulerStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
         if (lineString.find("# Markups ruler file version = ") != std::string::npos)
           {
           version = lineString.substr(31,std::string::npos);
-          vtkWarningMacro("Version = " << version);
+          vtkDebugMacro("Version = " << version);
           }
         else if (lineString.find("# CoordinateSystem = ") != std::string::npos)
           {
@@ -190,7 +190,6 @@ int vtkMRMLMarkupsRulerStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
       }
     else
       {
-      vtkWarningMacro("Valid line checking:\n\"" << line << "\"");
       // hopefully have a line defining a ruler
       if (version.size() == 0 && !parseAsAnnotationRuler)
         {
@@ -212,7 +211,7 @@ int vtkMRMLMarkupsRulerStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
         getline(ss, component, '|');
         if (component.compare("point") == 0)
           {
-          vtkWarningMacro("Got point string = " << component.c_str());
+          vtkDebugMacro("Got point string = " << component.c_str());
           if (!markupsNode->MarkupExists(thisMarkupNumber))
             {
             thisMarkupNumber = markupsNode->AddMarkupWithNPoints(2);

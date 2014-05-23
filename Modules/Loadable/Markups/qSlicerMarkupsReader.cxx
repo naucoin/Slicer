@@ -76,13 +76,13 @@ vtkSlicerMarkupsLogic* qSlicerMarkupsReader::markupsLogic()const
 //-----------------------------------------------------------------------------
 QString qSlicerMarkupsReader::description()const
 {
-  return "MarkupsFiducials";
+  return "Markups";
 }
 
 //-----------------------------------------------------------------------------
 qSlicerIO::IOFileType qSlicerMarkupsReader::fileType()const
 {
-  return QString("MarkupsFiducials");
+  return QString("MarkupsFile");
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +90,9 @@ QStringList qSlicerMarkupsReader::extensions()const
 {
   return QStringList()
     << "Markups Fiducials (*.fcsv)"
-    << " Annotation Fiducial (*.acsv)";
+    << " Markups Rulers (*.rcsv)"
+    << " Annotation Fiducial (*.acsv)"
+    << " Annotation Ruler (*.acsv)";
 }
 
 //-----------------------------------------------------------------------------
@@ -113,8 +115,36 @@ bool qSlicerMarkupsReader::load(const IOProperties& properties)
     return false;
     }
 
+  QString ext = QFileInfo(fileName).suffix();
+
   // pass to logic to do the loading
-  char * nodeIDs = d->MarkupsLogic->LoadMarkupsFiducials(fileName.toLatin1(), name.toLatin1());
+  char * nodeIDs = NULL;
+  if (ext.compare("fcsv") == 0)
+    {
+    // Markups fiducial list
+    nodeIDs = d->MarkupsLogic->LoadMarkupsFiducials(fileName.toLatin1(),
+                                                    name.toLatin1());
+    }
+  else if (ext.compare("rcsv") == 0)
+    {
+    // Markups ruler list
+    nodeIDs = d->MarkupsLogic->LoadMarkupsRulers(fileName.toLatin1(),
+                                                 name.toLatin1());
+    }
+  else if (ext.compare("acsv") == 0)
+    {
+    // Annotation fiducial or ruler
+    // try loading as rulers first since that will fail if it doesn't
+    // find two points
+    nodeIDs = d->MarkupsLogic->LoadMarkupsRulers(fileName.toLatin1(),
+                                                 name.toLatin1());
+    if (nodeIDs == NULL)
+      {
+      // try reading it as a ruler
+      nodeIDs = d->MarkupsLogic->LoadMarkupsFiducials(fileName.toLatin1(),
+                                                      name.toLatin1());
+      }
+    }
 
   if (nodeIDs)
     {
