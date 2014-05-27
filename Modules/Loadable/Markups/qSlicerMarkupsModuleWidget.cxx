@@ -75,9 +75,14 @@ public:
   int numberOfColumns();
   /// return the column index for a given QString, -1 if not a valid header
   int columnIndex(QString label);
+  /// update the column labels and number of columns to match the number of
+  /// points in the currently active markup type
+  void updateColumnsForActiveMarkup();
 
 private:
   QStringList columnLabels;
+  QStringList fiducialColumnLabels;
+  QStringList rulerColumnLabels;
 
   QAction*    newMarkupWithCurrentDisplayPropertiesAction;
 
@@ -101,7 +106,9 @@ private:
 qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMarkupsModuleWidget& object)
   : q_ptr(&object)
 {
-  this->columnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "R" << "A" << "S";
+  this->fiducialColumnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "R" << "A" << "S";
+  this->rulerColumnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "R" << "A" << "S" << "R2" << "A2" << "S2";
+  this->columnLabels = this->fiducialColumnLabels;
 
   this->newMarkupWithCurrentDisplayPropertiesAction = 0;
   this->visibilityMenu = 0;
@@ -121,6 +128,51 @@ qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMark
 int qSlicerMarkupsModuleWidgetPrivate::columnIndex(QString label)
 {
   return this->columnLabels.indexOf(label);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidgetPrivate::updateColumnsForActiveMarkup()
+{
+  Q_Q(qSlicerMarkupsModuleWidget);
+
+  vtkMRMLNode *mrmlNode = this->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsNode *listNode = NULL;
+  listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
+
+  qDebug() << "updateColumnsForActiveMarkup";
+
+  if (listNode->IsA("vtkMRMLMarkupsFiducialNode"))
+    {
+    this->columnLabels = this->fiducialColumnLabels;
+    }
+  else if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
+    {
+    this->columnLabels = this->rulerColumnLabels;
+    }
+
+  if (this->activeMarkupTableWidget->columnCount() == this->numberOfColumns())
+    {
+    return;
+    }
+
+  this->activeMarkupTableWidget->setColumnCount(this->numberOfColumns());
+  this->activeMarkupTableWidget->setHorizontalHeaderLabels(this->columnLabels);
+  // remove the text labels for the columns that just use icons
+  this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Selected"))->setText("");
+  this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Locked"))->setText("");
+  this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Visible"))->setText("");
+
+  // adjust the width of the extra point columns if necessary
+  if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
+    {
+    this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("R2"), 65);
+    this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("A2"), 65);
+    this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("S2"), 65);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1086,27 +1138,49 @@ void qSlicerMarkupsModuleWidget::updateRow(int m)
      d->activeMarkupTableWidget->setItem(m,descriptionIndex,new QTableWidgetItem(markupDescription));
      }
 
-   // point
-   double point[3];
-   if (d->transformedCoordinatesCheckBox->isChecked())
+   int numberOfPoints = markupsNode->GetNumberOfPointsInNthMarkup(m);
+   for (int pointIndex = 0; pointIndex < numberOfPoints; ++pointIndex)
      {
-     markupsNode->GetMarkupPointWorld(m, 0, point);
+     // point
+     double point[3];
+     if (d->transformedCoordinatesCheckBox->isChecked())
+       {
+       double worldPoint[4];
+       markupsNode->GetMarkupPointWorld(m, pointIndex, worldPoint);
+       point[0] = worldPoint[0];
+       point[1] = worldPoint[1];
+       point[2] = worldPoint[2];
+       }
+     else
+       {
+       markupsNode->GetMarkupPoint(m, pointIndex, point);
+       }
+     int rColumnIndex = -1;
+     if (pointIndex == 0)
+       {
+       rColumnIndex = d->columnIndex("R");
+       }
+     else if (pointIndex == 1)
+       {
+       rColumnIndex = d->columnIndex("R2");
+       }
+     else
+       {
+       qWarning() << "Unexpected point index = " << pointIndex;
+       continue;
+       }
+     // qDebug() << "rColumnIndex = " << rColumnIndex;
+     for (int p = 0; p < 3; p++)
+       {
+       // last argument to number sets the precision
+       QString coordinate = QString::number(point[p], 'f', 3);
+       if (d->activeMarkupTableWidget->item(m,rColumnIndex + p) == NULL ||
+           d->activeMarkupTableWidget->item(m,rColumnIndex + p)->text() != coordinate)
+         {
+         d->activeMarkupTableWidget->setItem(m,rColumnIndex + p,new QTableWidgetItem(coordinate));
+         }
+       }
      }
-   else
-     {
-     markupsNode->GetMarkupPoint(m, 0, point);
-     }
-  int rColumnIndex = d->columnIndex("R");
-  for (int p = 0; p < 3; p++)
-    {
-    // last argument to number sets the precision
-    QString coordinate = QString::number(point[p], 'f', 3);
-    if (d->activeMarkupTableWidget->item(m,rColumnIndex + p) == NULL ||
-        d->activeMarkupTableWidget->item(m,rColumnIndex + p)->text() != coordinate)
-      {
-      d->activeMarkupTableWidget->setItem(m,rColumnIndex + p,new QTableWidgetItem(coordinate));
-      }
-    }
 
   // unblock so that changes to the table will propagate to MRML
   d->activeMarkupTableWidget->blockSignals(false);
@@ -1727,10 +1801,13 @@ void qSlicerMarkupsModuleWidget::onAddMarkupPushButtonClicked()
     {
     listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
     }
-  if (listNode)
+  if (listNode->IsA("vtkMRMLMarkupsFiducialNode"))
     {
-    // for now, assume a fiducial
     listNode->AddMarkupWithNPoints(1);
+    }
+  else if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
+    {
+    listNode->AddMarkupWithNPoints(2);
     }
 }
 
@@ -1950,6 +2027,9 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     {
     qDebug() << "On Active MRML node changed: Failed to change active markups node id on selection node '" << selectionNodeID.c_str() << "'";
     }
+
+  // make sure have the right number of columns for this type of markup
+  d->updateColumnsForActiveMarkup();
 
   // update the GUI
   this->updateWidgetFromMRML();
@@ -2217,71 +2297,74 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     std::string description = std::string(item->text().toLatin1());
     listNode->SetNthMarkupDescription(n, description);
     }
-  else if (column == d->columnIndex("R") ||
-           column == d->columnIndex("A") ||
-           column == d->columnIndex("S"))
+  else if (column >= d->columnIndex("R"))
     {
-    // get the new value
-    double newPoint[3] = {0.0, 0.0, 0.0};
-    if (d->activeMarkupTableWidget->item(row, d->columnIndex("R")) == NULL ||
-        d->activeMarkupTableWidget->item(row, d->columnIndex("A")) == NULL ||
-        d->activeMarkupTableWidget->item(row, d->columnIndex("S")) == NULL)
+    int numPoints = listNode->GetNumberOfPointsInNthMarkup(n);
+    for (int pointIndex = 0; pointIndex < numPoints; ++pointIndex)
       {
-      // init state, return
-      return;
-      }
-    newPoint[0] = d->activeMarkupTableWidget->item(row, d->columnIndex("R"))->text().toDouble();
-    newPoint[1] = d->activeMarkupTableWidget->item(row, d->columnIndex("A"))->text().toDouble();
-    newPoint[2] = d->activeMarkupTableWidget->item(row, d->columnIndex("S"))->text().toDouble();
+      // offset to the columns for this point
+      int rColumnIndex = -1;
+      if (pointIndex == 0)
+        {
+        rColumnIndex = d->columnIndex("R");
+        }
+      else if (pointIndex == 1)
+        {
+        rColumnIndex = d->columnIndex("R2");
+        }
+      else
+        {
+        qWarning() << "On cell changed: invalid point index: " << pointIndex;
+        continue;
+        }
+      // get the new value
+      if (d->activeMarkupTableWidget->item(row, rColumnIndex) == NULL ||
+          d->activeMarkupTableWidget->item(row, rColumnIndex + 1) == NULL ||
+          d->activeMarkupTableWidget->item(row, rColumnIndex + 2) == NULL)
+        {
+        // init state, return
+        return;
+        }
+      double newPoint[3] = {0.0, 0.0, 0.0};
+      newPoint[0] = d->activeMarkupTableWidget->item(row, rColumnIndex)->text().toDouble();
+      newPoint[1] = d->activeMarkupTableWidget->item(row, rColumnIndex+1)->text().toDouble();
+      newPoint[2] = d->activeMarkupTableWidget->item(row, rColumnIndex+2)->text().toDouble();
 
-    // get the old value
-    double point[3];
-    if (d->transformedCoordinatesCheckBox->isChecked())
-      {
-      listNode->GetMarkupPointWorld(n, 0, point);
-      }
-    else
-      {
-      listNode->GetMarkupPoint(n, 0, point);
-      }
+      // get the old value
+      double point[3];
+      if (d->transformedCoordinatesCheckBox->isChecked())
+        {
+        double worldPoint[4];
+        listNode->GetMarkupPointWorld(n, pointIndex, worldPoint);
+        point[0] = worldPoint[0];
+        point[1] = worldPoint[1];
+        point[2] = worldPoint[2];
+        }
+      else
+        {
+        listNode->GetMarkupPoint(n, pointIndex, point);
+        }
 
-    // changed?
-    double minChange = 0.001;
-    if (fabs(newPoint[0] - point[0]) > minChange ||
-        fabs(newPoint[1] - point[1]) > minChange ||
-        fabs(newPoint[2] - point[2]) > minChange)
-      {
-      vtkMRMLMarkupsFiducialNode *fidList = vtkMRMLMarkupsFiducialNode::SafeDownCast(listNode);
-      if (fidList)
+      // changed?
+      double minChange = 0.001;
+      if (fabs(newPoint[0] - point[0]) > minChange ||
+          fabs(newPoint[1] - point[1]) > minChange ||
+          fabs(newPoint[2] - point[2]) > minChange)
         {
         if (d->transformedCoordinatesCheckBox->isChecked())
           {
-          fidList->SetNthFiducialWorldCoordinates(n, newPoint);
+          listNode->SetMarkupPointWorld(n, pointIndex,
+                                        newPoint[0], newPoint[1], newPoint[2]);
           }
         else
           {
-          fidList->SetNthFiducialPositionFromArray(n, newPoint);
+          listNode->SetMarkupPointFromArray(n, pointIndex, newPoint);
           }
         }
       else
         {
-        vtkMRMLMarkupsRulerNode *rulerList = vtkMRMLMarkupsRulerNode::SafeDownCast(listNode);
-        if (rulerList)
-          {
-          if (d->transformedCoordinatesCheckBox->isChecked())
-            {
-            rulerList->SetNthRulerWorldCoordinates1(n, newPoint);
-            }
-          else
-            {
-            rulerList->SetNthRulerPosition1FromArray(n, newPoint);
-            }
-          }
+        //qDebug() << QString("Cell changed: no change in location bigger than ") + QString::number(minChange);
         }
-      }
-    else
-      {
-      //qDebug() << QString("Cell changed: no change in location bigger than ") + QString::number(minChange);
       }
     }
   else
@@ -2358,6 +2441,7 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCurrentCellChanged(
 //-----------------------------------------------------------------------------
 void qSlicerMarkupsModuleWidget::onRightClickActiveMarkupTableWidget(QPoint pos)
 {
+  Q_D(qSlicerMarkupsModuleWidget);
   Q_UNUSED(pos);
 
   // qDebug() << "onRightClickActiveMarkupTableWidget: pos = " << pos;
@@ -2365,11 +2449,18 @@ void qSlicerMarkupsModuleWidget::onRightClickActiveMarkupTableWidget(QPoint pos)
   QMenu menu;
   this->addSelectedCoordinatesToMenu(&menu);
 
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  QString markupType = QString("fiducial");
+  if (mrmlNode->IsA("vtkMRMLMarkupsRulerNode"))
+    {
+    markupType = QString("ruler");
+    }
+
   // Delete
-  QAction *deleteFiducialAction =
-    new QAction(QString("Delete highlighted fiducial(s)"), &menu);
-  menu.addAction(deleteFiducialAction);
-  QObject::connect(deleteFiducialAction, SIGNAL(triggered()),
+  QAction *deleteMarkupAction =
+    new QAction(QString("Delete highlighted %1(s)").arg(markupType), &menu);
+  menu.addAction(deleteMarkupAction);
+  QObject::connect(deleteMarkupAction, SIGNAL(triggered()),
                    this, SLOT(onDeleteMarkupPushButtonClicked()));
 
   // Jump slices
@@ -2380,18 +2471,18 @@ void qSlicerMarkupsModuleWidget::onRightClickActiveMarkupTableWidget(QPoint pos)
                    this, SLOT(onJumpSlicesActionTriggered()));
 
   // If there's another list in the scene
-  if (this->mrmlScene()->GetNumberOfNodesByClass("vtkMRMLMarkupsNode") > 1)
+  if (this->mrmlScene()->GetNumberOfNodesByClass(mrmlNode->GetClassName()) > 1)
     {
     // copy to another list
     QAction *copyToOtherListAction =
-      new QAction(QString("Copy fiducial to another list"), &menu);
+      new QAction(QString("Copy %1 to another list").arg(markupType), &menu);
     menu.addAction(copyToOtherListAction);
     QObject::connect(copyToOtherListAction, SIGNAL(triggered()),
                      this, SLOT(onCopyToOtherListActionTriggered()));
 
     // move to another list
     QAction *moveToOtherListAction =
-      new QAction(QString("Move fiducial to another list"), &menu);
+      new QAction(QString("Move %1 to another list").arg(markupType), &menu);
     menu.addAction(moveToOtherListAction);
     QObject::connect(moveToOtherListAction, SIGNAL(triggered()),
                      this, SLOT(onMoveToOtherListActionTriggered()));
@@ -2453,7 +2544,11 @@ void qSlicerMarkupsModuleWidget::addSelectedCoordinatesToMenu(QMenu *menu)
       double point[3];
       if (d->transformedCoordinatesCheckBox->isChecked())
         {
-        markupsNode->GetMarkupPointWorld(row, p, point);
+        double worldPoint[4];
+        markupsNode->GetMarkupPointWorld(row, p, worldPoint);
+        point[0] = worldPoint[0];
+        point[1] = worldPoint[1];
+        point[2] = worldPoint[2];
         }
       else
         {
@@ -3209,6 +3304,12 @@ void qSlicerMarkupsModuleWidget::onHideCoordinateColumnsToggled(bool checked)
   d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("R"), checked);
   d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("A"), checked);
   d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("S"), checked);
+  if (d->columnIndex("R2") != -1)
+    {
+    d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("R2"), checked);
+    d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("A2"), checked);
+    d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("S2"), checked);
+    }
 
   if (!checked)
     {
