@@ -127,6 +127,15 @@ public slots:
   void onTextScaleSliderWidgetChanged(double value);
   void onOpacitySliderWidgetChanged(double value);
 
+  // Ruler display property slots
+  void onRulerSelectedColor1ColorPickerButtonChanged(QColor qcolor);
+  void onRulerSelectedColor2ColorPickerButtonChanged(QColor qcolor);
+  void onRulerSelectedLineColorColorPickerButtonChanged(QColor qcolor);
+  void onRulerUnselectedColor1ColorPickerButtonChanged(QColor qcolor);
+  void onRulerUnselectedColor2ColorPickerButtonChanged(QColor qcolor);
+  void onRulerUnselectedLineColorColorPickerButtonChanged(QColor qcolor);
+
+
   void onMarkupScaleSliderWidgetValueChanged(double value);
 
   /// Display property button slots

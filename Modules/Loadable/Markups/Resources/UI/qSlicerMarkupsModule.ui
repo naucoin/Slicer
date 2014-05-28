@@ -603,6 +603,20 @@
          <property name="fieldGrowthPolicy">
           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
          </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="listDisplayNodeViewLabel">
+           <property name="text">
+            <string>Views</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="qMRMLDisplayNodeViewComboBox" name="listDisplayNodeViewComboBox">
+           <property name="toolTip">
+            <string>Select 3D views in which to show this list. All unchecked shows in all 3D and 2D views.</string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QLabel" name="glyphTypeLabel">
            <property name="text">
@@ -642,13 +656,27 @@
           </widget>
          </item>
          <item row="4" column="0">
+          <widget class="QLabel" name="rulerSelectedColorLabel">
+           <property name="text">
+            <string>Ruler Selected</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="rulerUnselectedColorLabel">
+           <property name="text">
+            <string>Ruler Unselected</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
           <widget class="QLabel" name="glyphScaleLabel">
            <property name="text">
             <string>Glyph Scale</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="6" column="1">
           <widget class="ctkSliderWidget" name="glyphScaleSliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -658,14 +686,32 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
+          <widget class="QLabel" name="textVisibilityLabel">
+           <property name="text">
+            <string>Label Visibility</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QPushButton" name="textVisibleInvisiblePushButton">
+           <property name="toolTip">
+            <string>Click to hide this markup's labels</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:Icons/Medium/SlicerVisible.png</normaloff>:Icons/Medium/SlicerVisible.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
           <widget class="QLabel" name="textScaleLabel">
            <property name="text">
             <string>Text Scale</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="8" column="1">
           <widget class="ctkSliderWidget" name="textScaleSliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -675,14 +721,14 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="9" column="0">
           <widget class="QLabel" name="opacityLabel">
            <property name="text">
             <string>Opacity</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="9" column="1">
           <widget class="ctkSliderWidget" name="opacitySliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -692,7 +738,7 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="10" column="1">
           <widget class="QPushButton" name="resetToDefaultDisplayPropertiesPushButton">
            <property name="toolTip">
             <string>Use default display properties.</string>
@@ -702,7 +748,7 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="1">
+         <item row="11" column="1">
           <widget class="QPushButton" name="saveToDefaultDisplayPropertiesPushButton">
            <property name="toolTip">
             <string>Save current display property settings to defaults, will be saved for when Slicer restarts (see Application Settings)</string>
@@ -712,7 +758,7 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="0" colspan="2">
+         <item row="12" column="0" colspan="2">
           <widget class="ctkCollapsibleGroupBox" name="pointFiducialProjectionPropertiesGroupBox">
            <property name="title">
             <string>Fiducial Projection</string>
@@ -727,37 +773,73 @@
            </layout>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="qMRMLDisplayNodeViewComboBox" name="listDisplayNodeViewComboBox">
-           <property name="toolTip">
-            <string>Select 3D views in which to show this list. All unchecked shows in all 3D and 2D views.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="listDisplayNodeViewLabel">
-           <property name="text">
-            <string>Views</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="textVisibilityLabel">
-           <property name="text">
-            <string>Label Visibility</string>
-           </property>
-          </widget>
+         <item row="4" column="1">
+          <layout class="QHBoxLayout" name="rulerSelectedColorHorizontalLayout">
+           <item>
+            <widget class="ctkColorPickerButton" name="rulerSelectedColor1ColorPickerButton">
+             <property name="toolTip">
+              <string>Color of the first point of the ruler</string>
+             </property>
+             <property name="displayColorName">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ctkColorPickerButton" name="rulerSelectedLineColorColorPickerButton">
+             <property name="toolTip">
+              <string>Color of the line of the ruler</string>
+             </property>
+             <property name="displayColorName">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ctkColorPickerButton" name="rulerSelectedColor2ColorPickerButton">
+             <property name="toolTip">
+              <string>Color of the second point of the ruler</string>
+             </property>
+             <property name="displayColorName">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item row="5" column="1">
-          <widget class="QPushButton" name="textVisibleInvisiblePushButton">
-           <property name="toolTip">
-            <string>Click to hide this markup's labels</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>:Icons/Medium/SlicerVisible.png</normaloff>:Icons/Medium/SlicerVisible.png</iconset>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="rulerUnselectedColorHorizontalLayout">
+           <item>
+            <widget class="ctkColorPickerButton" name="rulerUnselectedColor1ColorPickerButton">
+             <property name="toolTip">
+              <string>Color of the first point of the ruler when it's not selected</string>
+             </property>
+             <property name="displayColorName">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ctkColorPickerButton" name="rulerUnselectedLineColorColorPickerButton">
+             <property name="toolTip">
+              <string>Color of the line of the ruler when it's not selected</string>
+             </property>
+             <property name="displayColorName">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ctkColorPickerButton" name="rulerUnselectedColor2ColorPickerButton">
+             <property name="toolTip">
+              <string>Color of the second point of the ruler when it's not selected</string>
+             </property>
+             <property name="displayColorName">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

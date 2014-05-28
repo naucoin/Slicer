@@ -76,7 +76,9 @@ public:
   /// return the column index for a given QString, -1 if not a valid header
   int columnIndex(QString label);
   /// update the column labels and number of columns to match the number of
-  /// points in the currently active markup type
+  /// points in the currently active markup type. Enable/disable any other
+  /// widgets that only should be there for certain markup types (for example the
+  /// ruler end point colors
   void updateColumnsForActiveMarkup();
 
 private:
@@ -173,6 +175,30 @@ void qSlicerMarkupsModuleWidgetPrivate::updateColumnsForActiveMarkup()
     this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("A2"), 65);
     this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("S2"), 65);
     }
+
+  // show or hide ruler specific widgets
+  if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
+    {
+    this->rulerSelectedColor1ColorPickerButton->setHidden(false);
+    this->rulerSelectedColor2ColorPickerButton->setHidden(false);
+    this->rulerSelectedLineColorColorPickerButton->setHidden(false);
+    this->rulerSelectedColorLabel->setHidden(false);
+    this->rulerUnselectedColorLabel->setHidden(false);
+    this->rulerUnselectedColor1ColorPickerButton->setHidden(false);
+    this->rulerUnselectedColor2ColorPickerButton->setHidden(false);
+    this->rulerUnselectedLineColorColorPickerButton->setHidden(false);
+    }
+  else
+    {
+    this->rulerSelectedColor1ColorPickerButton->setHidden(true);
+    this->rulerSelectedColor2ColorPickerButton->setHidden(true);
+    this->rulerSelectedLineColorColorPickerButton->setHidden(true);
+    this->rulerSelectedColorLabel->setHidden(true);
+    this->rulerUnselectedColorLabel->setHidden(true);
+    this->rulerUnselectedColor1ColorPickerButton->setHidden(true);
+    this->rulerUnselectedColor2ColorPickerButton->setHidden(true);
+    this->rulerUnselectedLineColorColorPickerButton->setHidden(true);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -191,12 +217,34 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   // use the ctk color dialog on the color picker buttons
   this->selectedColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
   this->unselectedColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->rulerSelectedColor1ColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->rulerSelectedColor2ColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->rulerSelectedLineColorColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->rulerUnselectedColor1ColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->rulerUnselectedColor2ColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
+  this->rulerUnselectedLineColorColorPickerButton->setDialogOptions(ctkColorPickerButton::UseCTKColorDialog);
 
   // set up the display properties
   QObject::connect(this->selectedColorPickerButton, SIGNAL(colorChanged(QColor)),
                    q, SLOT(onSelectedColorPickerButtonChanged(QColor)));
   QObject::connect(this->unselectedColorPickerButton, SIGNAL(colorChanged(QColor)),
                 q, SLOT(onUnselectedColorPickerButtonChanged(QColor)));
+
+  // ruler specific display properties
+  QObject::connect(this->rulerSelectedColor1ColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onRulerSelectedColor1ColorPickerButtonChanged(QColor)));
+  QObject::connect(this->rulerSelectedColor2ColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onRulerSelectedColor2ColorPickerButtonChanged(QColor)));
+  QObject::connect(this->rulerSelectedLineColorColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onRulerSelectedLineColorColorPickerButtonChanged(QColor)));
+  QObject::connect(this->rulerUnselectedColor1ColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onRulerUnselectedColor1ColorPickerButtonChanged(QColor)));
+  QObject::connect(this->rulerUnselectedColor2ColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onRulerUnselectedColor2ColorPickerButtonChanged(QColor)));
+  QObject::connect(this->rulerUnselectedLineColorColorPickerButton, SIGNAL(colorChanged(QColor)),
+                   q, SLOT(onRulerUnselectedLineColorColorPickerButtonChanged(QColor)));
+
+
   QObject::connect(this->glyphTypeComboBox, SIGNAL(currentIndexChanged(QString)),
                 q, SLOT(onGlyphTypeComboBoxChanged(QString)));
   QObject::connect(this->glyphScaleSliderWidget, SIGNAL(valueChanged(double)),
@@ -920,6 +968,41 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromDisplayNode()
         d->textScaleSliderWidget->setMaximum(textScale);
         }
       d->textScaleSliderWidget->setValue(textScale);
+
+      // ruler specific display
+      vtkMRMLMarkupsRulerDisplayNode *rulerDisplayNode = vtkMRMLMarkupsRulerDisplayNode::SafeDownCast(markupsDisplayNode);
+      if (rulerDisplayNode)
+        {
+        // point 1 selected color
+        color = rulerDisplayNode->GetSelectedPointColor1();
+        qMRMLUtils::colorToQColor(color, qColor);
+        d->rulerSelectedColor1ColorPickerButton->setColor(qColor);
+
+        // point 2 selected color
+        color = rulerDisplayNode->GetSelectedPointColor2();
+        qMRMLUtils::colorToQColor(color, qColor);
+        d->rulerSelectedColor2ColorPickerButton->setColor(qColor);
+
+        // line selected color
+        color = rulerDisplayNode->GetSelectedLineColor();
+        qMRMLUtils::colorToQColor(color, qColor);
+        d->rulerSelectedLineColorColorPickerButton->setColor(qColor);
+
+        // point 1 unselected color
+        color = rulerDisplayNode->GetPointColor1();
+        qMRMLUtils::colorToQColor(color, qColor);
+        d->rulerUnselectedColor1ColorPickerButton->setColor(qColor);
+
+        // point 2 unselected color
+        color = rulerDisplayNode->GetPointColor2();
+        qMRMLUtils::colorToQColor(color, qColor);
+        d->rulerUnselectedColor2ColorPickerButton->setColor(qColor);
+
+        // line unselected color
+        color = rulerDisplayNode->GetLineColor();
+        qMRMLUtils::colorToQColor(color, qColor);
+        d->rulerUnselectedLineColorColorPickerButton->setColor(qColor);
+        }
       }
     }
   else
@@ -1356,6 +1439,174 @@ void qSlicerMarkupsModuleWidget::onUnselectedColorPickerButtonChanged(QColor qco
     {
     displayNode->SetColor(color);
     }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerSelectedColor1ColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  double color[3];
+  qMRMLUtils::qColorToColor(qcolor, color);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!rulerNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = rulerNode->GetMarkupsRulerDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetSelectedPointColor1(color);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerSelectedColor2ColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  double color[3];
+  qMRMLUtils::qColorToColor(qcolor, color);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!rulerNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = rulerNode->GetMarkupsRulerDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetSelectedPointColor2(color);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerSelectedLineColorColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  double color[3];
+  qMRMLUtils::qColorToColor(qcolor, color);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!rulerNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = rulerNode->GetMarkupsRulerDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetSelectedLineColor(color);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerUnselectedColor1ColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  double color[3];
+  qMRMLUtils::qColorToColor(qcolor, color);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!rulerNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = rulerNode->GetMarkupsRulerDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetPointColor1(color);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerUnselectedColor2ColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  double color[3];
+  qMRMLUtils::qColorToColor(qcolor, color);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!rulerNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = rulerNode->GetMarkupsRulerDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetPointColor2(color);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerUnselectedLineColorColorPickerButtonChanged(QColor qcolor)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  double color[3];
+  qMRMLUtils::qColorToColor(qcolor, color);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!rulerNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = rulerNode->GetMarkupsRulerDisplayNode();
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetLineColor(color);
 }
 
 //-----------------------------------------------------------------------------
