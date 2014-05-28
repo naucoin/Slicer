@@ -150,6 +150,13 @@ public:
   /// Get world coordinates on nth ruler in two arrays
   void GetNthRulerWorldCoordinatesInArrays(int n, double coords1[4], double coords2[4]);
 
+  /// Calculate and return the distance between the Nth ruler end points.
+  /// n defaults to 0. Returns -1.0 on error.
+  double GetDistanceMeasurement(int n = 0);
+  /// Calculate and return the transformed distance between the Nth ruler end points.
+  /// n defaults to 0. Returns -1.0 on error.
+  double GetDistanceMeasurementWorld(int n = 0);
+
 protected:
   vtkMRMLMarkupsRulerNode();
   ~vtkMRMLMarkupsRulerNode();

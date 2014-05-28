@@ -31,6 +31,8 @@ int vtkMRMLMarkupsRulerNodeTest1(int , char * [] )
 
   EXERCISE_BASIC_DISPLAYABLE_MRML_METHODS( vtkMRMLMarkupsRulerNode, node1 );
 
+  node1->SetName("rulerTest");
+
   vtkMRMLMarkupsDisplayNode *dispNode = node1->GetMarkupsDisplayNode();
   std::cout << "Get MarkupsDisplayNode returned " << (dispNode ? "valid" : "null") << " pointer" << std::endl;
   vtkMRMLMarkupsRulerDisplayNode *rulerDispNode = node1->GetMarkupsRulerDisplayNode();
@@ -249,6 +251,29 @@ int vtkMRMLMarkupsRulerNodeTest1(int , char * [] )
     return EXIT_FAILURE;
     }
 
+  // distance measurement
+  double d1 = node1->GetDistanceMeasurement(rulerIndex2);
+  double d2 = node1->GetDistanceMeasurementWorld(rulerIndex2);
+  std::cout << "Distance measurement from ruler " << rulerIndex2
+            << ", d1 = " << d1 << ", d2 = " << d2 << std::endl;
+  // no transform so should be the same
+  if (d1 != d2)
+    {
+    std::cerr << "Error getting distance measurement from ruler " << rulerIndex2
+              << ", " << d1 << " != " << d2 << std::endl;
+    return EXIT_FAILURE;
+    }
+  // test with equal points
+  int zeroIndex = node1->AddRuler(0.0, 0.0, 0.0,
+                                  0.0, 0.0, 0.0);
+  d1 = node1->GetDistanceMeasurement(zeroIndex);
+  std::cout << "0-0 distance measurement = " << d1 << std::endl;
+  if (d1 != 0.0)
+    {
+    std::cerr << "Error getting 0 distance measurement between identical end points, "
+              << d1 << " != 0.0" << std::endl;
+    return EXIT_FAILURE;
+    }
   node1->Print(std::cout);
 
   return EXIT_SUCCESS;

@@ -75,7 +75,7 @@ public:
   int numberOfColumns();
   /// return the column index for a given QString, -1 if not a valid header
   int columnIndex(QString label);
-  /// update the column labels and number of columns to match the number of
+  /// hide/show the columns to match the displayed values and number of
   /// points in the currently active markup type. Enable/disable any other
   /// widgets that only should be there for certain markup types (for example the
   /// ruler end point colors
@@ -83,8 +83,6 @@ public:
 
 private:
   QStringList columnLabels;
-  QStringList fiducialColumnLabels;
-  QStringList rulerColumnLabels;
 
   QAction*    newMarkupWithCurrentDisplayPropertiesAction;
 
@@ -108,9 +106,7 @@ private:
 qSlicerMarkupsModuleWidgetPrivate::qSlicerMarkupsModuleWidgetPrivate(qSlicerMarkupsModuleWidget& object)
   : q_ptr(&object)
 {
-  this->fiducialColumnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "R" << "A" << "S";
-  this->rulerColumnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "R" << "A" << "S" << "R2" << "A2" << "S2";
-  this->columnLabels = this->fiducialColumnLabels;
+  this->columnLabels << "Selected" << "Locked" << "Visible" << "Name" << "Description" << "Distance" << "R" << "A" << "S" << "R2" << "A2" << "S2";
 
   this->newMarkupWithCurrentDisplayPropertiesAction = 0;
   this->visibilityMenu = 0;
@@ -142,43 +138,14 @@ void qSlicerMarkupsModuleWidgetPrivate::updateColumnsForActiveMarkup()
     {
     return;
     }
-  vtkMRMLMarkupsNode *listNode = NULL;
-  listNode = vtkMRMLMarkupsNode::SafeDownCast(mrmlNode);
-
-  qDebug() << "updateColumnsForActiveMarkup";
-
-  if (listNode->IsA("vtkMRMLMarkupsFiducialNode"))
+  // show or hide ruler specific columns and widgets
+  if (mrmlNode->IsA("vtkMRMLMarkupsRulerNode"))
     {
-    this->columnLabels = this->fiducialColumnLabels;
-    }
-  else if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
-    {
-    this->columnLabels = this->rulerColumnLabels;
-    }
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("Distance"), false);
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("R2"), false);
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("A2"), false);
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("S2"), false);
 
-  if (this->activeMarkupTableWidget->columnCount() == this->numberOfColumns())
-    {
-    return;
-    }
-
-  this->activeMarkupTableWidget->setColumnCount(this->numberOfColumns());
-  this->activeMarkupTableWidget->setHorizontalHeaderLabels(this->columnLabels);
-  // remove the text labels for the columns that just use icons
-  this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Selected"))->setText("");
-  this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Locked"))->setText("");
-  this->activeMarkupTableWidget->horizontalHeaderItem(this->columnIndex("Visible"))->setText("");
-
-  // adjust the width of the extra point columns if necessary
-  if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
-    {
-    this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("R2"), 65);
-    this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("A2"), 65);
-    this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("S2"), 65);
-    }
-
-  // show or hide ruler specific widgets
-  if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
-    {
     this->rulerSelectedColor1ColorPickerButton->setHidden(false);
     this->rulerSelectedColor2ColorPickerButton->setHidden(false);
     this->rulerSelectedLineColorColorPickerButton->setHidden(false);
@@ -190,6 +157,11 @@ void qSlicerMarkupsModuleWidgetPrivate::updateColumnsForActiveMarkup()
     }
   else
     {
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("Distance"), true);
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("R2"), true);
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("A2"), true);
+    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("S2"), true);
+
     this->rulerSelectedColor1ColorPickerButton->setHidden(true);
     this->rulerSelectedColor2ColorPickerButton->setHidden(true);
     this->rulerSelectedLineColorColorPickerButton->setHidden(true);
@@ -488,6 +460,10 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("R"), 65);
   this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("A"), 65);
   this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("S"), 65);
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("Distance"), 100);
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("R2"), 65);
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("A2"), 65);
+  this->activeMarkupTableWidget->setColumnWidth(this->columnIndex("S2"), 65);
 
   // show/hide the coordinate columns
   QObject::connect(this->hideCoordinateColumnsCheckBox,
@@ -1221,6 +1197,36 @@ void qSlicerMarkupsModuleWidget::updateRow(int m)
      d->activeMarkupTableWidget->setItem(m,descriptionIndex,new QTableWidgetItem(markupDescription));
      }
 
+   // is the ruler distance column shown?
+   vtkMRMLMarkupsRulerNode *rulerNode = vtkMRMLMarkupsRulerNode::SafeDownCast(markupsNode);
+   if (rulerNode != 0)
+     {
+     int distanceIndex = d->columnIndex("Distance");
+     double distanceMeasurement = -1.0;
+     if (d->transformedCoordinatesCheckBox->isChecked())
+       {
+       distanceMeasurement = rulerNode->GetDistanceMeasurementWorld(m);
+       }
+     else
+       {
+       distanceMeasurement = rulerNode->GetDistanceMeasurement(m);
+       }
+     QString markupDistance;
+     if (distanceMeasurement != -1)
+       {
+       markupDistance = QString::number(distanceMeasurement);
+       }
+     if (d->activeMarkupTableWidget->item(m,distanceIndex) == NULL ||
+         d->activeMarkupTableWidget->item(m,distanceIndex)->text() != markupDistance)
+       {
+       d->activeMarkupTableWidget->setItem(m,distanceIndex,
+                                           new QTableWidgetItem(markupDistance));
+       // make it uneditable
+       d->activeMarkupTableWidget->item(m, distanceIndex)->setFlags(
+         d->activeMarkupTableWidget->item(m, distanceIndex)->flags()
+          & ~Qt::ItemIsEditable);
+       }
+     }
    int numberOfPoints = markupsNode->GetNumberOfPointsInNthMarkup(m);
    for (int pointIndex = 0; pointIndex < numberOfPoints; ++pointIndex)
      {
@@ -2548,8 +2554,17 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupTableCellChanged(int row, int col
     std::string description = std::string(item->text().toLatin1());
     listNode->SetNthMarkupDescription(n, description);
     }
-  else if (column >= d->columnIndex("R"))
+  // ruler distance is not editable
+  else if ((column == d->columnIndex("R") ||
+            column == d->columnIndex("A") ||
+            column == d->columnIndex("S") ||
+            column == d->columnIndex("R2") ||
+            column == d->columnIndex("A2") ||
+            column == d->columnIndex("S2")) &&
+           column != -1)
     {
+    // when have a fid, the column indices for the second point columns
+    // will be -1, don't want to match that
     int numPoints = listNode->GetNumberOfPointsInNthMarkup(n);
     for (int pointIndex = 0; pointIndex < numPoints; ++pointIndex)
       {
@@ -3555,7 +3570,11 @@ void qSlicerMarkupsModuleWidget::onHideCoordinateColumnsToggled(bool checked)
   d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("R"), checked);
   d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("A"), checked);
   d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("S"), checked);
-  if (d->columnIndex("R2") != -1)
+
+  // is it a ruler?
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (mrmlNode != 0 &&
+      mrmlNode->IsA("vtkMRMLMarkupsRulerNode"))
     {
     d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("R2"), checked);
     d->activeMarkupTableWidget->setColumnHidden(d->columnIndex("A2"), checked);

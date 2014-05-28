@@ -22,6 +22,7 @@
 #include "vtkMRMLScene.h"
 
 // VTK includes
+#include <vtkMath.h>
 #include <vtkObjectFactory.h>
 
 // STD includes
@@ -400,4 +401,38 @@ void vtkMRMLMarkupsRulerNode::GetNthRulerWorldCoordinatesInArrays(int n,
 {
   this->GetMarkupPointWorld(n, 0, coords1);
   this->GetMarkupPointWorld(n, 1, coords2);
+}
+
+//-------------------------------------------------------------------------
+double vtkMRMLMarkupsRulerNode::GetDistanceMeasurement(int n)
+{
+  if (!this->MarkupExists(n))
+    {
+    vtkErrorMacro("GetDistanceMeasurement: ruler " << n << " not found");
+    return -1.0;
+    }
+
+  double p1[3] = {0.0,0.0,0.0};
+  double p2[3] = {0.0,0.0,0.0};
+
+  this->GetNthRulerPositionInArrays(n, p1, p2);
+
+  return sqrt(vtkMath::Distance2BetweenPoints(p1,p2));
+}
+
+//-------------------------------------------------------------------------
+double vtkMRMLMarkupsRulerNode::GetDistanceMeasurementWorld(int n)
+{
+  if (!this->MarkupExists(n))
+    {
+    vtkErrorMacro("GetDistanceMeasurementWorld: ruler " << n << " not found");
+    return -1.0;
+    }
+
+  double p1[4] = {0.0,0.0,0.0,1.0};
+  double p2[4] = {0.0,0.0,0.0,1.0};
+
+  this->GetNthRulerWorldCoordinatesInArrays(n, p1, p2);
+
+  return sqrt(vtkMath::Distance2BetweenPoints(p1,p2));
 }
