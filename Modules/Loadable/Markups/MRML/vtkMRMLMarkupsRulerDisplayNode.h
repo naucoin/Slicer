@@ -111,11 +111,11 @@ public:
   inline void SliceProjectionThickerOnTopOff();
 
   /// Set projection color as ruler color
-  ///\sa SetProjectedColor
+  ///\sa SetSliceProjectionColor
   inline void SliceProjectionUseRulerColorOn();
 
   /// Manually set projection color
-  ///\sa SetProjectedColor
+  ///\sa SetSliceProjectionColor
   inline void SliceProjectionUseRulerColorOff();
 
   /// ProjectionDashed : Set projected line dashed

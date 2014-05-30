@@ -612,7 +612,7 @@ int vtkMRMLMarkupsNode::GetMarkupPointWorld(int markupIndex, int pointIndex, dou
     vtkMRMLLinearTransformNode *lnode = vtkMRMLLinearTransformNode::SafeDownCast(tnode);
     lnode->GetMatrixTransformToWorld(matrixTransformToWorld.GetPointer());
     transformToWorld->Concatenate(matrixTransformToWorld.GetPointer());
-  }
+    }
 
   // convert by the parent transform
   double  xyzw[4];
