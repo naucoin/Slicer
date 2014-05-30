@@ -11,12 +11,15 @@ set(${KIT}_SRCS
 
   qMRML${MODULE_NAME}FiducialProjectionPropertyWidgetPlugin.cxx
   qMRML${MODULE_NAME}FiducialProjectionPropertyWidgetPlugin.h
+  qMRML${MODULE_NAME}RulerProjectionPropertyWidgetPlugin.cxx
+  qMRML${MODULE_NAME}RulerProjectionPropertyWidgetPlugin.h
   )
 
 set(${KIT}_MOC_SRCS
   qSlicer${MODULE_NAME}ModuleWidgetsPlugin.h
 
   qMRML${MODULE_NAME}FiducialProjectionPropertyWidgetPlugin.h
+  qMRML${MODULE_NAME}RulerProjectionPropertyWidgetPlugin.h
   )
 
 set(${KIT}_TARGET_LIBRARIES

@@ -79,7 +79,7 @@ public:
   /// points in the currently active markup type. Enable/disable any other
   /// widgets that only should be there for certain markup types (for example the
   /// ruler end point colors
-  void updateColumnsForActiveMarkup();
+  void updateWidgetsForActiveMarkup();
 
 private:
   QStringList columnLabels;
@@ -129,7 +129,7 @@ int qSlicerMarkupsModuleWidgetPrivate::columnIndex(QString label)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMarkupsModuleWidgetPrivate::updateColumnsForActiveMarkup()
+void qSlicerMarkupsModuleWidgetPrivate::updateWidgetsForActiveMarkup()
 {
   Q_Q(qSlicerMarkupsModuleWidget);
 
@@ -139,38 +139,27 @@ void qSlicerMarkupsModuleWidgetPrivate::updateColumnsForActiveMarkup()
     return;
     }
   // show or hide ruler specific columns and widgets
+  bool hideThis = true;
   if (mrmlNode->IsA("vtkMRMLMarkupsRulerNode"))
     {
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("Distance"), false);
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("R2"), false);
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("A2"), false);
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("S2"), false);
-
-    this->rulerSelectedColor1ColorPickerButton->setHidden(false);
-    this->rulerSelectedColor2ColorPickerButton->setHidden(false);
-    this->rulerSelectedLineColorColorPickerButton->setHidden(false);
-    this->rulerSelectedColorLabel->setHidden(false);
-    this->rulerUnselectedColorLabel->setHidden(false);
-    this->rulerUnselectedColor1ColorPickerButton->setHidden(false);
-    this->rulerUnselectedColor2ColorPickerButton->setHidden(false);
-    this->rulerUnselectedLineColorColorPickerButton->setHidden(false);
+    hideThis = false;
     }
-  else
-    {
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("Distance"), true);
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("R2"), true);
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("A2"), true);
-    this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("S2"), true);
 
-    this->rulerSelectedColor1ColorPickerButton->setHidden(true);
-    this->rulerSelectedColor2ColorPickerButton->setHidden(true);
-    this->rulerSelectedLineColorColorPickerButton->setHidden(true);
-    this->rulerSelectedColorLabel->setHidden(true);
-    this->rulerUnselectedColorLabel->setHidden(true);
-    this->rulerUnselectedColor1ColorPickerButton->setHidden(true);
-    this->rulerUnselectedColor2ColorPickerButton->setHidden(true);
-    this->rulerUnselectedLineColorColorPickerButton->setHidden(true);
-    }
+  this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("Distance"), hideThis);
+  this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("R2"), hideThis);
+  this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("A2"), hideThis);
+  this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("S2"), hideThis);
+
+  this->rulerSelectedColor1ColorPickerButton->setHidden(hideThis);
+  this->rulerSelectedColor2ColorPickerButton->setHidden(hideThis);
+  this->rulerSelectedLineColorColorPickerButton->setHidden(hideThis);
+  this->rulerSelectedColorLabel->setHidden(hideThis);
+  this->rulerUnselectedColorLabel->setHidden(hideThis);
+  this->rulerUnselectedColor1ColorPickerButton->setHidden(hideThis);
+  this->rulerUnselectedColor2ColorPickerButton->setHidden(hideThis);
+  this->rulerUnselectedLineColorColorPickerButton->setHidden(hideThis);
+
+  this->rulerProjectionPropertiesGroupBox->setHidden(hideThis);
 }
 
 //-----------------------------------------------------------------------------
@@ -801,15 +790,17 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromMRML()
   // update slice intersections
   d->sliceIntersectionsVisibilityCheckBox->setChecked(this->sliceIntersectionsVisible());
 
-  // update the point projections
-  if (markupsNode->IsA("vtkMRMLMarkupsFiducialNode"))
+  // update the projections
+  d->fiducialProjectionWidget->setMRMLMarkupsNode(
+        vtkMRMLMarkupsNode::SafeDownCast(markupsNode));
+  if (markupsNode->IsA("vtkMRMLMarkupsRulerNode"))
     {
-    d->pointFiducialProjectionWidget->setMRMLFiducialNode(
-        vtkMRMLMarkupsFiducialNode::SafeDownCast(markupsNode));
+    d->rulerProjectionWidget->setMRMLRulerNode(
+        vtkMRMLMarkupsRulerNode::SafeDownCast(markupsNode));
     }
   else
     {
-    d->pointFiducialProjectionWidget->setMRMLFiducialNode(0);
+    d->rulerProjectionWidget->setMRMLRulerNode(0);
     }
 
   // update the list name format
@@ -2285,8 +2276,9 @@ void qSlicerMarkupsModuleWidget::onActiveMarkupMRMLNodeChanged(vtkMRMLNode *mark
     qDebug() << "On Active MRML node changed: Failed to change active markups node id on selection node '" << selectionNodeID.c_str() << "'";
     }
 
-  // make sure have the right number of columns for this type of markup
-  d->updateColumnsForActiveMarkup();
+  // make sure have the right number of columns for this type of markup and
+  // hide/show any markup node class specific widgets
+  d->updateWidgetsForActiveMarkup();
 
   // update the GUI
   this->updateWidgetFromMRML();

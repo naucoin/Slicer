@@ -26,7 +26,7 @@
 #include "ui_qMRMLMarkupsFiducialProjectionPropertyWidget.h"
 
 // MRML includes
-#include <vtkMRMLMarkupsFiducialNode.h>
+#include <vtkMRMLMarkupsNode.h>
 #include <vtkMRMLMarkupsDisplayNode.h>
 
 //-----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ public:
   qMRMLMarkupsFiducialProjectionPropertyWidgetPrivate(qMRMLMarkupsFiducialProjectionPropertyWidget& object);
   void init();
 
-  vtkMRMLMarkupsDisplayNode* FiducialDisplayNode;
+  vtkMRMLMarkupsDisplayNode* PointDisplayNode;
 };
 
 //-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ qMRMLMarkupsFiducialProjectionPropertyWidgetPrivate
 ::qMRMLMarkupsFiducialProjectionPropertyWidgetPrivate(qMRMLMarkupsFiducialProjectionPropertyWidget& object)
   : q_ptr(&object)
 {
-  this->FiducialDisplayNode = NULL;
+  this->PointDisplayNode = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -95,22 +95,22 @@ qMRMLMarkupsFiducialProjectionPropertyWidget
 
 //-----------------------------------------------------------------------------
 void qMRMLMarkupsFiducialProjectionPropertyWidget
-::setMRMLFiducialNode(vtkMRMLMarkupsFiducialNode* fiducialNode)
+::setMRMLMarkupsNode(vtkMRMLMarkupsNode* pointNode)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
 
-  if (!fiducialNode)
+  if (!pointNode)
     {
     return;
     }
 
   vtkMRMLMarkupsDisplayNode* displayNode
-    = fiducialNode->GetMarkupsDisplayNode();
+    = pointNode->GetMarkupsDisplayNode();
 
-  qvtkReconnect(d->FiducialDisplayNode, displayNode, vtkCommand::ModifiedEvent,
+  qvtkReconnect(d->PointDisplayNode, displayNode, vtkCommand::ModifiedEvent,
                 this, SLOT(updateWidgetFromDisplayNode()));
 
-  d->FiducialDisplayNode = displayNode;
+  d->PointDisplayNode = displayNode;
   this->updateWidgetFromDisplayNode();
 }
 
@@ -119,17 +119,17 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 ::setProjectionVisibility(bool showProjection)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
-  if (!d->FiducialDisplayNode)
+  if (!d->PointDisplayNode)
     {
     return;
     }
   if (showProjection)
     {
-    d->FiducialDisplayNode->SliceProjectionOn();
+    d->PointDisplayNode->SliceProjectionOn();
     }
   else
     {
-    d->FiducialDisplayNode->SliceProjectionOff();
+    d->PointDisplayNode->SliceProjectionOff();
     }
 }
 
@@ -138,11 +138,11 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 ::setProjectionColor(QColor newColor)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
-  if (!d->FiducialDisplayNode)
+  if (!d->PointDisplayNode)
     {
     return;
     }
-  d->FiducialDisplayNode
+  d->PointDisplayNode
     ->SetSliceProjectionColor(newColor.redF(), newColor.greenF(), newColor.blueF());
 }
 
@@ -151,19 +151,19 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 ::setUseFiducialColor(bool useFiducialColor)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
-  if (!d->FiducialDisplayNode)
+  if (!d->PointDisplayNode)
     {
     return;
     }
   if (useFiducialColor)
     {
-    d->FiducialDisplayNode->SliceProjectionUseFiducialColorOn();
+    d->PointDisplayNode->SliceProjectionUseFiducialColorOn();
     d->pointProjectionColorLabel->setEnabled(false);
     d->pointProjectionColorPickerButton->setEnabled(false);
     }
   else
     {
-    d->FiducialDisplayNode->SliceProjectionUseFiducialColorOff();
+    d->PointDisplayNode->SliceProjectionUseFiducialColorOff();
     d->pointProjectionColorLabel->setEnabled(true);
     d->pointProjectionColorPickerButton->setEnabled(true);
     }
@@ -174,17 +174,17 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 ::setOutlinedBehindSlicePlane(bool outlinedBehind)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
-  if (!d->FiducialDisplayNode)
+  if (!d->PointDisplayNode)
     {
     return;
     }
   if (outlinedBehind)
     {
-    d->FiducialDisplayNode->SliceProjectionOutlinedBehindSlicePlaneOn();
+    d->PointDisplayNode->SliceProjectionOutlinedBehindSlicePlaneOn();
     }
   else
     {
-    d->FiducialDisplayNode->SliceProjectionOutlinedBehindSlicePlaneOff();
+    d->PointDisplayNode->SliceProjectionOutlinedBehindSlicePlaneOff();
     }
 }
 
@@ -193,11 +193,11 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 ::setProjectionOpacity(double opacity)
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
-  if (!d->FiducialDisplayNode)
+  if (!d->PointDisplayNode)
     {
     return;
     }
-  d->FiducialDisplayNode->SetSliceProjectionOpacity(opacity);
+  d->PointDisplayNode->SetSliceProjectionOpacity(opacity);
 }
 
 //-----------------------------------------------------------------------------
@@ -206,9 +206,9 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
 {
   Q_D(qMRMLMarkupsFiducialProjectionPropertyWidget);
 
-  this->setEnabled(d->FiducialDisplayNode != 0);
+  this->setEnabled(d->PointDisplayNode != 0);
 
-  if (!d->FiducialDisplayNode)
+  if (!d->PointDisplayNode)
     {
     return;
     }
@@ -216,26 +216,26 @@ void qMRMLMarkupsFiducialProjectionPropertyWidget
   // Update widget if different from MRML node
   // -- 2D Projection Visibility
   d->point2DProjectionCheckBox->setChecked(
-    d->FiducialDisplayNode->GetSliceProjection() &
+    d->PointDisplayNode->GetSliceProjection() &
     vtkMRMLMarkupsDisplayNode::ProjectionOn);
 
   // -- Projection Color
   double pColor[3];
-  d->FiducialDisplayNode->GetSliceProjectionColor(pColor);
+  d->PointDisplayNode->GetSliceProjectionColor(pColor);
   QColor displayColor = QColor(pColor[0]*255, pColor[1]*255, pColor[2]*255);
   d->pointProjectionColorPickerButton->setColor(displayColor);
 
   // -- Use Fiducial Color
-  bool useFiducialColor = d->FiducialDisplayNode->GetSliceProjectionUseFiducialColor();
+  bool useFiducialColor = d->PointDisplayNode->GetSliceProjectionUseFiducialColor();
   d->pointUseFiducialColorCheckBox->setChecked(useFiducialColor);
   d->pointProjectionColorLabel->setEnabled(!useFiducialColor);
   d->pointProjectionColorPickerButton->setEnabled(!useFiducialColor);
 
   // -- Outlined Behind Slice Plane
   d->pointOutlinedBehindSlicePlaneCheckBox->setChecked(
-     d->FiducialDisplayNode->GetSliceProjectionOutlinedBehindSlicePlane());
+     d->PointDisplayNode->GetSliceProjectionOutlinedBehindSlicePlane());
 
   // -- Opacity
   d->projectionOpacitySliderWidget->setValue(
-     d->FiducialDisplayNode->GetSliceProjectionOpacity());
+     d->PointDisplayNode->GetSliceProjectionOpacity());
 }

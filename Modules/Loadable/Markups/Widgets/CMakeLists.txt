@@ -12,14 +12,18 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   qMRML${MODULE_NAME}FiducialProjectionPropertyWidget.cxx
   qMRML${MODULE_NAME}FiducialProjectionPropertyWidget.h
+  qMRML${MODULE_NAME}RulerProjectionPropertyWidget.cxx
+  qMRML${MODULE_NAME}RulerProjectionPropertyWidget.h
   )
 
 set(${KIT}_MOC_SRCS
   qMRML${MODULE_NAME}FiducialProjectionPropertyWidget.h
+  qMRML${MODULE_NAME}RulerProjectionPropertyWidget.h
   )
 
 set(${KIT}_UI_SRCS
   Resources/UI/qMRML${MODULE_NAME}FiducialProjectionPropertyWidget.ui
+  Resources/UI/qMRML${MODULE_NAME}RulerProjectionPropertyWidget.ui
   )
 
 set(${KIT}_RESOURCES

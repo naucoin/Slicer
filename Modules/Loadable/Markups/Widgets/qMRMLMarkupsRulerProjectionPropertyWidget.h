@@ -17,12 +17,11 @@
   Hospital. The project was supported by grants 5P01CA067165,
   5R01CA124377, 5R01CA138586, 2R44DE019322, 7R01CA124377,
   5R42CA137886, 5R42CA137886
-  It was then updated for the Markups module by Nicole Aucoin, BWH.
 
 ==============================================================================*/
 
-#ifndef __qMRMLMarkupsFiducialProjectionPropertyWidget_h
-#define __qMRMLMarkupsFiducialProjectionPropertyWidget_h
+#ifndef __qMRMLMarkupsRulerProjectionPropertyWidget_h
+#define __qMRMLMarkupsRulerProjectionPropertyWidget_h
 
 // CTK includes
 #include <ctkPimpl.h>
@@ -33,12 +32,12 @@
 
 #include "qSlicerMarkupsModuleWidgetsExport.h"
 
-class qMRMLMarkupsFiducialProjectionPropertyWidgetPrivate;
-class vtkMRMLMarkupsNode;
+class qMRMLMarkupsRulerProjectionPropertyWidgetPrivate;
+class vtkMRMLMarkupsRulerNode;
 
 /// \ingroup Slicer_QtModules_Markups
 class Q_SLICER_MODULE_MARKUPS_WIDGETS_EXPORT
-qMRMLMarkupsFiducialProjectionPropertyWidget
+qMRMLMarkupsRulerProjectionPropertyWidget
   : public qMRMLWidget
 {
   Q_OBJECT
@@ -46,26 +45,29 @@ qMRMLMarkupsFiducialProjectionPropertyWidget
 
 public:
   typedef qMRMLWidget Superclass;
-  qMRMLMarkupsFiducialProjectionPropertyWidget(QWidget *newParent = 0);
-  virtual ~qMRMLMarkupsFiducialProjectionPropertyWidget();
+  qMRMLMarkupsRulerProjectionPropertyWidget(QWidget *newParent = 0);
+  virtual ~qMRMLMarkupsRulerProjectionPropertyWidget();
 
 public slots:
-  void setMRMLMarkupsNode(vtkMRMLMarkupsNode* pointNode);
+  void setMRMLRulerNode(vtkMRMLMarkupsRulerNode* rulerNode);
   void setProjectionVisibility(bool showProjection);
+  void setUseRulerColor(bool useRulerColor);
   void setProjectionColor(QColor newColor);
-  void setUseFiducialColor(bool useFiducialColor);
-  void setOutlinedBehindSlicePlane(bool outlinedBehind);
-  void setProjectionOpacity(double opacity);
+  void setOverlineThickness(int thickness);
+  void setUnderlineThickness(int thickness);
+  void setColoredWhenParallel(bool coloredWhenParallel);
+  void setThickerOnTop(bool thickerOnTop);
+  void setDashed(bool dashed);
 
 protected slots:
   void updateWidgetFromDisplayNode();
 
 protected:
-  QScopedPointer<qMRMLMarkupsFiducialProjectionPropertyWidgetPrivate> d_ptr;
+  QScopedPointer<qMRMLMarkupsRulerProjectionPropertyWidgetPrivate> d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE(qMRMLMarkupsFiducialProjectionPropertyWidget);
-  Q_DISABLE_COPY(qMRMLMarkupsFiducialProjectionPropertyWidget);
+  Q_DECLARE_PRIVATE(qMRMLMarkupsRulerProjectionPropertyWidget);
+  Q_DISABLE_COPY(qMRMLMarkupsRulerProjectionPropertyWidget);
 
 };
 

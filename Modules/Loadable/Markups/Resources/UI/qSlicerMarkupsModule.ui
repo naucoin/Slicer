@@ -759,16 +759,31 @@
           </widget>
          </item>
          <item row="12" column="0" colspan="2">
-          <widget class="ctkCollapsibleGroupBox" name="pointFiducialProjectionPropertiesGroupBox">
+          <widget class="ctkCollapsibleGroupBox" name="fiducialProjectionPropertiesGroupBox">
            <property name="title">
             <string>Fiducial Projection</string>
            </property>
            <property name="collapsed">
             <bool>true</bool>
            </property>
-           <layout class="QVBoxLayout" name="pointFiducialProjectionVerticalLayout">
+           <layout class="QVBoxLayout" name="fiducialProjectionVerticalLayout">
             <item>
-             <widget class="qMRMLMarkupsFiducialProjectionPropertyWidget" name="pointFiducialProjectionWidget"/>
+             <widget class="qMRMLMarkupsFiducialProjectionPropertyWidget" name="fiducialProjectionWidget"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="13" column="0" colspan="2">
+          <widget class="ctkCollapsibleGroupBox" name="rulerProjectionPropertiesGroupBox">
+           <property name="title">
+            <string>Ruler Projection</string>
+           </property>
+           <property name="collapsed">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="rulerProjectionVerticalLayout">
+            <item>
+             <widget class="qMRMLMarkupsRulerProjectionPropertyWidget" name="rulerProjectionWidget"/>
             </item>
            </layout>
           </widget>
