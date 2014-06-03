@@ -144,6 +144,12 @@ public:
   vtkSetMacro(OverLineThickness, double);
   vtkGetMacro(OverLineThickness, double);
 
+  /// Get/Set the ruler distance annotation format string.
+  /// Uses standard C string formatting rules.
+  /// Default: %-#6.3g mm
+  vtkGetStringMacro(DistanceMeasurementFormat);
+  vtkSetStringMacro(DistanceMeasurementFormat);
+
 protected:
   vtkMRMLMarkupsRulerDisplayNode();
   ~vtkMRMLMarkupsRulerDisplayNode();
@@ -168,6 +174,9 @@ protected:
   /// projection settings
   double UnderLineThickness;
   double OverLineThickness;
+
+  /// format of the distance annotation
+  char *DistanceMeasurementFormat;
 };
 
 //----------------------------------------------------------------------------

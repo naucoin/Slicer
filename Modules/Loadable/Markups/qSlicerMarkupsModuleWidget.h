@@ -134,7 +134,8 @@ public slots:
   void onRulerUnselectedColor1ColorPickerButtonChanged(QColor qcolor);
   void onRulerUnselectedColor2ColorPickerButtonChanged(QColor qcolor);
   void onRulerUnselectedLineColorColorPickerButtonChanged(QColor qcolor);
-
+  void onRulerStandardFormatsComboBoxChanged(QString value);
+  void onRulerFormatLineEditTextChanged(QString txt);
 
   void onMarkupScaleSliderWidgetValueChanged(double value);
 

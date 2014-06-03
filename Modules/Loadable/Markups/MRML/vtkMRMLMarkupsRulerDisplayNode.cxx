@@ -94,11 +94,20 @@ vtkMRMLMarkupsRulerDisplayNode::vtkMRMLMarkupsRulerDisplayNode()
   this->OverLineThickness = 3.0;
   /// bug 2375: don't show the slice intersection until it's correct
   this->SliceIntersectionVisibility = 0;
+
+  // distance annotation format
+  this->DistanceMeasurementFormat = NULL;
+  this->SetDistanceMeasurementFormat("%-#6.3g mm");
 }
 
 //----------------------------------------------------------------------------
 vtkMRMLMarkupsRulerDisplayNode::~vtkMRMLMarkupsRulerDisplayNode()
 {
+  if (this->DistanceMeasurementFormat)
+    {
+    delete [] this->DistanceMeasurementFormat;
+    this->DistanceMeasurementFormat = NULL;
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -147,6 +156,12 @@ void vtkMRMLMarkupsRulerDisplayNode::WriteXML(ostream& of, int nIndent)
   of << " lineThickness=\"" << this->LineThickness << "\"";
   of << " underLineThickness=\"" << this->UnderLineThickness << "\"";
   of << " overLineThickness=\"" << this->OverLineThickness << "\"";
+
+  if (this->DistanceMeasurementFormat != NULL)
+    {
+    of << " distanceMeasurementFormat=\""
+       << this->DistanceMeasurementFormat << "\"";
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -229,6 +244,10 @@ void vtkMRMLMarkupsRulerDisplayNode::ReadXMLAttributes(const char** atts)
       ss << attValue;
       ss >> this->OverLineThickness;
       }
+    else if (!strcmp(attName, "distanceMeasurementFormat"))
+      {
+      this->SetDistanceMeasurementFormat(attValue);
+      }
     }
 
   this->EndModify(disabledModify);
@@ -258,6 +277,8 @@ void vtkMRMLMarkupsRulerDisplayNode::Copy(vtkMRMLNode *anode)
   this->SetLineThickness(node->LineThickness);
   this->SetUnderLineThickness(node->GetUnderLineThickness());
   this->SetOverLineThickness(node->GetOverLineThickness());
+
+  this->SetDistanceMeasurementFormat(node->GetDistanceMeasurementFormat());
 
   this->EndModify(disabledModify);
 }
@@ -300,6 +321,10 @@ void vtkMRMLMarkupsRulerDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Line Thickness   : " << this->LineThickness << "\n";
   os << indent << "Under Line Thickness: " << this->UnderLineThickness << "\n";
   os << indent << "Over Line Thickness: " << this->OverLineThickness << "\n";
+
+  os << indent << "DistanceMeasurementFormat: "
+     << (this->DistanceMeasurementFormat ?
+         this->GetDistanceMeasurementFormat() : "(none)") << "\n";
 }
 
 //---------------------------------------------------------------------------

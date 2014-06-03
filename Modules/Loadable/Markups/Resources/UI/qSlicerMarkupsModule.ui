@@ -669,14 +669,14 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="8" column="0">
           <widget class="QLabel" name="glyphScaleLabel">
            <property name="text">
             <string>Glyph Scale</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="8" column="1">
           <widget class="ctkSliderWidget" name="glyphScaleSliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -686,14 +686,14 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="9" column="0">
           <widget class="QLabel" name="textVisibilityLabel">
            <property name="text">
             <string>Label Visibility</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="9" column="1">
           <widget class="QPushButton" name="textVisibleInvisiblePushButton">
            <property name="toolTip">
             <string>Click to hide this markup's labels</string>
@@ -704,14 +704,14 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
+         <item row="10" column="0">
           <widget class="QLabel" name="textScaleLabel">
            <property name="text">
             <string>Text Scale</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="10" column="1">
           <widget class="ctkSliderWidget" name="textScaleSliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -721,14 +721,14 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="0">
+         <item row="11" column="0">
           <widget class="QLabel" name="opacityLabel">
            <property name="text">
             <string>Opacity</string>
            </property>
           </widget>
          </item>
-         <item row="9" column="1">
+         <item row="11" column="1">
           <widget class="ctkSliderWidget" name="opacitySliderWidget">
            <property name="singleStep">
             <double>0.100000000000000</double>
@@ -738,7 +738,7 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="1">
+         <item row="12" column="1">
           <widget class="QPushButton" name="resetToDefaultDisplayPropertiesPushButton">
            <property name="toolTip">
             <string>Use default display properties.</string>
@@ -748,7 +748,7 @@
            </property>
           </widget>
          </item>
-         <item row="11" column="1">
+         <item row="13" column="1">
           <widget class="QPushButton" name="saveToDefaultDisplayPropertiesPushButton">
            <property name="toolTip">
             <string>Save current display property settings to defaults, will be saved for when Slicer restarts (see Application Settings)</string>
@@ -758,7 +758,7 @@
            </property>
           </widget>
          </item>
-         <item row="12" column="0" colspan="2">
+         <item row="14" column="0" colspan="2">
           <widget class="ctkCollapsibleGroupBox" name="fiducialProjectionPropertiesGroupBox">
            <property name="title">
             <string>Fiducial Projection</string>
@@ -773,7 +773,7 @@
            </layout>
           </widget>
          </item>
-         <item row="13" column="0" colspan="2">
+         <item row="15" column="0" colspan="2">
           <widget class="ctkCollapsibleGroupBox" name="rulerProjectionPropertiesGroupBox">
            <property name="title">
             <string>Ruler Projection</string>
@@ -856,6 +856,37 @@
            </item>
           </layout>
          </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="rulerDistanceFormatLabel">
+           <property name="text">
+            <string>Ruler Format</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QLineEdit" name="rulerFormatLineEdit">
+           <property name="toolTip">
+            <string>String formatting command, use the defaults from the menu or customise it in this entry. Use %g to print out distance in a default floating point format, %.1f to print out only one digit after the decimal, plus any text you wish</string>
+           </property>
+           <property name="text">
+            <string>%-#6.3g mm</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="rulerStandardFormatsLabel">
+           <property name="text">
+            <string>Ruler Formats</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QComboBox" name="rulerStandardFormatsComboBox">
+           <property name="toolTip">
+            <string>Select a standard annotation format. Warning: will undo any custom text in the ruler format entry box.</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -922,6 +953,11 @@
    <class>ctkSliderWidget</class>
    <extends>QWidget</extends>
    <header>ctkSliderWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qMRMLMarkupsRulerProjectionPropertyWidget</class>
+   <extends>QWidget</extends>
+   <header>qmrmlmarkupsrulerprojectionpropertywidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

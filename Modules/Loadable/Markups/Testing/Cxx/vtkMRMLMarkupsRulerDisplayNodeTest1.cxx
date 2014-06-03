@@ -38,5 +38,7 @@ int vtkMRMLMarkupsRulerDisplayNodeTest1(int , char * [] )
   TEST_SET_GET_DOUBLE_RANGE(node1, UnderLineThickness, -1.0, 5.0);
   TEST_SET_GET_DOUBLE_RANGE(node1, OverLineThickness, -1.0, 8.0);
 
+  TEST_SET_GET_STRING(node1, DistanceMeasurementFormat);
+
   return EXIT_SUCCESS;
 }

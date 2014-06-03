@@ -159,6 +159,11 @@ void qSlicerMarkupsModuleWidgetPrivate::updateWidgetsForActiveMarkup()
   this->rulerUnselectedColor2ColorPickerButton->setHidden(hideThis);
   this->rulerUnselectedLineColorColorPickerButton->setHidden(hideThis);
 
+  this->rulerDistanceFormatLabel->setHidden(hideThis);
+  this->rulerFormatLineEdit->setHidden(hideThis);
+  this->rulerStandardFormatsLabel->setHidden(hideThis);
+  this->rulerStandardFormatsComboBox->setHidden(hideThis);
+
   this->rulerProjectionPropertiesGroupBox->setHidden(hideThis);
 }
 
@@ -205,6 +210,12 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   QObject::connect(this->rulerUnselectedLineColorColorPickerButton, SIGNAL(colorChanged(QColor)),
                    q, SLOT(onRulerUnselectedLineColorColorPickerButtonChanged(QColor)));
 
+
+  // ruler distance format
+  QObject::connect(this->rulerStandardFormatsComboBox, SIGNAL(currentIndexChanged(QString)),
+                  q, SLOT(onRulerStandardFormatsComboBoxChanged(QString)));
+  QObject::connect(this->rulerFormatLineEdit, SIGNAL(textChanged(QString)),
+                   q, SLOT(onRulerFormatLineEditTextChanged(QString)));
 
   QObject::connect(this->glyphTypeComboBox, SIGNAL(currentIndexChanged(QString)),
                 q, SLOT(onGlyphTypeComboBoxChanged(QString)));
@@ -497,6 +508,16 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   this->activeMarkupTableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   QObject::connect(this->activeMarkupTableWidget, SIGNAL(customContextMenuRequested(QPoint)),
                    q, SLOT(onRightClickActiveMarkupTableWidget(QPoint)));
+
+  // set up the ruler format combo box
+  this->rulerStandardFormatsComboBox->setEnabled(false);
+  this->rulerStandardFormatsComboBox->addItem(QString("Default"));
+  this->rulerStandardFormatsComboBox->addItem(QString("1 decimal"));
+  this->rulerStandardFormatsComboBox->addItem(QString("0 decimals"));
+  this->rulerStandardFormatsComboBox->addItem(QString("2 decimals"));
+  this->rulerStandardFormatsComboBox->addItem(QString("Scientific Notation"));
+  this->rulerStandardFormatsComboBox->setEnabled(true);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -969,6 +990,10 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromDisplayNode()
         color = rulerDisplayNode->GetLineColor();
         qMRMLUtils::colorToQColor(color, qColor);
         d->rulerUnselectedLineColorColorPickerButton->setColor(qColor);
+
+        // measurement format
+        QString txt = QString(rulerDisplayNode->GetDistanceMeasurementFormat());
+        d->rulerFormatLineEdit->setText(txt);
         }
       }
     }
@@ -1604,6 +1629,83 @@ void qSlicerMarkupsModuleWidget::onRulerUnselectedLineColorColorPickerButtonChan
     return;
     }
   displayNode->SetLineColor(color);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerStandardFormatsComboBoxChanged(QString value)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  if (value.isEmpty())
+    {
+    return;
+    }
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *listNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsRulerDisplayNode();
+
+  if (!displayNode)
+    {
+    return;
+    }
+  if (value.compare("Default") == 0)
+    {
+    displayNode->SetDistanceMeasurementFormat("%-#6.3g mm");
+    }
+  else if (value.compare("1 decimal") == 0)
+    {
+    displayNode->SetDistanceMeasurementFormat("%.1f mm");
+    }
+  else if (value.compare("0 decimals") == 0)
+    {
+    displayNode->SetDistanceMeasurementFormat("%.0f mm");
+    }
+  else if (value.compare("2 decimals") == 0)
+    {
+    displayNode->SetDistanceMeasurementFormat("%.2f mm");
+    }
+  else if (value.compare("Scientific Notation") == 0)
+    {
+    displayNode->SetDistanceMeasurementFormat("%.2e mm");
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerFormatLineEditTextChanged(QString txt)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *listNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsRulerDisplayNode();
+
+  if (!displayNode)
+    {
+    return;
+    }
+  displayNode->SetDistanceMeasurementFormat(txt.toLatin1());
 }
 
 //-----------------------------------------------------------------------------
