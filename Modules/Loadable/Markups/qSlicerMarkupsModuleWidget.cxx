@@ -650,12 +650,15 @@ void qSlicerMarkupsModuleWidget::checkForAnnotationConversion()
   // don't show again check box conflicts with informative text, so use
   // a long text
   convertMsgBox.setText(labelText);
-  convertMsgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-  convertMsgBox.setDefaultButton(QMessageBox::Yes);
+  QPushButton *convertButton =
+    convertMsgBox.addButton(tr("Convert"), QMessageBox::AcceptRole);
+  convertMsgBox.addButton(QMessageBox::Cancel);
+  convertMsgBox.setDefaultButton(convertButton);
+  convertMsgBox.setIcon(QMessageBox::Question);
   convertMsgBox.setDontShowAgainVisible(true);
   convertMsgBox.setDontShowAgainSettingsKey("Markups/AlwaysConvertAnnotations");
-  int ret = convertMsgBox.exec();
-  if (ret == QMessageBox::Yes)
+  convertMsgBox.exec();
+  if (convertMsgBox.clickedButton() == convertButton)
     {
     this->convertAnnotationsToMarkups();
     }
