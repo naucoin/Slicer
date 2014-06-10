@@ -82,6 +82,9 @@ vtkMRMLMarkupsRulerDisplayNode::vtkMRMLMarkupsRulerDisplayNode()
   this->SelectedLineColor[2] = 0.5;
 
   this->LineThickness = 1.0;
+  this->LabelPosition = 0.2;
+  this->TickSpacing = 10.0;
+  this->MaxTicks = 99;
 
   // projection settings
   this->SliceProjection = (vtkMRMLMarkupsDisplayNode::ProjectionOff |
@@ -154,6 +157,10 @@ void vtkMRMLMarkupsRulerDisplayNode::WriteXML(ostream& of, int nIndent)
     }
 
   of << " lineThickness=\"" << this->LineThickness << "\"";
+  of << " labelPosition=\"" << this->LabelPosition << "\"";
+  of << " tickSpacing=\"" << this->TickSpacing << "\"";
+  of << " maxTicks=\"" << this->MaxTicks << "\"";
+
   of << " underLineThickness=\"" << this->UnderLineThickness << "\"";
   of << " overLineThickness=\"" << this->OverLineThickness << "\"";
 
@@ -232,6 +239,24 @@ void vtkMRMLMarkupsRulerDisplayNode::ReadXMLAttributes(const char** atts)
       ss << attValue;
       ss >> this->LineThickness;
       }
+    else if (!strcmp(attName, "labelPosition"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->LabelPosition;
+      }
+    else if (!strcmp(attName, "tickSpacing"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->TickSpacing;
+      }
+    else if (!strcmp(attName, "maxTicks"))
+      {
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->MaxTicks;
+      }
     else if (!strcmp(attName, "underLineThickness"))
       {
       std::stringstream ss;
@@ -275,6 +300,10 @@ void vtkMRMLMarkupsRulerDisplayNode::Copy(vtkMRMLNode *anode)
   this->SetSelectedLineColor(node->GetSelectedLineColor());
 
   this->SetLineThickness(node->LineThickness);
+  this->SetLabelPosition(node->LabelPosition);
+  this->SetTickSpacing(node->TickSpacing);
+  this->SetMaxTicks(node->MaxTicks);
+
   this->SetUnderLineThickness(node->GetUnderLineThickness());
   this->SetOverLineThickness(node->GetOverLineThickness());
 
@@ -319,6 +348,10 @@ void vtkMRMLMarkupsRulerDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
      << this->SelectedLineColor[2] << ")" << "\n";
 
   os << indent << "Line Thickness   : " << this->LineThickness << "\n";
+  os << indent << "Label Position   : " << this->LabelPosition << "\n";
+  os << indent << "Tick Spacing     : " << this->TickSpacing << "\n";
+  os << indent << "Max Ticks        : " << this->MaxTicks << "\n";
+
   os << indent << "Under Line Thickness: " << this->UnderLineThickness << "\n";
   os << indent << "Over Line Thickness: " << this->OverLineThickness << "\n";
 

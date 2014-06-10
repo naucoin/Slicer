@@ -35,6 +35,17 @@ int vtkMRMLMarkupsRulerDisplayNodeTest1(int , char * [] )
   TEST_SET_GET_VECTOR3_DOUBLE_RANGE(node1, SelectedLineColor, 0.0, 1.0);
 
   TEST_SET_GET_DOUBLE_RANGE(node1, LineThickness, -1.0, 10.0);
+
+  // LabelPosition is clamped, so test manually
+  TEST_SET_GET_DOUBLE(node1, LabelPosition, 0.0);
+  TEST_SET_GET_DOUBLE(node1, LabelPosition, 0.01);
+  TEST_SET_GET_DOUBLE(node1, LabelPosition, 0.5);
+  TEST_SET_GET_DOUBLE(node1, LabelPosition, 0.99);
+  TEST_SET_GET_DOUBLE(node1, LabelPosition, 1.0);
+
+  TEST_SET_GET_DOUBLE_RANGE(node1, TickSpacing, 0.0, 100.0);
+  TEST_SET_GET_INT_RANGE(node1, MaxTicks, 0.0, 100.0);
+
   TEST_SET_GET_DOUBLE_RANGE(node1, UnderLineThickness, -1.0, 5.0);
   TEST_SET_GET_DOUBLE_RANGE(node1, OverLineThickness, -1.0, 8.0);
 

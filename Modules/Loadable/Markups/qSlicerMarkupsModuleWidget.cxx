@@ -163,6 +163,9 @@ void qSlicerMarkupsModuleWidgetPrivate::updateWidgetsForActiveMarkup()
   this->rulerFormatLineEdit->setHidden(hideThis);
   this->rulerStandardFormatsLabel->setHidden(hideThis);
   this->rulerStandardFormatsComboBox->setHidden(hideThis);
+  this->rulerLabelPositionSliderWidget->setHidden(hideThis);
+  this->rulerMaxNumberOfTicksSliderWidget->setHidden(hideThis);
+  this->rulerTickSpacingMRMLSliderWidget->setHidden(hideThis);
 
   this->rulerProjectionPropertiesGroupBox->setHidden(hideThis);
 }
@@ -217,14 +220,33 @@ void qSlicerMarkupsModuleWidgetPrivate::setupUi(qSlicerWidget* widget)
   QObject::connect(this->rulerFormatLineEdit, SIGNAL(textChanged(QString)),
                    q, SLOT(onRulerFormatLineEditTextChanged(QString)));
 
+  // ruler label position
+  QObject::connect(this->rulerLabelPositionSliderWidget,
+                   SIGNAL(valueChanged(double)),
+                   q, SLOT(onRulerLabelPositionSliderWidgetChanged(double)));
+
+  // ruler ticks
+  this->rulerTickSpacingMRMLSliderWidget->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
+  this->rulerTickSpacingMRMLSliderWidget->setMRMLScene(q->mrmlScene());
+  QObject::connect(this->rulerTickSpacingMRMLSliderWidget,
+                   SIGNAL(valueChanged(double)),
+                   q, SLOT(onRulerTickSpacingMRMLSliderWidgetChanged()));
+
+  QObject::connect(this->rulerMaxNumberOfTicksSliderWidget,
+                   SIGNAL(valueChanged(double)),
+                   q, SLOT(onRulerMaxNumberOfTicksSliderWidgetChanged(double)));
+
+  // glyphs
   QObject::connect(this->glyphTypeComboBox, SIGNAL(currentIndexChanged(QString)),
                 q, SLOT(onGlyphTypeComboBoxChanged(QString)));
   QObject::connect(this->glyphScaleSliderWidget, SIGNAL(valueChanged(double)),
                    q, SLOT(onGlyphScaleSliderWidgetChanged(double)));
+  // text
   QObject::connect(this->textVisibleInvisiblePushButton, SIGNAL(clicked()),
                    q, SLOT(onTextVisibleInvisiblePushButtonClicked()));
   QObject::connect(this->textScaleSliderWidget, SIGNAL(valueChanged(double)),
                    q, SLOT(onTextScaleSliderWidgetChanged(double)));
+  // opacity
   QObject::connect(this->opacitySliderWidget, SIGNAL(valueChanged(double)),
                    q, SLOT(onOpacitySliderWidgetChanged(double)));
 
@@ -997,6 +1019,16 @@ void qSlicerMarkupsModuleWidget::updateWidgetFromDisplayNode()
         // measurement format
         QString txt = QString(rulerDisplayNode->GetDistanceMeasurementFormat());
         d->rulerFormatLineEdit->setText(txt);
+
+        // label position
+        double labelPos = rulerDisplayNode->GetLabelPosition();
+        d->rulerLabelPositionSliderWidget->setValue(labelPos);
+
+        // ticks
+        double tickSpacing = rulerDisplayNode->GetTickSpacing();
+        d->rulerTickSpacingMRMLSliderWidget->setValue(tickSpacing);
+        double maxTicks = static_cast<double>(rulerDisplayNode->GetMaxTicks());
+        d->rulerMaxNumberOfTicksSliderWidget->setValue(maxTicks);
         }
       }
     }
@@ -1709,6 +1741,91 @@ void qSlicerMarkupsModuleWidget::onRulerFormatLineEditTextChanged(QString txt)
     return;
     }
   displayNode->SetDistanceMeasurementFormat(txt.toLatin1());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerLabelPositionSliderWidgetChanged(double value)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *listNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsRulerDisplayNode();
+
+  if (!displayNode)
+    {
+    return;
+    }
+
+  displayNode->SetLabelPosition(value);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerTickSpacingMRMLSliderWidgetChanged()
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *listNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsRulerDisplayNode();
+
+  if (!displayNode)
+    {
+    return;
+    }
+
+  double value = d->rulerTickSpacingMRMLSliderWidget->value();
+  displayNode->SetTickSpacing(value);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::onRulerMaxNumberOfTicksSliderWidgetChanged(double value)
+{
+  Q_D(qSlicerMarkupsModuleWidget);
+
+  // get the active node
+  vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    return;
+    }
+  vtkMRMLMarkupsRulerNode *listNode = vtkMRMLMarkupsRulerNode::SafeDownCast(mrmlNode);
+  if (!listNode)
+    {
+    return;
+    }
+  // get the display node
+  vtkMRMLMarkupsRulerDisplayNode *displayNode = NULL;
+  displayNode = listNode->GetMarkupsRulerDisplayNode();
+
+  if (!displayNode)
+    {
+    return;
+    }
+
+  displayNode->SetMaxTicks(static_cast<int>(floor(value)));
 }
 
 //-----------------------------------------------------------------------------

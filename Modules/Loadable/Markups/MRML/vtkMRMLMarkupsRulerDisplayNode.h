@@ -92,6 +92,10 @@ public:
   vtkSetMacro(LineThickness, double);
   vtkGetMacro(LineThickness, double);
 
+  /// Get/Set for LabelPosition
+  vtkSetClampMacro(LabelPosition, double, 0.0, 1.0);
+  vtkGetMacro(LabelPosition, double);
+
   /// Set SliceProjection to Dashed
   inline void SliceProjectionDashedOn();
 
@@ -150,6 +154,14 @@ public:
   vtkGetStringMacro(DistanceMeasurementFormat);
   vtkSetStringMacro(DistanceMeasurementFormat);
 
+  /// Get/Set for TickSpacing
+  vtkSetMacro(TickSpacing, double);
+  vtkGetMacro(TickSpacing, double);
+
+  /// Get/Set for maximum number of ticks
+  vtkSetMacro(MaxTicks, int);
+  vtkGetMacro(MaxTicks, int);
+
 protected:
   vtkMRMLMarkupsRulerDisplayNode();
   ~vtkMRMLMarkupsRulerDisplayNode();
@@ -171,12 +183,20 @@ protected:
   /// thickness of the ruler line
   double LineThickness;
 
+  /// relative position of the label along the line, from 0.0-1.0
+  double LabelPosition;
+
   /// projection settings
   double UnderLineThickness;
   double OverLineThickness;
 
   /// format of the distance annotation
   char *DistanceMeasurementFormat;
+
+  /// Spacing between ticks on the line
+  double TickSpacing;
+  /// Maximum number of ticks on the line
+  int MaxTicks;
 };
 
 //----------------------------------------------------------------------------
