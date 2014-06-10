@@ -83,6 +83,11 @@ public:
   bool GetUseLPS();
   void UseIJKOn();
   bool GetUseIJK();
+  /// Translate an input string into a coordinate system integer.
+  /// Valid inputs are RAS, LPS, IJK.
+  /// Returns -1 on error.
+  /// \sa GetCoordinateSystem, GetCoordinateSystemAsString
+  int GetCoordinateSystemFromString(std::string coordString);
 
   /// Convert between user input strings and strings safe to be
   /// written to the storage file. Since the current storage node

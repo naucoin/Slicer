@@ -151,6 +151,25 @@ std::string vtkMRMLMarkupsStorageNode::GetCoordinateSystemAsString()
 }
 
 //----------------------------------------------------------------------------
+int vtkMRMLMarkupsStorageNode::
+    GetCoordinateSystemFromString(std::string coordString)
+{
+  if (coordString.compare("RAS") == 0)
+    {
+    return vtkMRMLMarkupsStorageNode::RAS;
+    }
+  if (coordString.compare("LPS") == 0)
+    {
+    return vtkMRMLMarkupsStorageNode::LPS;
+    }
+  if (coordString.compare("IJK") == 0)
+    {
+    return vtkMRMLMarkupsStorageNode::IJK;
+    }
+  return -1;
+}
+
+//----------------------------------------------------------------------------
 void vtkMRMLMarkupsStorageNode::UseRASOn()
 {
   this->SetCoordinateSystem(vtkMRMLMarkupsStorageNode::RAS);

@@ -86,5 +86,48 @@ int vtkMRMLMarkupsStorageNodeTest1(int vtkNotUsed(argc), char * vtkNotUsed(argv)
     return EXIT_FAILURE;
     }
 
+ // test getting the coordinate system as strings
+ int coordSystem = node1->GetCoordinateSystemFromString(std::string(""));
+ if (coordSystem != -1)
+   {
+   std::cerr << "Expected coordinate system of -1 from empty string, got "
+             << coordSystem;
+   return EXIT_FAILURE;
+   }
+ coordSystem = node1->GetCoordinateSystemFromString(std::string("invalid"));
+ if (coordSystem != -1)
+   {
+   std::cerr << "Expected coordinate system of -1 from invalid string, got "
+             << coordSystem;
+   return EXIT_FAILURE;
+   }
+ coordSystem = node1->GetCoordinateSystemFromString(std::string("RAS"));
+ if (coordSystem != vtkMRMLMarkupsStorageNode::RAS)
+   {
+   std::cerr << "Expected ras coordinate system of "
+             << vtkMRMLMarkupsStorageNode::RAS
+             << ", got "
+             << coordSystem;
+   return EXIT_FAILURE;
+   }
+ coordSystem = node1->GetCoordinateSystemFromString(std::string("LPS"));
+ if (coordSystem != vtkMRMLMarkupsStorageNode::LPS)
+   {
+   std::cerr << "Expected lps coordinate system of "
+             << vtkMRMLMarkupsStorageNode::LPS
+             << ", got "
+             << coordSystem;
+   return EXIT_FAILURE;
+   }
+ coordSystem = node1->GetCoordinateSystemFromString(std::string("IJK"));
+ if (coordSystem != vtkMRMLMarkupsStorageNode::IJK)
+   {
+   std::cerr << "Expected ijk coordinate system of "
+             << vtkMRMLMarkupsStorageNode::IJK
+             << ", got "
+             << coordSystem;
+   return EXIT_FAILURE;
+   }
+
   return EXIT_SUCCESS;
 }

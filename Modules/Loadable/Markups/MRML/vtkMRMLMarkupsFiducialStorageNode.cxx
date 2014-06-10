@@ -173,7 +173,17 @@ int vtkMRMLMarkupsFiducialStorageNode::ReadDataInternal(vtkMRMLNode *refNode)
           else if (lineString.find("# CoordinateSystem = ") != std::string::npos)
             {
             std::string str = lineString.substr(21,std::string::npos);
-            coordinateSystemFlag = atoi(str.c_str());
+            // backwards compatibility for magic number
+            if (str.compare("0") == 0 ||
+                str.compare("1") == 0 ||
+                str.compare("2") == 0)
+              {
+              coordinateSystemFlag = atoi(str.c_str());
+              }
+            else
+              {
+              coordinateSystemFlag = this->GetCoordinateSystemFromString(str);
+              }
             vtkDebugMacro("CoordinateSystem = " << coordinateSystemFlag);
             this->SetCoordinateSystem(coordinateSystemFlag);
             }
@@ -495,7 +505,7 @@ int vtkMRMLMarkupsFiducialStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
 
   // put down a header
   of << "# Markups fiducial file version = " << Slicer_VERSION << endl;
-  of << "# CoordinateSystem = " << this->GetCoordinateSystem() << endl;
+  of << "# CoordinateSystem = " << this->GetCoordinateSystemAsString() << endl;
 
   // label the columns
   // id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID
