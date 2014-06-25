@@ -535,6 +535,13 @@ void qSlicerMouseModeToolBar::switchPlaceMode()
       if (d->PersistenceAction->isChecked())
         {
         interactionNode->SwitchToPersistentPlaceMode();
+        // if this is just switching what type of thing is being placed while
+        // keeping persistent place mode on, need to update the cursor manually
+        // since the change on the interaction node will be a no-op
+        if (placeNodeClassName.compare(previousPlaceNodeClassName) != 0)
+          {
+          d->updateWidgetToPlace(placeNodeClassName.toLatin1().constData());
+          }
         }
       else
         {
