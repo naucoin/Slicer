@@ -18,6 +18,7 @@ set(displayable_manager_SRCS
   vtkMRML${MODULE_NAME}DisplayableManager2D.cxx
   vtkMRML${MODULE_NAME}FiducialDisplayableManager3D.cxx
   vtkMRML${MODULE_NAME}FiducialDisplayableManager2D.cxx
+  vtkMRML${MODULE_NAME}RulerDisplayableManager3D.cxx
   )
 
 set(VTK_USE_INSTANTIATOR_NEW 1)

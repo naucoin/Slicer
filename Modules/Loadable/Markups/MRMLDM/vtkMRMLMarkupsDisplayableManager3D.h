@@ -55,7 +55,9 @@ public:
   /// Propagate properties of MRML node to widget.
   virtual void PropagateMRMLToWidget(vtkMRMLMarkupsNode* node, vtkAbstractWidget * widget);
   /// Propagate properties of widget to MRML node.
-  virtual void PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node);
+  virtual void PropagateWidgetToMRML(vtkAbstractWidget * widget,
+                                     vtkMRMLMarkupsNode* node,
+                                     int markupNumber = 0);
   /// Check if there are real changes between two sets of displayCoordinates
   bool GetDisplayCoordinatesChanged(double * displayCoordinates1, double * displayCoordinates2);
 
@@ -73,11 +75,14 @@ public:
   /// Set mrml parent transform to widgets
   virtual void SetParentTransformToWidget(vtkMRMLMarkupsNode *vtkNotUsed(node), vtkAbstractWidget *vtkNotUsed(widget)){};
 
-  /// Create a new widget for this markups node and save it to the helper.
+  /// Create a new widget, either one per markup node if it's a fiducial list
+  /// (the vtkSeedWidget is one widget per node) or create a whole new widget
+  /// per markup if it's a different kind of markup list, for example a ruler
+  ///list node. Save the widget to the helper. Subclasses must implement.
   /// Returns widget on success, null on failure.
-  vtkAbstractWidget *AddWidget(vtkMRMLMarkupsNode *markupsNode);
+  virtual vtkAbstractWidget *AddWidget(vtkMRMLMarkupsNode *markupsNode, int markupIndex) { return NULL; };
 
-//  vtkMRMLMarkupsDisplayableManagerHelper *  GetHelper() { return this->Helper; };
+  /// Returns widget on success, null on failure.
   vtkGetObjectMacro(Helper, vtkMRMLMarkupsDisplayableManagerHelper);
 
 protected:
@@ -129,7 +134,7 @@ protected:
   /// Subclasses need to react to new markups being added to or removed
   /// from a markups node or modified
   virtual void OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode)) {};
-  virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode)) {};
+  virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * vtkNotUsed(markupsNode), int vtkNotUsed(n)) {};
   virtual void OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode* vtkNotUsed(node), int vtkNotUsed(n)) {};
 
   //
@@ -143,9 +148,9 @@ protected:
   /// Counter for clicks in Render Window
   vtkMRMLMarkupsClickCounter* ClickCounter;
 
-  /// Update a single seed from markup position, implemented by the subclasses, return
+  /// Update a widget from the nth markup position, implemented by the subclasses, return
   /// true if the position changed
-  virtual bool UpdateNthSeedPositionFromMRML(int vtkNotUsed(n),
+  virtual bool UpdateNthWidgetPositionFromMRML(int vtkNotUsed(n),
                  vtkAbstractWidget *vtkNotUsed(widget),
                  vtkMRMLMarkupsNode *vtkNotUsed(markupsNode))
     { return false; }
@@ -177,10 +182,12 @@ protected:
   // Widget functionality
   //
 
-  /// Create a widget.
+  /// Create a widget to represent a specific type of markups node, subclasses
+  /// must implement.
   virtual vtkAbstractWidget * CreateWidget(vtkMRMLMarkupsNode* node);
   /// Gets called when widget was created
-  virtual void OnWidgetCreated(vtkAbstractWidget * widget, vtkMRMLMarkupsNode * node);
+  virtual void OnWidgetCreated(vtkAbstractWidget * widget,
+                               vtkMRMLMarkupsNode * node, int markupNumber = 0);
   /// Get the widget of a node.
   vtkAbstractWidget * GetWidget(vtkMRMLMarkupsNode * node);
 

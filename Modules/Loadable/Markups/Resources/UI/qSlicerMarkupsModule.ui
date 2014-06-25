@@ -761,7 +761,7 @@
          <item row="8" column="1">
           <widget class="QLineEdit" name="rulerFormatLineEdit">
            <property name="toolTip">
-            <string>String formatting command, use the defaults from the menu or customise it in this entry. Use %g to print out distance in a default floating point format, %.1f to print out only one digit after the decimal, plus any text you wish</string>
+            <string>If length Units display string format is set, will over ride this setting. String formatting command, use the defaults from the menu or customise it in this entry. Use %g to print out distance in a default floating point format, %.1f to print out only one digit after the decimal, plus any text you wish</string>
            </property>
            <property name="text">
             <string>%-#6.3g mm</string>

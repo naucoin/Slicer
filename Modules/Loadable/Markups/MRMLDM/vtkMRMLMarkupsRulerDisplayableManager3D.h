@@ -15,8 +15,8 @@
 
 ==============================================================================*/
 
-#ifndef __vtkMRMLMarkupsFiducialDisplayableManager3D_h
-#define __vtkMRMLMarkupsFiducialDisplayableManager3D_h
+#ifndef __vtkMRMLMarkupsRulerDisplayableManager3D_h
+#define __vtkMRMLMarkupsRulerDisplayableManager3D_h
 
 // MarkupsModule includes
 #include "vtkSlicerMarkupsModuleMRMLDisplayableManagerExport.h"
@@ -24,74 +24,80 @@
 // MarkupsModule/MRMLDisplayableManager includes
 #include "vtkMRMLMarkupsDisplayableManager3D.h"
 
-class vtkMRMLMarkupsFiducialNode;
+class vtkMRMLMarkupsRulerNode;
 class vtkSlicerViewerWidget;
 class vtkMRMLMarkupsDisplayNode;
-class vtkTextWidget;
+
+class vtkDistanceWidget;
 
 /// \ingroup Slicer_QtModules_Markups
-class VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsFiducialDisplayableManager3D :
+class VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsRulerDisplayableManager3D :
     public vtkMRMLMarkupsDisplayableManager3D
 {
 public:
 
-  static vtkMRMLMarkupsFiducialDisplayableManager3D *New();
-  vtkTypeMacro(vtkMRMLMarkupsFiducialDisplayableManager3D, vtkMRMLMarkupsDisplayableManager3D);
+  static vtkMRMLMarkupsRulerDisplayableManager3D *New();
+  vtkTypeMacro(vtkMRMLMarkupsRulerDisplayableManager3D, vtkMRMLMarkupsDisplayableManager3D);
   void PrintSelf(ostream& os, vtkIndent indent);
 
 protected:
 
-  vtkMRMLMarkupsFiducialDisplayableManager3D(){this->Focus="vtkMRMLMarkupsFiducialNode";}
-  virtual ~vtkMRMLMarkupsFiducialDisplayableManager3D(){}
+  vtkMRMLMarkupsRulerDisplayableManager3D(){this->Focus="vtkMRMLMarkupsRulerNode";}
+  virtual ~vtkMRMLMarkupsRulerDisplayableManager3D(){}
 
   /// Callback for click in RenderWindow
   virtual void OnClickInRenderWindow(double x, double y, const char *associatedNodeID);
-
-  /// Add a new widget to represent this markups node. Record it with
-  /// the helper. markupIndex is ignored as this should only be called when a new fiducial
-  /// node is added, not when adding markups to the list.
-  virtual vtkAbstractWidget *AddWidget(vtkMRMLMarkupsNode *markupsNode, int markupIndex);
-
   /// Create a widget.
   virtual vtkAbstractWidget * CreateWidget(vtkMRMLMarkupsNode* node);
-  /// Create new handle on widget when a new markup is added to a markups node
+  /// Create new widget when a new markup is added to a markups node
   virtual void OnMRMLMarkupsNodeMarkupAddedEvent(vtkMRMLMarkupsNode * markupsNode);
   /// Respond to the nth markup modified event
   virtual void OnMRMLMarkupsNodeNthMarkupModifiedEvent(vtkMRMLMarkupsNode * markupsNode, int n);
   /// Respond to a markup being removed from the markups node
-  virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode, int n);
+  virtual void OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode, int m);
 
   /// Gets called when widget was created
-  virtual void OnWidgetCreated(vtkAbstractWidget * widget,
-                               vtkMRMLMarkupsNode * node, int markupNumber = 0);
+  virtual void OnWidgetCreated(vtkAbstractWidget * widget, vtkMRMLMarkupsNode * node,
+                               int markupNumber);
 
-  /// Update a single seed from MRML
-  void SetNthSeed(int n, vtkMRMLMarkupsFiducialNode* fiducialNode, vtkSeedWidget *seedWidget);
+  /// Update a single ruler from MRML
+  void SetNthRuler(int n, vtkMRMLMarkupsRulerNode* rulerNode, vtkDistanceWidget *rulerWidget);
   /// Propagate properties of MRML node to widget.
   virtual void PropagateMRMLToWidget(vtkMRMLMarkupsNode* node, vtkAbstractWidget * widget);
 
   /// Propagate properties of widget to MRML node.
-  virtual void PropagateWidgetToMRML(vtkAbstractWidget * widget,
-                                     vtkMRMLMarkupsNode* node,
-                                     int markupNumber = 0);
+  virtual void PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node, int markupNumber);
 
   /// Set up an observer on the interactor style to watch for key press events
   virtual void AdditionnalInitializeStep();
   /// Respond to the interactor style event
   virtual void OnInteractorStyleEvent(int eventid);
 
-  /// Update a single seed position from the node, return true if the position changed
+  /// Update a single ruler position from the node, return true if the position changed
   virtual bool UpdateNthWidgetPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode);
   /// Respond to control point modified events
   virtual void UpdatePosition(vtkAbstractWidget *widget, vtkMRMLNode *node);
 
-  // Clean up when scene closes
+  /// Clean up when scene closes
   virtual void OnMRMLSceneEndClose();
+
+  /// Create a new widget for this markup and save it to the helper.
+  virtual vtkAbstractWidget * AddWidget(vtkMRMLMarkupsNode *markupsNode, int n);
+
+  /// Get the label from the node and unit node
+  std::string GetLabelFormat(vtkMRMLMarkupsRulerNode* rulerNode, int markupIndex);
+
+  /// Compute the distance in mm between 2 world coordinates points
+  /// \sa ApplyUnit()
+  double GetDistance(const double* wc1, const double* wc2);
+  /// Apply the current unit to a length in mm.
+  /// \sa GetDistance()
+  double ApplyUnit(double lengthInMM);
 
 private:
 
-  vtkMRMLMarkupsFiducialDisplayableManager3D(const vtkMRMLMarkupsFiducialDisplayableManager3D&); /// Not implemented
-  void operator=(const vtkMRMLMarkupsFiducialDisplayableManager3D&); /// Not Implemented
+  vtkMRMLMarkupsRulerDisplayableManager3D(const vtkMRMLMarkupsRulerDisplayableManager3D&); /// Not implemented
+  void operator=(const vtkMRMLMarkupsRulerDisplayableManager3D&); /// Not Implemented
 };
 
 #endif

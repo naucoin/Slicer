@@ -60,13 +60,28 @@ public:
   void UpdateLockedAllWidgetsFromInteractionNode(vtkMRMLInteractionNode* interactionNode);
   /// Lock/Unlock all widgets
   void UpdateLockedAllWidgets(bool locked);
-  /// Lock/Unlock a widget. If no interaction node is passed in, don't take the
-  /// mouse mode into account, if it is passed in, widgets get locked while in
-  /// Place mode
+  /// Lock/Unlock a seed widget for a fiducials node.
+  /// If no interaction node is passed in, don't take the mouse mode into
+  /// account, if it is passed in, widgets get locked while in Place mode.
+  /// \sa UpdateLockedForMarkups
   void UpdateLocked(vtkMRMLMarkupsNode* node, vtkMRMLInteractionNode *interactionNode = NULL);
+  /// Lock/Unlock widgets for a markups node (one widget for markup).
+  /// If no interaction node is passed in, don't take the mouse mode into
+  /// account, if it is passed in, widgets get locked while in Place mode.
+  /// \sa UpdateLocked
+  void UpdateLockedForMarkups(vtkMRMLMarkupsNode* node,
+                              vtkMRMLInteractionNode *interactionNode = NULL);
 
   /// Keep track of the mapping between widgets and nodes
   void RecordWidgetForNode(vtkAbstractWidget* widget, vtkMRMLMarkupsNode *node);
+  /// Keep track of the mapping between widgets and markups
+  void RecordWidgetForMarkup(vtkAbstractWidget* widget, vtkMRMLMarkupsNode *node, int n);
+  /// Update the widgets for markup map in the very rare occasion when the
+  /// markup id changes (this happens on placing the first markup in a list
+  /// if the node is added to the scene after a markup is already in the list
+  /// so the markup id has not been set to the final scene unique value.
+  /// \sa RecordWidgetForMarkup
+  void UpdateWidgetForMarkupID(std::string oldID, std::string newID);
 
   /// Get a vtkAbstractWidget* given a node
   vtkAbstractWidget * GetWidget(vtkMRMLMarkupsNode * node);
@@ -75,12 +90,16 @@ public:
   /// ...and its associated vtkAbstractWidget* for Slice projection representation. There is one
   /// projection widget per unique point.
   vtkAbstractWidget * GetPointProjectionWidget(std::string uniqueFiducialID);
+  /// Get an abstract widget for a unique markup
+  /// \sa WidgetsForMarkup
+  vtkAbstractWidget * GetWidgetForMarkup(std::string uniqueMarkupID);
 
   /// Remove all widgets, intersection widgets, nodes
   void RemoveAllWidgetsAndNodes();
   /// Remove a node, its widget and its intersection widget
   void RemoveWidgetAndNode(vtkMRMLMarkupsNode *node);
-
+  /// Remove a widget and it's intersection widget, for one markup
+  void RemoveWidget(vtkMRMLMarkupsNode *node, int m);
 
   /// Search the markups node list and return the markups node that has this display node
   vtkMRMLMarkupsNode * GetMarkupsNodeFromDisplayNode(vtkMRMLMarkupsDisplayNode *displayNode);
@@ -91,7 +110,7 @@ public:
   /// Typedef for iterator over the list of nodes managed by the DisplayableManager
   typedef std::vector<vtkMRMLMarkupsNode*>::iterator MarkupsNodeListIt;
 
-  /// Map of vtkWidget indexed using associated node ID
+  /// Map of vtkWidget indexed using associated node
   std::map<vtkMRMLMarkupsNode*, vtkAbstractWidget*> Widgets;
 
   /// .. and its associated convenient typedef
@@ -108,6 +127,14 @@ public:
 
   /// .. and its associated convenient typedef
   typedef std::map<std::string, vtkAbstractWidget*>::iterator WidgetPointProjectionsIt;
+
+  /// Alternate map of vtkWidgets used when need one widget per markup, rather
+  /// than one widget per list, indexed by the markup id
+  /// \sa GetWidgetForMarkup
+  std::map<std::string, vtkAbstractWidget*> WidgetsForMarkup;
+
+  /// Typedef for iterator over the list of widgets per markup
+  typedef std::map<std::string, vtkAbstractWidget*>::iterator WidgetsForMarkupIt;
 
   //
   // End of The Lists!!

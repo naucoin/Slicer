@@ -254,18 +254,34 @@ void vtkMRMLMarkupsDisplayableManager3D::UpdateFromMRML()
     if (markupsNode)
       {
       // do we  have a widget for it?
-      if (this->GetWidget(markupsNode) == NULL)
+      // one widget per fiducial node
+      if (markupsNode->IsA("vtkMRMLMarkupsFiducialNode"))
         {
-        vtkDebugMacro("UpdateFromMRML: creating a widget for node " << markupsNode->GetID());
-        vtkAbstractWidget *widget = this->AddWidget(markupsNode);
-        if (widget)
+        if (this->GetWidget(markupsNode) == NULL)
           {
-          // update the new widget from the node
-          //this->PropagateMRMLToWidget(markupsNode, widget);
+          vtkDebugMacro("UpdateFromMRML: creating a widget for node " << markupsNode->GetID());
+          vtkAbstractWidget *widget = this->AddWidget(markupsNode, 0);
+          if (!widget)
+            {
+            vtkErrorMacro("UpdateFromMRML: failed to create a widget for fiducial node "
+                          << markupsNode->GetID());
+            }
           }
-        else
+        }
+      else
+        {
+        // other markup nodes have one widget per markup in the list, so check all of them
+        for (int m = 0; m < markupsNode->GetNumberOfMarkups(); ++m)
           {
-          vtkErrorMacro("UpdateFromMRML: failed to create a widget for node " << markupsNode->GetID());
+          if (this->Helper->GetWidgetForMarkup(markupsNode->GetNthMarkupID(m)) == NULL)
+            {
+            vtkAbstractWidget *widget = this->AddWidget(markupsNode, m);
+            if (!widget)
+              {
+              vtkErrorMacro("UpdateFromMRML: failed to create a widget for markups node "
+                            << markupsNode->GetID() << " at markup " << m);
+              }
+            }
           }
         }
       }
@@ -331,7 +347,7 @@ void vtkMRMLMarkupsDisplayableManager3D
         this->OnMRMLMarkupsNodeMarkupAddedEvent(markupsNode);
         break;
       case vtkMRMLMarkupsNode::MarkupRemovedEvent:
-        this->OnMRMLMarkupsNodeMarkupRemovedEvent(markupsNode);
+        this->OnMRMLMarkupsNodeMarkupRemovedEvent(markupsNode, n);
         break;
       case vtkMRMLTransformableNode::TransformModifiedEvent:
         this->OnMRMLMarkupsNodeTransformModifiedEvent(markupsNode);
@@ -417,9 +433,13 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
     return;
     }
 
-  if (node->IsA("vtkMRMLMarkupsDisplayNode"))
+  // if have a display node for this type of focus node, need to observe it
+  // fids use the superclass disp node, ruler has a specific one
+  if ((node->IsA("vtkMRMLMarkupsRulerDisplayNode") &&
+       (strcmp(this->Focus, "vtkMRMLMarkupsRulerNode") == 0)) ||
+      (node->IsA("vtkMRMLMarkupsDisplayNode") &&
+       (strcmp(this->Focus, "vtkMRMLMarkupsFiducialNode") == 0)))
     {
-    // have a display node, need to observe it
     vtkObserveMRMLNodeMacro(node);
     return;
     }
@@ -454,16 +474,21 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
     }
 
   // There should not be a widget for the new node
-  if (this->Helper->GetWidget(markupsNode) != 0)
+  if ((markupsNode->IsA("vtkMRMLMarkupsFiducialNode") &&
+       this->GetWidget(markupsNode) != 0) ||
+      (markupsNode->IsA("vtkMRMLMarkupsRulerNode")
+       && (this->Helper->GetWidgetForMarkup(markupsNode->GetNthMarkupID(0)) != 0)))
     {
-    vtkErrorMacro("OnMRMLSceneNodeAddedEvent: A widget is already associated to this node!");
+    vtkErrorMacro("OnMRMLSceneNodeAddedEvent: A widget is already associated with the node named "
+                  << markupsNode->GetName());
     return;
     }
 
   //std::cout << "OnMRMLSceneNodeAddedEvent ThreeD -> CreateWidget" << std::endl;
 
   // Create the Widget and add it to the list.
-  vtkAbstractWidget* newWidget = this->AddWidget(markupsNode);
+  vtkAbstractWidget* newWidget = NULL;
+  newWidget = this->AddWidget(markupsNode, 0);
   if (!newWidget)
     {
     vtkErrorMacro("OnMRMLSceneNodeAddedEvent: Widget was not created!")
@@ -530,7 +555,7 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsNodeModifiedEvent(vtkMRMLN
 
   //std::cout << "OnMRMLMarkupsNodeModifiedEvent ThreeD->PropagateMRMLToWidget" << std::endl;
 
-  vtkAbstractWidget * widget = this->Helper->GetWidget(markupsNode);
+  vtkAbstractWidget * widget = this->GetWidget(markupsNode);
 
   if (widget)
     {
@@ -577,9 +602,12 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsDisplayNodeModifiedEvent(v
         << markupsNode->GetID()
         << " associated with the modified display node "
         << markupsDisplayNode->GetID());
-  vtkAbstractWidget * widget = this->Helper->GetWidget(markupsNode);
+
+  vtkAbstractWidget * widget = this->GetWidget(markupsNode);
 
   // Propagate MRML changes to widget
+  // The fiducial manager updates this one widget, others ignore and iterate
+  // over the list of widgets for this node
   this->PropagateMRMLToWidget(markupsNode, widget);
 
   this->RequestRender();
@@ -598,14 +626,19 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsPointModifiedEvent(vtkMRML
     {
     return;
     }
-  vtkAbstractWidget *widget = this->Helper->GetWidget(markupsNode);
+  vtkAbstractWidget *widget = NULL;
+  if (markupsNode->IsA("vtkMRMLMarkupsFiducialNode"))
+    {
+    widget = this->GetWidget(markupsNode);
+    }
+  else
+    {
+    widget = this->Helper->GetWidgetForMarkup(markupsNode->GetNthMarkupID(n));
+    }
   if (widget)
     {
-    // Update the standard settings of all widgets.
-    this->UpdateNthSeedPositionFromMRML(n, widget, markupsNode);
-
-    // Propagate MRML changes to widget
-    this->PropagateMRMLToWidget(markupsNode, widget);
+    // Update the position of the widget.
+    this->UpdateNthWidgetPositionFromMRML(n, widget, markupsNode);
     this->RequestRender();
     }
 }
@@ -627,7 +660,7 @@ void vtkMRMLMarkupsDisplayableManager3D::OnMRMLMarkupsNodeTransformModifiedEvent
     return;
     }
 
-  vtkAbstractWidget *widget = this->Helper->GetWidget(markupsNode);
+  vtkAbstractWidget *widget = this->GetWidget(markupsNode);
   if (widget)
     {
     // Propagate MRML changes to widget
@@ -683,7 +716,7 @@ void vtkMRMLMarkupsDisplayableManager3D::UpdateWidgetVisibility(vtkMRMLMarkupsNo
     return;
     }
 
-   vtkAbstractWidget* widget = this->Helper->GetWidget(markupsNode);
+   vtkAbstractWidget* widget = this->GetWidget(markupsNode);
 
    if (!widget)
      {
@@ -1099,7 +1132,10 @@ vtkAbstractWidget* vtkMRMLMarkupsDisplayableManager3D::CreateWidget(vtkMRMLMarku
 }
 
 //---------------------------------------------------------------------------
-void vtkMRMLMarkupsDisplayableManager3D::OnWidgetCreated(vtkAbstractWidget* vtkNotUsed(widget), vtkMRMLMarkupsNode* vtkNotUsed(node))
+void vtkMRMLMarkupsDisplayableManager3D::
+OnWidgetCreated(vtkAbstractWidget* vtkNotUsed(widget),
+                vtkMRMLMarkupsNode* vtkNotUsed(node),
+                int vtkNotUsed(markupNumber))
 {
 
   // Actions after a widget was created should be executed here.
@@ -1116,7 +1152,10 @@ void vtkMRMLMarkupsDisplayableManager3D::PropagateMRMLToWidget(vtkMRMLMarkupsNod
 }
 
 //---------------------------------------------------------------------------
-void vtkMRMLMarkupsDisplayableManager3D::PropagateWidgetToMRML(vtkAbstractWidget* vtkNotUsed(widget), vtkMRMLMarkupsNode* vtkNotUsed(node))
+void vtkMRMLMarkupsDisplayableManager3D::
+  PropagateWidgetToMRML(vtkAbstractWidget* vtkNotUsed(widget),
+                        vtkMRMLMarkupsNode* vtkNotUsed(node),
+                        int vtkNotUsed(markupNumber))
 {
   // The properties of a widget should be set here.
   vtkErrorMacro("PropagateWidgetToMRML should be overloaded!");
@@ -1169,38 +1208,4 @@ void vtkMRMLMarkupsDisplayableManager3D::GetWorldToLocalCoordinates(vtkMRMLMarku
     localCoordinates[i] = xyz[i];
     }
   transformToWorld->Delete();
-}
-
-//---------------------------------------------------------------------------
-/// Create a new widget for this markups node and save it to the helper.
-vtkAbstractWidget * vtkMRMLMarkupsDisplayableManager3D::AddWidget(vtkMRMLMarkupsNode *markupsNode)
-{
-  vtkDebugMacro("AddWidget: calling create widget");
-  vtkAbstractWidget* newWidget = this->CreateWidget(markupsNode);
-  if (!newWidget)
-    {
-    vtkErrorMacro("AddWidget: unable to create a new widget for markups node " << markupsNode->GetID());
-    return NULL;
-    }
-
-  // record the mapping between node and widget in the helper
-  this->Helper->RecordWidgetForNode(newWidget,markupsNode);
-
-  vtkDebugMacro("AddWidget: saved to helper ");
-//  vtkIndent indent;
-//  this->Helper->PrintSelf(std::cout, indent);
-
-  // Refresh observers
-  this->SetAndObserveNode(markupsNode);
-
-  // TODO do we need this render call?
-  this->RequestRender();
-
-  // ?
-  this->OnWidgetCreated(newWidget, markupsNode);
-
-  // now set up the new widget
-  this->PropagateMRMLToWidget(markupsNode, newWidget);
-
-  return newWidget;
 }

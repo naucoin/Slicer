@@ -105,6 +105,15 @@ void vtkMRMLMarkupsDisplayableManagerHelper::PrintSelf(ostream& os, vtkIndent in
     os << indent.GetNextIndent() << it->first.c_str() << " : projection is "
        << (it->second ? "not null" : "null") << std::endl;
     }
+
+  os << indent << "Widgets per markup:" << std::endl;
+  for (WidgetsForMarkupIt it = this->WidgetsForMarkup.begin();
+       it != this->WidgetsForMarkup.end();
+       ++it)
+    {
+    os << indent.GetNextIndent() << it->first.c_str() << " : projection is "
+       << (it->second ? "not null" : "null") << std::endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -161,8 +170,28 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLockedAllWidgets(bool locked)
 {
   // loop through all widgets and update lock status
   vtkDebugMacro("UpdateLockedAllWidgets: locked = " << locked);
+
+  // first the widgets that are one per list
   for (WidgetsIt it = this->Widgets.begin();
        it !=  this->Widgets.end();
+       ++it)
+    {
+    if (it->second)
+      {
+      if (locked)
+        {
+        it->second->ProcessEventsOff();
+        }
+      else
+        {
+        it->second->ProcessEventsOn();
+        }
+      }
+    }
+
+  // then the widgets that are one per markup
+  for (WidgetsForMarkupIt it = this->WidgetsForMarkup.begin();
+       it !=  this->WidgetsForMarkup.end();
        ++it)
     {
     if (it->second)
@@ -190,12 +219,20 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode *no
     }
 
   vtkAbstractWidget * widget = this->GetWidget(node);
-  // A widget is expected
+  // A widget single is expected for fiducial markups nodes, otherwise iterate
+  // over the markups and the widgets for each
   if(widget == 0)
     {
+    this->UpdateLockedForMarkups(node, interactionNode);
     return;
     }
 
+  // sanity check, this should be a fiducials node
+  if (node->IsA("vtkMRMLMarkupsFiducialNode") == 0)
+    {
+    vtkErrorMacro("UpdateLocked: only works on fiducial markups, failed to properly call UpdateLockedForMarkups");
+    return;
+    }
   bool isLockedOnNode = (node->GetLocked() != 0 ? true : false);
   bool isLockedOnWidget = (widget->GetProcessEvents() != 0 ? false : true);
   bool isLockedOnInteraction = false;
@@ -244,6 +281,71 @@ void vtkMRMLMarkupsDisplayableManagerHelper::UpdateLocked(vtkMRMLMarkupsNode *no
           // unlock it
           seedWidget->GetSeed(i)->ProcessEventsOn();
           }
+        }
+      }
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::
+        UpdateLockedForMarkups(vtkMRMLMarkupsNode *node,
+                               vtkMRMLInteractionNode *interactionNode)
+{
+  // Sanity checks
+  if (node == 0)
+    {
+    return;
+    }
+  if (node->IsA("vtkMRMLMarkupsFiducialNode"))
+    {
+    vtkErrorMacro("UpdateLockedForMarkups: node contains fiducials, use UpdateLocked");
+    return;
+    }
+
+
+  bool isLockedOnNode = (node->GetLocked() != 0 ? true : false);
+  bool isLockedOnInteraction = false;
+  if (interactionNode &&
+      interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place)
+    {
+    // place mode will over ride node locking
+    isLockedOnInteraction = true;
+    }
+
+  int numMarkups = node->GetNumberOfMarkups();
+  for (int i = 0; i < numMarkups; i++)
+    {
+    vtkAbstractWidget * widget = this->GetWidgetForMarkup(node->GetNthMarkupID(i));
+    if (widget == 0)
+      {
+      vtkErrorMacro("UpdateLockedForWidgets: unable to get widget for markup #" << i);
+      continue;
+      }
+
+    bool isLockedOnNthWidget = (widget->GetProcessEvents() != 0 ? false : true);
+
+    // only update the processEvents state of the widget if it is different than
+    // what the markups node or the interaction node says it needs to be
+    if ( (isLockedOnNode && !isLockedOnNthWidget) ||
+         (isLockedOnInteraction && !isLockedOnNthWidget) )
+      {
+      widget->ProcessEventsOff();
+      }
+    else if (!isLockedOnInteraction && !isLockedOnNode && isLockedOnNthWidget)
+      {
+      // the widget is locked, but the interaction node and the top level
+      // markups node say it can be unlocked. Check if this markup in the
+      // list is locked or not
+      bool isLockedOnNthMarkup = node->GetNthMarkupLocked(i);
+      if (isLockedOnNthMarkup)
+        {
+        // lock it
+        widget->ProcessEventsOff();
+        }
+      else
+        {
+        // unlock it
+        widget->ProcessEventsOn();
         }
       }
     }
@@ -306,6 +408,24 @@ vtkAbstractWidget * vtkMRMLMarkupsDisplayableManagerHelper::GetPointProjectionWi
 }
 
 //---------------------------------------------------------------------------
+vtkAbstractWidget * vtkMRMLMarkupsDisplayableManagerHelper::GetWidgetForMarkup(std::string uniqueMarkupID)
+{
+  if (!uniqueMarkupID.compare(""))
+    {
+    return 0;
+    }
+
+  // Make sure the map contains a vtkWidget associated with this uniqueMarkupID
+  WidgetsForMarkupIt it = this->WidgetsForMarkup.find(uniqueMarkupID);
+  if (it == this->WidgetsForMarkup.end())
+    {
+    return 0;
+    }
+
+  return it->second;
+}
+
+//---------------------------------------------------------------------------
 void vtkMRMLMarkupsDisplayableManagerHelper::RemoveAllWidgetsAndNodes()
 {
   WidgetsIt widgetIterator = this->Widgets.begin();
@@ -337,6 +457,16 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveAllWidgetsAndNodes()
     pointProjIt->second->Delete();
     }
   this->WidgetPointProjections.clear();
+
+  WidgetsForMarkupIt widgetForMarkupIt;
+  for (widgetForMarkupIt = this->WidgetsForMarkup.begin();
+       widgetForMarkupIt != this->WidgetsForMarkup.end();
+       ++widgetForMarkupIt)
+    {
+    widgetForMarkupIt->second->Off();
+    widgetForMarkupIt->second->Delete();
+    }
+  this->WidgetsForMarkup.clear();
 
   this->MarkupsNodeList.clear();
 }
@@ -438,6 +568,33 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
    this->WidgetPointProjections.erase(pointID);
    }
 
+ WidgetsForMarkupIt widgetsForMarkupIterator = this->WidgetsForMarkup.begin();
+ // build up a vector of points to erase from the point projection map
+ std::vector<std::string> widgetsForMarkupToErase;
+ for (; widgetsForMarkupIterator != this->WidgetsForMarkup.end(); widgetsForMarkupIterator++)
+   {
+   // does this point projection correspond to a valid markup id?
+   std::string pointID = widgetsForMarkupIterator->first;
+   std::map<std::string,std::string>::iterator it;
+   it = currentMarkupIDs.find(pointID);
+   if (it == currentMarkupIDs.end())
+      {
+      // add it to a list of point to erase
+      widgetsForMarkupToErase.push_back(pointID);
+      }
+   }
+ for (unsigned int p = 0; p < widgetsForMarkupToErase.size(); ++p)
+   {
+   std::string markupID = widgetsForMarkupToErase[p];
+   if (this->WidgetsForMarkup[markupID])
+     {
+     this->WidgetsForMarkup[markupID]->Off();
+     this->WidgetsForMarkup[markupID]->Delete();
+     }
+   this->WidgetsForMarkup.erase(markupID);
+   }
+
+
   vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt nodeIterator = std::find(
       this->MarkupsNodeList.begin(),
       this->MarkupsNodeList.end(),
@@ -457,6 +614,43 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidgetAndNode(
   // remove the entry for the node glyph types
   this->RemoveNodeGlyphType(node->GetDisplayNode());
 
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::RemoveWidget(
+  vtkMRMLMarkupsNode *node, int m)
+{
+  if (!node)
+    {
+    return;
+    }
+
+  std::string markupID = node->GetNthMarkupID(m);
+  // Make sure the map contains a vtkWidget associated with this node
+  WidgetsForMarkupIt widgetIterator = this->WidgetsForMarkup.find(markupID);
+  if (widgetIterator != this->WidgetsForMarkup.end())
+    {
+    // Delete and Remove vtkWidget from the map
+    if (this->WidgetsForMarkup[markupID])
+      {
+      this->WidgetsForMarkup[markupID]->Off();
+      this->WidgetsForMarkup[markupID]->Delete();
+      }
+    this->WidgetsForMarkup.erase(markupID);
+    }
+
+  // remove the point projections for this markup
+  WidgetPointProjectionsIt it = this->WidgetPointProjections.find(markupID);
+  if (it != this->WidgetPointProjections.end())
+    {
+    // turn off, delete and remove the point projection
+    if (this->WidgetPointProjections[markupID])
+      {
+      this->WidgetPointProjections[markupID]->Off();
+      this->WidgetPointProjections[markupID]->Delete();
+      }
+    this->WidgetPointProjections.erase(markupID);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -609,6 +803,57 @@ void vtkMRMLMarkupsDisplayableManagerHelper::RecordWidgetForNode(vtkAbstractWidg
   this->Widgets[node] = widget;
   // save the node
   this->MarkupsNodeList.push_back(node);
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::RecordWidgetForMarkup(vtkAbstractWidget* widget, vtkMRMLMarkupsNode *node, int n)
+{
+  if (!widget)
+    {
+    vtkErrorMacro("RecordWidgetForMarkup: no widget!");
+    return;
+    }
+  if (!node)
+    {
+    vtkErrorMacro("RecordWidgetForMarkup: no node!");
+    return;
+    }
+  // save the widget to the map indexed by the markup id
+  std::string uniqueID = node->GetNthMarkupID(n);
+  if (uniqueID.compare("") == 0)
+    {
+    vtkErrorMacro("RecordWidgetForMarkup: no id for markup " << n);
+    return;
+    }
+
+  this->WidgetsForMarkup[uniqueID] = widget;
+
+  // save the node if it's not already tracked
+  vtkMRMLMarkupsDisplayableManagerHelper::MarkupsNodeListIt nodeIterator = std::find(
+      this->MarkupsNodeList.begin(),
+      this->MarkupsNodeList.end(),
+      node);
+  if (nodeIterator == this->MarkupsNodeList.end())
+    {
+    this->MarkupsNodeList.push_back(node);
+    }
+}
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManagerHelper::UpdateWidgetForMarkupID(std::string oldID, std::string newID)
+{
+  WidgetsForMarkupIt it = this->WidgetsForMarkup.find(oldID);
+  if (it != this->WidgetsForMarkup.end())
+    {
+    this->WidgetsForMarkup[newID] = it->second;
+    this->WidgetsForMarkup.erase(it);
+    }
+  else
+    {
+    vtkWarningMacro("UpdateWidgetForMarkupID: failed to find old id of "
+                    << oldID
+                    << ", unable to reset the widget to use the new id "
+                    << newID);
+    }
 }
 
 //---------------------------------------------------------------------------

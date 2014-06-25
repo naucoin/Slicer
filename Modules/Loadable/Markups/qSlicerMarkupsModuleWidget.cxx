@@ -144,6 +144,9 @@ void qSlicerMarkupsModuleWidgetPrivate::updateWidgetsForActiveMarkup()
     {
     hideThis = false;
     }
+  // TODO: deleting rulers doesn't work right now
+  this->deleteMarkupPushButton->setEnabled(hideThis);
+  this->deleteAllMarkupsInListPushButton->setEnabled(hideThis);
 
   this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("Distance"), hideThis);
   this->activeMarkupTableWidget->setColumnHidden(this->columnIndex("R2"), hideThis);
@@ -2266,6 +2269,11 @@ void qSlicerMarkupsModuleWidget::onAddMarkupPushButtonClicked()
 
   // get the active node
   vtkMRMLNode *mrmlNode = d->activeMarkupMRMLNodeComboBox->currentNode();
+  if (!mrmlNode)
+    {
+    qWarning() << "No active list to add a markup to!";
+    return;
+    }
   vtkMRMLMarkupsNode *listNode = NULL;
   if (mrmlNode)
     {
@@ -2278,6 +2286,13 @@ void qSlicerMarkupsModuleWidget::onAddMarkupPushButtonClicked()
   else if (listNode->IsA("vtkMRMLMarkupsRulerNode"))
     {
     listNode->AddMarkupWithNPoints(2);
+    // make it span the default box
+    listNode->SetMarkupPoint(listNode->GetNumberOfMarkups() - 1,
+                             0,
+                             -100.0, 0.0, 0.0);
+    listNode->SetMarkupPoint(listNode->GetNumberOfMarkups() - 1,
+                             1,
+                             100.0, 0.0, 0.0);
     }
 }
 

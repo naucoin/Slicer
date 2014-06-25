@@ -121,9 +121,25 @@ void qSlicerMarkupsModule::setup()
 
   // Register displayable managers
   // 3D
-  vtkMRMLThreeDViewDisplayableManagerFactory::GetInstance()->RegisterDisplayableManager("vtkMRMLMarkupsFiducialDisplayableManager3D");
+  QStringList threeDdisplayableManagers;
+  threeDdisplayableManagers
+    << "Fiducial"
+    << "Ruler";
+  foreach(const QString& name, threeDdisplayableManagers)
+    {
+    vtkMRMLThreeDViewDisplayableManagerFactory::GetInstance()->RegisterDisplayableManager(
+        QString("vtkMRMLMarkups%1DisplayableManager3D").arg(name).toLatin1());
+    }
+
   // 2D
-  vtkMRMLSliceViewDisplayableManagerFactory::GetInstance()->RegisterDisplayableManager("vtkMRMLMarkupsFiducialDisplayableManager2D");
+  QStringList slicerViewDisplayableManagers;
+  slicerViewDisplayableManagers
+    << "Fiducial";
+  foreach(const QString& name, slicerViewDisplayableManagers)
+    {
+    vtkMRMLSliceViewDisplayableManagerFactory::GetInstance()->RegisterDisplayableManager(
+        QString("vtkMRMLMarkups%1DisplayableManager2D").arg(name).toLatin1());
+    }
 
   // Register IO
   qSlicerIOManager* ioManager = qSlicerApplication::application()->ioManager();

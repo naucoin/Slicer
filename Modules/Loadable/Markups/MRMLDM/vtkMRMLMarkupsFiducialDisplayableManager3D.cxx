@@ -140,6 +140,44 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::PrintSelf(ostream& os, vtkInden
 }
 
 //---------------------------------------------------------------------------
+vtkAbstractWidget *vtkMRMLMarkupsFiducialDisplayableManager3D::
+AddWidget(vtkMRMLMarkupsNode *markupsNode, int vtkNotUsed(markupIndex))
+{
+  vtkDebugMacro("AddWidget: calling create widget");
+  if (!(markupsNode->IsA("vtkMRMLMarkupsFiducialNode")))
+    {
+    vtkWarningMacro("AddWidget: trying to add widget for a non fiducial node, returning.");
+    return NULL;
+    }
+
+  vtkAbstractWidget* newWidget = this->CreateWidget(markupsNode);
+  if (!newWidget)
+    {
+    vtkErrorMacro("AddWidget: unable to create a new widget for markups node " << markupsNode->GetID());
+    return NULL;
+    }
+
+  // record the mapping between node and widget in the helper
+  this->Helper->RecordWidgetForNode(newWidget,markupsNode);
+
+  vtkDebugMacro("AddWidget: saved to helper ");
+
+  // Refresh observers
+  this->SetAndObserveNode(markupsNode);
+
+  // TODO do we need this render call?
+  this->RequestRender();
+
+  // ?
+  this->OnWidgetCreated(newWidget, markupsNode);
+
+  // now set up the new widget
+  this->PropagateMRMLToWidget(markupsNode, newWidget);
+
+  return newWidget;
+}
+
+//---------------------------------------------------------------------------
 /// Create a new widget.
 vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager3D::CreateWidget(vtkMRMLMarkupsNode* node)
 {
@@ -208,7 +246,7 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager3D::CreateWidget(vtk
 
 //---------------------------------------------------------------------------
 /// Tear down the widget creation
-void vtkMRMLMarkupsFiducialDisplayableManager3D::OnWidgetCreated(vtkAbstractWidget * widget, vtkMRMLMarkupsNode * node)
+void vtkMRMLMarkupsFiducialDisplayableManager3D::OnWidgetCreated(vtkAbstractWidget * widget, vtkMRMLMarkupsNode * node, int vtkNotUsed(markupNumber))
 {
   if (!widget)
     {
@@ -233,7 +271,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnWidgetCreated(vtkAbstractWidg
 }
 
 //---------------------------------------------------------------------------
-bool vtkMRMLMarkupsFiducialDisplayableManager3D::UpdateNthSeedPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode)
+bool vtkMRMLMarkupsFiducialDisplayableManager3D::UpdateNthWidgetPositionFromMRML(int n, vtkAbstractWidget *widget, vtkMRMLMarkupsNode *pointsNode)
 {
   if (!pointsNode || !widget)
     {
@@ -265,7 +303,7 @@ bool vtkMRMLMarkupsFiducialDisplayableManager3D::UpdateNthSeedPositionFromMRML(i
 
   if (this->GetWorldCoordinatesChanged(seedWorldCoord, fidWorldCoord))
     {
-    vtkDebugMacro("UpdateNthSeedPositionFromMRML: 3D:"
+    vtkDebugMacro("UpdateNthWidgetPositionFromMRML: 3D:"
                   << " world coordinates changed:\n\tseed = "
                   << seedWorldCoord[0] << ", "
                   << seedWorldCoord[1] << ", "
@@ -278,7 +316,7 @@ bool vtkMRMLMarkupsFiducialDisplayableManager3D::UpdateNthSeedPositionFromMRML(i
     }
   else
     {
-    vtkDebugMacro("UpdateNthSeedPositionFromMRML: 3D: world coordinates unchanged!");
+    vtkDebugMacro("UpdateNthWidgetPositionFromMRML: 3D: world coordinates unchanged!");
     }
 
   return positionChanged;
@@ -329,7 +367,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::SetNthSeed(int n, vtkMRMLMarkup
     }
 
   // update the postion
-  bool positionChanged = this->UpdateNthSeedPositionFromMRML(n, seedWidget, fiducialNode);
+  bool positionChanged = this->UpdateNthWidgetPositionFromMRML(n, seedWidget, fiducialNode);
   if (!positionChanged)
     {
     vtkDebugMacro("Position did not change");
@@ -584,7 +622,10 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::PropagateMRMLToWidget(vtkMRMLMa
 
 //---------------------------------------------------------------------------
 /// Propagate properties of widget to MRML node.
-void vtkMRMLMarkupsFiducialDisplayableManager3D::PropagateWidgetToMRML(vtkAbstractWidget * widget, vtkMRMLMarkupsNode* node)
+void vtkMRMLMarkupsFiducialDisplayableManager3D::
+  PropagateWidgetToMRML(vtkAbstractWidget * widget,
+                        vtkMRMLMarkupsNode* node,
+                        int vtkNotUsed(markupNumber))
 {
   if (!widget)
     {
@@ -726,7 +767,8 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnClickInRenderWindow(double x,
     newNode = true;
     // create the MRML node
     activeFiducialNode = vtkMRMLMarkupsFiducialNode::New();
-    activeFiducialNode->SetName("F");
+    std::string nodeName = this->GetMRMLScene()->GenerateUniqueName("F");
+    activeFiducialNode->SetName(nodeName.c_str());
     }
 
   // add a fiducial: this will trigger an update of the widgets
@@ -878,7 +920,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::UpdatePosition(vtkAbstractWidge
   int numberOfFiducials = pointsNode->GetNumberOfMarkups();
   for (int n = 0; n < numberOfFiducials; n++)
     {
-    if (this->UpdateNthSeedPositionFromMRML(n, seedWidget, pointsNode))
+    if (this->UpdateNthWidgetPositionFromMRML(n, seedWidget, pointsNode))
       {
       positionChanged = true;
       }
@@ -960,7 +1002,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLMarkupsNodeMarkupAddedEve
 }
 
 //---------------------------------------------------------------------------
-void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode)
+void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLMarkupsNodeMarkupRemovedEvent(vtkMRMLMarkupsNode * markupsNode, int vtkNotUsed(n))
 {
   vtkDebugMacro("OnMRMLMarkupsNodeMarkupRemovedEvent");
 
@@ -978,5 +1020,5 @@ void vtkMRMLMarkupsFiducialDisplayableManager3D::OnMRMLMarkupsNodeMarkupRemovedE
 
   // for now, recreate the widget
   this->Helper->RemoveWidgetAndNode(markupsNode);
-  this->AddWidget(markupsNode);
+  this->AddWidget(markupsNode, 0);
 }
