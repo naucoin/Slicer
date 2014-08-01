@@ -37,6 +37,7 @@
 
 // Slicer logic includes
 #include <vtkSlicerColorLogic.h>
+#include <vtkSlicerScalarbarActor.h>
 
 // MRML includes
 #include <vtkMRMLColorTableNode.h>
@@ -66,6 +67,7 @@ public:
   void setDefaultColorNode();
 
   vtkScalarBarWidget* ScalarBarWidget;
+  vtkSlicerScalarBarActor* ScalarBarActor;
 };
 
 //-----------------------------------------------------------------------------
@@ -73,15 +75,17 @@ qSlicerColorsModuleWidgetPrivate::qSlicerColorsModuleWidgetPrivate(qSlicerColors
   : q_ptr(&object)
 {
   this->ScalarBarWidget = vtkScalarBarWidget::New();
-  this->ScalarBarWidget->GetScalarBarActor()->SetOrientationToVertical();
-  this->ScalarBarWidget->GetScalarBarActor()->SetNumberOfLabels(11);
-  this->ScalarBarWidget->GetScalarBarActor()->SetTitle("(mm)");
-  this->ScalarBarWidget->GetScalarBarActor()->SetLabelFormat(" %#8.3f");
+  this->ScalarBarActor = vtkSlicerScalarBarActor::New();
+  this->ScalarBarWidget->SetScalarBarActor(this->ScalarBarActor);
+  this->ScalarBarActor->SetOrientationToVertical();
+  this->ScalarBarActor->SetNumberOfLabels(11);
+  this->ScalarBarActor->SetTitle("(mm)");
+  this->ScalarBarActor->SetLabelFormat(" %.8s");
 
   // it's a 2d actor, position it in screen space by percentages
-  this->ScalarBarWidget->GetScalarBarActor()->SetPosition(0.1, 0.1);
-  this->ScalarBarWidget->GetScalarBarActor()->SetWidth(0.1);
-  this->ScalarBarWidget->GetScalarBarActor()->SetHeight(0.8);
+  this->ScalarBarActor->SetPosition(0.1, 0.1);
+  this->ScalarBarActor->SetWidth(0.1);
+  this->ScalarBarActor->SetHeight(0.8);
 }
 
 //-----------------------------------------------------------------------------
@@ -92,6 +96,11 @@ qSlicerColorsModuleWidgetPrivate::~qSlicerColorsModuleWidgetPrivate()
     this->ScalarBarWidget->Delete();
     this->ScalarBarWidget = 0;
     }
+  if (this->ScalarBarActor)
+  {
+    this->ScalarBarActor->Delete();
+    this->ScalarBarActor = 0;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -231,12 +240,30 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
     if (colorTableNode && colorTableNode->GetLookupTable())
       {
       range = colorTableNode->GetLookupTable()->GetRange();
-      d->ScalarBarWidget->GetScalarBarActor()->SetLookupTable(colorTableNode->GetLookupTable());
+      d->ScalarBarActor->SetLookupTable(colorTableNode->GetLookupTable());
+#if (VTK_MAJOR_VERSION == 6)
+      d->ScalarBarActor->UseAnnotationAsLabelOn();
+      d->ScalarBarActor->SetLabelFormat(" %.8s");
+      int numberOfColors = colorTableNode->GetNumberOfColors();
+      for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex)
+        {
+        d->ScalarBarActor->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(colorTableNode->GetColorName(colorIndex)));
+        }
+#endif
       }
     else if (fsColorNode && fsColorNode->GetLookupTable())
       {
       range = fsColorNode->GetScalarsToColors()->GetRange();
-      d->ScalarBarWidget->GetScalarBarActor()->SetLookupTable(fsColorNode->GetScalarsToColors());
+      d->ScalarBarActor->SetLookupTable(fsColorNode->GetScalarsToColors());
+#if (VTK_MAJOR_VERSION == 6)
+      d->ScalarBarActor->UseAnnotationAsLabelOn();
+      d->ScalarBarActor->SetLabelFormat(" %.8s");
+      int numberOfColors = fsColorNode->GetNumberOfColors();
+      for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex)
+        {
+        d->ScalarBarActor->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(fsColorNode->GetColorName(colorIndex)));
+        }
+#endif
       }
     if (range)
       {
@@ -272,7 +299,11 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
     // set the lookup table on the scalar bar widget actor
     if (procColorNode->GetColorTransferFunction())
       {
-      d->ScalarBarWidget->GetScalarBarActor()->SetLookupTable(procColorNode->GetColorTransferFunction());
+      d->ScalarBarActor->SetLookupTable(procColorNode->GetColorTransferFunction());
+#if (VTK_MAJOR_VERSION == 6)
+      d->ScalarBarActor->UseAnnotationAsLabelOff();
+      d->ScalarBarActor->SetLabelFormat(" %#8.3f");
+#endif
       }
     }
   else
