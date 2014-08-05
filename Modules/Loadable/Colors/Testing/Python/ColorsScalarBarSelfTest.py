@@ -160,20 +160,28 @@ class ColorsScalarBarSelfTestLogic:
     """
     # start in the colors module
     m = slicer.util.mainWindow()
-    m.moduleSelector().selectModule('colors')
+    m.moduleSelector().selectModule('Colors')
+    self.delayDisplay('In Colors module')
 
     colorWidget = slicer.modules.colors.widgetRepresentation()
     ctkScalarBarWidget = slicer.util.findChildren(colorWidget, name='VTKScalarBar')[0]
     # show the scalar bar widget
     ctkScalarBarWidget.setDisplay(1)
     activeColorNodeSelector = slicer.util.findChildren(colorWidget, 'ColorTableComboBox')[0]
+    useColorNameAsLabelCheckbox = slicer.util.findChildren(colorWidget, 'UseColorNameAsLabelCheckBox')[0]
+    checked = useColorNameAsLabelCheckbox.isChecked()
     # iterate over the color nodes and set each one active
     numColorNodes = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLColorNode')
     for n in range(numColorNodes):
       colorNode = slicer.mrmlScene.GetNthNodeByClass(n, 'vtkMRMLColorNode')
+      useColorNameAsLabelCheckbox.setChecked(checked)
+      print("%d/%d" % (n, numColorNodes-1))
+      self.delayDisplay('Setting Color Node To %s' % colorNode.GetName(), 100)
       activeColorNodeSelector.setCurrentNodeID(colorNode.GetID())
       # use the delay display here to ensure a render
-      self.delayDisplay('Set Color Node To %s' % colorNode.GetName())
+      self.delayDisplay('Set Color Node To %s' % colorNode.GetName(), 500)
+      useColorNameAsLabelCheckbox.setChecked(not checked)
+      self.delayDisplay('Toggled using names as labels', 500)
 
     return True
 

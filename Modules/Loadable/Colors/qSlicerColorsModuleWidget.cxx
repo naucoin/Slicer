@@ -80,7 +80,6 @@ qSlicerColorsModuleWidgetPrivate::qSlicerColorsModuleWidgetPrivate(qSlicerColors
   this->ScalarBarActor->SetOrientationToVertical();
   this->ScalarBarActor->SetNumberOfLabels(11);
   this->ScalarBarActor->SetTitle("(mm)");
-  this->ScalarBarActor->SetLabelFormat(" %.8s");
 
   // it's a 2d actor, position it in screen space by percentages
   this->ScalarBarActor->SetPosition(0.1, 0.1);
@@ -158,6 +157,22 @@ void qSlicerColorsModuleWidget::setup()
   connect(d->CopyColorNodeButton, SIGNAL(clicked()),
           this, SLOT(copyCurrentColorNode()));
 
+#if (VTK_MAJOR_VERSION > 5)
+  if (d->UseColorNameAsLabelCheckBox->isChecked())
+    {
+    // string format
+    d->ScalarBarActor->SetLabelFormat(" %.8s");
+    }
+  else
+    {
+    // number format
+    d->ScalarBarActor->SetLabelFormat(" %#8.3f");
+    }
+  connect(d->UseColorNameAsLabelCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(setUseColorNameAsLabel(bool)));
+#else
+  d->UseColorNameAsLabelCheckBox->SetEnabled(0);
+#endif
   qSlicerApplication * app = qSlicerApplication::application();
   if (app && app->layoutManager())
     {
@@ -194,9 +209,31 @@ void qSlicerColorsModuleWidget::setCurrentColorNode(vtkMRMLNode* colorNode)
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerColorsModuleWidget::setUseColorNameAsLabel(bool useColorName)
+{
+  Q_D(qSlicerColorsModuleWidget);
+#if (VTK_MAJOR_VERSION <= 5)
+  d->ScalarBarActor->SetUseColorNameAsLabel(useColorName);
+#else
+  if (useColorName)
+    {
+    // text string format
+    d->ScalarBarActor->SetLabelFormat(" %.8s");
+    }
+  else
+    {
+    // number format
+    d->ScalarBarActor->SetLabelFormat(" %#8.3f");
+    }
+  d->ScalarBarActor->SetUseAnnotationAsLabel(useColorName);
+#endif
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode)
 {
   Q_D(qSlicerColorsModuleWidget);
+
   vtkMRMLColorNode* colorNode = vtkMRMLColorNode::SafeDownCast(newColorNode);
   if (!colorNode)
     {
@@ -241,29 +278,11 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
       {
       range = colorTableNode->GetLookupTable()->GetRange();
       d->ScalarBarActor->SetLookupTable(colorTableNode->GetLookupTable());
-#if (VTK_MAJOR_VERSION == 6)
-      d->ScalarBarActor->UseAnnotationAsLabelOn();
-      d->ScalarBarActor->SetLabelFormat(" %.8s");
-      int numberOfColors = colorTableNode->GetNumberOfColors();
-      for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex)
-        {
-        d->ScalarBarActor->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(colorTableNode->GetColorName(colorIndex)));
-        }
-#endif
       }
     else if (fsColorNode && fsColorNode->GetLookupTable())
       {
       range = fsColorNode->GetScalarsToColors()->GetRange();
       d->ScalarBarActor->SetLookupTable(fsColorNode->GetScalarsToColors());
-#if (VTK_MAJOR_VERSION == 6)
-      d->ScalarBarActor->UseAnnotationAsLabelOn();
-      d->ScalarBarActor->SetLabelFormat(" %.8s");
-      int numberOfColors = fsColorNode->GetNumberOfColors();
-      for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex)
-        {
-        d->ScalarBarActor->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(fsColorNode->GetColorName(colorIndex)));
-        }
-#endif
       }
     if (range)
       {
@@ -276,6 +295,23 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
       d->LUTRangeWidget->setEnabled(false);
       d->LUTRangeWidget->setValues(0.,0.);
       }
+#if (VTK_MAJOR_VERSION > 5)
+    // update the annotations from the superclass color node since this is a
+    // color table or freesurfer color node
+    int numberOfColors = colorNode->GetNumberOfColors();
+    vtkIntArray* indexArray = vtkIntArray::New();
+    indexArray->SetNumberOfValues(numberOfColors);
+    vtkStringArray* stringArray = vtkStringArray::New();
+    stringArray->SetNumberOfValues(numberOfColors);
+    for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex)
+      {
+      indexArray->SetValue(colorIndex, colorIndex);
+      stringArray->SetValue(colorIndex, colorNode->GetColorName(colorIndex));
+      }
+    d->ScalarBarActor->GetLookupTable()->SetAnnotations(indexArray, stringArray);
+    indexArray->Delete();
+    stringArray->Delete();
+#endif
     }
   else if (procColorNode != NULL)
     {
@@ -300,10 +336,6 @@ void qSlicerColorsModuleWidget::onMRMLColorNodeChanged(vtkMRMLNode* newColorNode
     if (procColorNode->GetColorTransferFunction())
       {
       d->ScalarBarActor->SetLookupTable(procColorNode->GetColorTransferFunction());
-#if (VTK_MAJOR_VERSION == 6)
-      d->ScalarBarActor->UseAnnotationAsLabelOff();
-      d->ScalarBarActor->SetLabelFormat(" %#8.3f");
-#endif
       }
     }
   else

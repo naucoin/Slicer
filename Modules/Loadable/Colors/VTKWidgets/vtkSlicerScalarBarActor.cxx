@@ -35,6 +35,7 @@
 #if (VTK_MAJOR_VERSION <= 5)
 #else
 #include <vtkScalarBarActorInternal.h>
+#include <vtksys/RegularExpression.hxx>
 #include <vtkTextActor.h>
 
 #include <stdio.h> // for snprintf
@@ -233,9 +234,6 @@ void vtkSlicerScalarBarActor::LayoutTicks()
 
   // find the best size for the ticks
   double* range = this->LookupTable->GetRange();
-  char string[512];
-  double val;
-  int i;
 
   // TODO: this should be optimized, maybe by keeping a list of
   // allocated mappers, in order to avoid creation/destruction of
@@ -247,9 +245,17 @@ void vtkSlicerScalarBarActor::LayoutTicks()
   // Does this map have its scale set to log?
   int isLogTable = this->LookupTable->UsingLogScale();
 
-  for (i = 0; i < this->NumberOfLabels; i++)
+  // only print warning once in loop
+  bool formatWarningPrinted = false;
+
+  for (int i = 0; i < this->NumberOfLabels; i++)
     {
     this->P->TextActors[i].TakeReference(vtkTextActor::New());
+
+    double val = 0.0;
+    char labelString[512];
+    // default in case of error with the annotations
+    SNPRINTF(labelString, 511, "(none)");
 
     if ( isLogTable )
       {
@@ -282,26 +288,58 @@ void vtkSlicerScalarBarActor::LayoutTicks()
 
     // if the lookuptable uses the new annotation functionality in VTK6.0
     // then use it as labels
-    if (this->UseAnnotationAsLabel == 1 && this->LookupTable->GetNumberOfAnnotatedValues() > 1)
+    int numberOfAnnotatedValues = this->LookupTable->GetNumberOfAnnotatedValues();
+    if (this->UseAnnotationAsLabel == 1)
       {
-      double indx = 0.0;
-      int index  = 0;
-      if (this->NumberOfLabels > 1)
+      if (numberOfAnnotatedValues > 1)
         {
-        indx = static_cast<double>(i)/(this->NumberOfLabels-1)*(this->LookupTable->GetNumberOfAnnotatedValues()-1);
+        double indx = 0.0;
+        int index  = 0;
+        if (this->NumberOfLabels > 1)
+          {
+          indx = static_cast<double>(i)/(this->NumberOfLabels-1)*(numberOfAnnotatedValues-1);
+          }
+        else
+          {
+          indx = 0.5*numberOfAnnotatedValues;
+          }
+        index = static_cast<int>(indx+0.5);
+        // try to make sure the label format supports a string
+        // TOOD: replace with a more strict regular expression
+        vtksys::RegularExpression regExForString("%.*s");
+        if (regExForString.find(this->LabelFormat))
+          {
+          SNPRINTF(labelString, 511, this->LabelFormat, this->LookupTable->GetAnnotation(index).c_str());
+          }
+        else
+          {
+          if (!formatWarningPrinted)
+            {
+            vtkWarningMacro("LabelFormat doesn't contain a string specifier!" << this->LabelFormat);
+            formatWarningPrinted = true;
+            }
+          }
         }
-      else
-        {
-        indx = 0.5*this->LookupTable->GetNumberOfAnnotatedValues();
-        }
-      index = static_cast<int>(indx+0.5);
-      SNPRINTF(string, 511, this->LabelFormat, this->LookupTable->GetAnnotation(index).c_str());
       }
     else
       {
-      SNPRINTF(string, 511, this->LabelFormat, val);
+      // try to make sure the label format supports a floating point number
+      // TODO: replace with more strict regular expression
+      vtksys::RegularExpression regExForDouble("%.*[fFgGeE]");
+      if (regExForDouble.find(this->LabelFormat))
+          {
+          SNPRINTF(labelString, 511, this->LabelFormat, val);
+          }
+        else
+          {
+          if (!formatWarningPrinted)
+            {
+            vtkWarningMacro("LabelFormat doesn't contain a floating point specifier!" << this->LabelFormat);
+            formatWarningPrinted = true;
+            }
+          }
       }
-    this->P->TextActors[i]->SetInput(string);
+    this->P->TextActors[i]->SetInput(labelString);
 
     // Shallow copy here so that the size of the label prop is not affected
     // by the automatic adjustment of its text mapper's size (i.e. its
