@@ -386,8 +386,22 @@ bool vtkMRMLMarkupsFiducialDisplayableManager2D::UpdateNthMarkupPositionFromWidg
 
   seedRepresentation->GetSeedDisplayPosition(n,displayCoordinatesBuffer1);
 
+  float distanceFromSlice = this->DistanceToSlicePlane(pointTransformed);
   if (this->GetDisplayCoordinatesChanged(displayCoordinates1,displayCoordinatesBuffer1))
     {
+    vtkDebugMacro("UpdateNthMarkupPositionFromWidget: display coors changed\n\t"
+                  << "world to display coordinates =\n\t"
+                  << displayCoordinates1[0] << ", "
+                  << displayCoordinates1[1] << ", "
+                  << displayCoordinates1[2] << ", "
+                  << displayCoordinates1[3]
+                  << "\nSeed display position = \n\t"
+                  << displayCoordinatesBuffer1[0] << ", "
+                  << displayCoordinatesBuffer1[1] << ", "
+                  << displayCoordinatesBuffer1[2] << ", "
+                  << displayCoordinatesBuffer1[3]
+                  << "\nDistance of RAS from slice: "
+                  << distanceFromSlice);
     positionChanged = true;
     double worldCoordinates[4] = {0.0, 0.0, 0.0, 0.0};
     this->GetDisplayToWorldCoordinates(displayCoordinatesBuffer1, worldCoordinates);

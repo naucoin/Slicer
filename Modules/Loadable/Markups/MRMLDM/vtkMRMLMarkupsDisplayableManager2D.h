@@ -149,6 +149,13 @@ protected:
   /// Handler for specific SliceView actions, iterate over the widgets in the helper
   virtual void OnMRMLSliceNodeModifiedEvent();
 
+  /// Return the distance from the point in world space to the
+  /// plane defined by the slice node normal and origin, using the same
+  /// convention as the vtkMRMLThreeDReformatDisplayableManager.
+  /// Returns 0 if there is no slice node defined or the input world
+  /// coordinates are null.
+  double DistanceToSlicePlane(double *worldCoordinates);
+
   /// Check, if the widget is displayable in the current slice geometry for
   /// this markup, returns true if a 3d displayable manager
   virtual bool IsWidgetDisplayableOnSlice(vtkMRMLMarkupsNode* node, int markupIndex = 0);

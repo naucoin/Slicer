@@ -804,6 +804,41 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSliceNodeModifiedEvent()
 }
 
 //---------------------------------------------------------------------------
+double vtkMRMLMarkupsDisplayableManager2D::DistanceToSlicePlane(double *worldCoordinates)
+{
+  double distanceFromSlice = 0.0;
+
+  if (!this->GetSliceNode())
+    {
+    return distanceFromSlice;
+    }
+
+  if (!worldCoordinates)
+    {
+    vtkErrorMacro("DistanceToSlicePlane: null world coordinates");
+    return distanceFromSlice;
+    }
+
+  // calculate the distance from the point in world space to the
+  // plane defined by the slice node normal and origin (using same
+  // convention as the vtkMRMLThreeDReformatDisplayableManager)
+  vtkMatrix4x4 *sliceToRAS = this->GetSliceNode()->GetSliceToRAS();
+  double slicePlaneNormal[3], slicePlaneOrigin[3];
+  slicePlaneNormal[0] = sliceToRAS->GetElement(0,2);
+  slicePlaneNormal[1] = sliceToRAS->GetElement(1,2);
+  slicePlaneNormal[2] = sliceToRAS->GetElement(2,2);
+  slicePlaneOrigin[0] = sliceToRAS->GetElement(0,3);
+  slicePlaneOrigin[1] = sliceToRAS->GetElement(1,3);
+  slicePlaneOrigin[2] = sliceToRAS->GetElement(2,3);
+
+  distanceFromSlice = slicePlaneNormal[0]*(worldCoordinates[0]-slicePlaneOrigin[0]) +
+    slicePlaneNormal[1]*(worldCoordinates[1]-slicePlaneOrigin[1]) +
+    slicePlaneNormal[2]*(worldCoordinates[2]-slicePlaneOrigin[2]);
+
+  return distanceFromSlice;
+}
+
+//---------------------------------------------------------------------------
 bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarkupsNode* node, int markupIndex)
 {
 
@@ -953,20 +988,8 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsWidgetDisplayableOnSlice(vtkMRMLMarku
                       << transformedWorldCoordinates[0] << ","
                       << transformedWorldCoordinates[1] << ","
                       << transformedWorldCoordinates[2]);
-        // calculate the distance from the point in world space to the
-        // plane defined by the slice node normal and origin (using same
-        // convention as the vtkMRMLThreeDReformatDisplayableManager)
-        vtkMatrix4x4 *sliceToRAS = this->GetSliceNode()->GetSliceToRAS();
-        double slicePlaneNormal[3], slicePlaneOrigin[3];
-        slicePlaneNormal[0] = sliceToRAS->GetElement(0,2);
-        slicePlaneNormal[1] = sliceToRAS->GetElement(1,2);
-        slicePlaneNormal[2] = sliceToRAS->GetElement(2,2);
-        slicePlaneOrigin[0] = sliceToRAS->GetElement(0,3);
-        slicePlaneOrigin[1] = sliceToRAS->GetElement(1,3);
-        slicePlaneOrigin[2] = sliceToRAS->GetElement(2,3);
-        double distanceToPlane = slicePlaneNormal[0]*(transformedWorldCoordinates[0]-slicePlaneOrigin[0]) +
-          slicePlaneNormal[1]*(transformedWorldCoordinates[1]-slicePlaneOrigin[1]) +
-          slicePlaneNormal[2]*(transformedWorldCoordinates[2]-slicePlaneOrigin[2]);
+        double distanceToPlane = this->DistanceToSlicePlane(transformedWorldCoordinates);
+
         // this gives the distance to light box plane 0, but have to offset by
         // number of light box planes (as determined by the light box index) times the volume
         // slice spacing
