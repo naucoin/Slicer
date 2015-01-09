@@ -36,6 +36,7 @@ class vtkMRMLMarkupsNode;
 class vtkSlicerViewerWidget;
 class vtkMRMLMarkupsDisplayNode;
 class vtkAbstractWidget;
+class vtkMRMLSliceCompositeNode;
 
 /// \ingroup Slicer_QtModules_Markups
 class  VTK_SLICER_MARKUPS_MODULE_MRMLDISPLAYABLEMANAGER_EXPORT vtkMRMLMarkupsDisplayableManager2D :
@@ -81,10 +82,6 @@ public:
   /// Set mrml parent transform to widgets
   virtual void SetParentTransformToWidget(vtkMRMLMarkupsNode *vtkNotUsed(node), vtkAbstractWidget *vtkNotUsed(widget)){};
 
-  /// Set/Get the 2d scale factor to divide 3D scale by to show 2D elements appropriately (usually set to 300)
-  vtkSetMacro(ScaleFactor2D, double);
-  vtkGetMacro(ScaleFactor2D, double);
-
   /// Create a new widget for this markups node and save it to the helper.
   /// Returns widget on success, null on failure.
   vtkAbstractWidget *AddWidget(vtkMRMLMarkupsNode *markupsNode);
@@ -98,7 +95,7 @@ public:
 
   /// Gets the world coordinate of the markups node point, transforms it to
   /// display coordinates, takes the z element to calculate the light box index.
-  /// Returns -1 if not in lightbox mode or the indices are out of range.
+  /// Returns 0 if not in lightbox mode or the indices are out of range.
   int GetLightboxIndex(vtkMRMLMarkupsNode *node, int markupIndex, int pointIndex);
 
   /// Update a single seed from markup position, implemented by the subclasses, return
@@ -159,6 +156,16 @@ protected:
   /// Observe the interaction node.
   void AddObserversToInteractionNode();
   void RemoveObserversFromInteractionNode();
+
+  /// Observe the slice composite node, need to track changes in the
+  /// background volume so that can adjust the widget cameras to a good
+  // viewing distance so can see it at a good scale for the data
+  void AddObserversToSliceCompositeNode();
+  void RemoveObserversFromSliceCompositeNode();
+
+  /// Convenience function to the the slice composite node, returns NULL
+  /// if not found or the scene isn't defined
+  vtkMRMLSliceCompositeNode *GetSliceCompositeNode();
 
   /// Preset functions for certain events.
   void OnMRMLMarkupsNodeModifiedEvent(vtkMRMLNode* node);
@@ -247,6 +254,19 @@ protected:
 
   double LastClickWorldCoordinates[4];
 
+  /// Methods to manage the 2d camera when slice data changes
+  /// Calculate a useful camera distance from the background volume.
+  /// Find the bounding box around the data, take the maximum span and half it,
+  /// then divide by the sine of the view angle divided by 2
+  /// distance = (max_data_dim/2.0) / sin(view_angle / 2.0)
+  /// If no background volume, uses the default camera node settings
+  /// of position and focal point to calculate a distance.
+  double CalculateCameraDistanceFromData();
+  /// Check to see if the current slice viewer camera has this distance set.
+  /// If not, update the slice viewer camera, then push that down into the seed
+  /// widget and trigger rerendering.
+  void UpdateCameraDistance(double distance);
+
 private:
 
   vtkMRMLMarkupsDisplayableManager2D(const vtkMRMLMarkupsDisplayableManager2D&); /// Not implemented
@@ -256,9 +276,6 @@ private:
   int DisableInteractorStyleEventsProcessing;
 
   vtkMRMLSliceNode * SliceNode;
-
-  /// Scale factor for 2d windows
-  double ScaleFactor2D;
 };
 
 #endif

@@ -50,6 +50,7 @@
 #include <vtkProperty2D.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSeedWidget.h>
 #include <vtkSeedRepresentation.h>
@@ -227,9 +228,6 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
     return 0;
     }
 
-  // 2d glyphs and text need to be scaled by 1/300 to show up properly in the 2d slice windows
-  this->SetScaleFactor2D(0.0033);
-
   vtkMRMLMarkupsFiducialNode* fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast(node);
 
   if (!fiducialNode)
@@ -296,20 +294,21 @@ vtkAbstractWidget * vtkMRMLMarkupsFiducialDisplayableManager2D::CreateWidget(vtk
       }
     }
 #endif
+  int lightboxIndex = this->GetLightboxIndex(fiducialNode, 0, 0);
+  vtkDebugMacro("CreateWidget: lightboxindex = " << lightboxIndex);
 
-  seedWidget->SetInteractor(this->GetInteractor());
+  vtkRenderer* currentRenderer = this->GetRenderer(lightboxIndex);
+  vtkDebugMacro("CreateWidget: currentRenderer = " << currentRenderer);
+  // double check that the renderer camera is okay
+  double distance = this->CalculateCameraDistanceFromData();
+  vtkDebugMacro("CreateWidget: CalculateCameraDistanceFromData = " << distance);
+  this->UpdateCameraDistance(distance);
+
+  seedWidget->SetInteractor(currentRenderer->GetRenderWindow()->GetInteractor());
+
   // set the renderer on the widget and representation
-  if (!this->IsInLightboxMode())
-    {
-    seedWidget->SetCurrentRenderer(this->GetRenderer());
-    seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer());
-    }
-  else
-    {
-    int lightboxIndex = this->GetLightboxIndex(fiducialNode, 0,0);
-    seedWidget->SetCurrentRenderer(this->GetRenderer(lightboxIndex));
-    seedWidget->GetRepresentation()->SetRenderer(this->GetRenderer(lightboxIndex));
-    }
+  seedWidget->SetCurrentRenderer(currentRenderer);
+  seedWidget->GetRepresentation()->SetRenderer(currentRenderer);
 
   vtkDebugMacro("Fids CreateWidget: Created widget for node " << fiducialNode->GetID() << " with a representation");
 
@@ -505,6 +504,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       {
       // std::cout << "SetNthSeed: created a new handle,number of seeds = " << seedRepresentation->GetNumberOfSeeds() << std::endl;
       createdNewHandle = true;
+      // set it's renderer explicitly
+      newhandle->SetCurrentRenderer(seedWidget->GetCurrentRenderer());
+
       newhandle->ManagesCursorOff();
       if (newhandle->GetEnabled() == 0)
         {
@@ -629,8 +631,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       }
 
     // set the scaling
-    // the following is only needed since we require a different uniform scale depending on 2D and 3D
-    handleRep->SetUniformScale(displayNode->GetGlyphScale()*this->GetScaleFactor2D());
+    handleRep->SetUniformScale(displayNode->GetGlyphScale());
 
     /// if the text is visible
     std::string textString = fiducialNode->GetNthFiducialLabel(n);
@@ -645,12 +646,6 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       {
       // scale the text
       double textscale[3] = {displayNode->GetTextScale(), displayNode->GetTextScale(), displayNode->GetTextScale()};
-
-      // scale it down for the 2d windows
-      textscale[0] *= this->GetScaleFactor2D();
-      textscale[1] *= this->GetScaleFactor2D();
-      textscale[2] *= this->GetScaleFactor2D();
-
       handleRep->SetLabelTextScale(textscale);
       }
     // set the text colors
@@ -684,9 +679,9 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
       // if the fiducial is visible, turn off projection
       vtkSeedWidget* fiducialSeed = vtkSeedWidget::SafeDownCast(this->Helper->GetPointProjectionWidget(fiducialNode->GetNthMarkupID(n)));
       if (fiducialSeed && fiducialSeed->GetSeed(0))
-    {
+        {
         fiducialSeed->GetSeed(0)->Off();
-    }
+        }
       }
     else
       {
@@ -766,7 +761,7 @@ void vtkMRMLMarkupsFiducialDisplayableManager2D::SetNthSeed(int n, vtkMRMLMarkup
             projectionSeed->CreateDefaultRepresentation();
             projectionSeed->SetRepresentation(rep.GetPointer());
             projectionSeed->SetInteractor(this->GetInteractor());
-            projectionSeed->SetCurrentRenderer(this->GetRenderer());
+            projectionSeed->SetCurrentRenderer(this->GetRenderer(0));
             projectionSeed->CreateNewHandle();
             projectionSeed->ProcessEventsOff();
             projectionSeed->ManagesCursorOff();

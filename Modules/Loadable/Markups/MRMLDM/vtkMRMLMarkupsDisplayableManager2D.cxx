@@ -28,6 +28,7 @@
 
 // MRML includes
 #include <vtkMRMLApplicationLogic.h>
+#include <vtkMRMLCameraNode.h>
 #include <vtkMRMLInteractionNode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLSelectionNode.h>
@@ -36,6 +37,7 @@
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLTransformNode.h>
 #include <vtkMRMLViewNode.h>
+#include <vtkMRMLVolumeNode.h>
 
 // VTK includes
 #include <vtkAbstractWidget.h>
@@ -43,6 +45,7 @@
 #include <vtkCamera.h>
 #include <vtkHandleRepresentation.h>
 #include <vtkMath.h>
+#include <vtkMathUtilities.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -85,13 +88,18 @@ vtkMRMLMarkupsDisplayableManager2D::vtkMRMLMarkupsDisplayableManager2D()
   // must be set when it's assigned to a viewer
   this->SliceNode = 0;
 
-  // by default, multiply the display node scale by this when setting scale on elements in 2d windows
-  this->ScaleFactor2D = 0.00333;
-
   this->LastClickWorldCoordinates[0]=0.0;
   this->LastClickWorldCoordinates[1]=0.0;
   this->LastClickWorldCoordinates[2]=0.0;
   this->LastClickWorldCoordinates[3]=1.0;
+
+  // set up the 2d camera
+  double distance = this->CalculateCameraDistanceFromData();
+  vtkWarningMacro("MarkupsDisplayableManager: CalculateCameraDistanceFromData = " << distance);
+  if (distance)
+    {
+    this->UpdateCameraDistance(distance);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -127,7 +135,6 @@ void vtkMRMLMarkupsDisplayableManager2D::PrintSelf(ostream& os, vtkIndent indent
     {
     os << indent << "Focus = " << this->Focus << std::endl;
     }
-  os << indent << "ScaleFactor2D = " << this->ScaleFactor2D << std::endl;
 }
 
 //---------------------------------------------------------------------------
@@ -205,6 +212,42 @@ void vtkMRMLMarkupsDisplayableManager2D::RemoveObserversFromInteractionNode()
   if (interactionNode)
     {
     vtkUnObserveMRMLNodeMacro(interactionNode);
+    }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::AddObserversToSliceCompositeNode()
+{
+  if (!this->GetMRMLScene())
+    {
+    return;
+    }
+  // also observe the interaction node for changes
+  vtkMRMLSliceCompositeNode *sliceCompositeNode = this->GetSliceCompositeNode();
+  if (sliceCompositeNode)
+    {
+    vtkDebugMacro("AddObserversToSliceCompositeNode: sliceCompositeNode found");
+    vtkIntArray *sliceCompositeEvents = vtkIntArray::New();
+    sliceCompositeEvents->InsertNextValue(vtkCommand::ModifiedEvent);
+    vtkObserveMRMLNodeEventsMacro(sliceCompositeNode, sliceCompositeEvents);
+    sliceCompositeEvents->Delete();
+    }
+  else { vtkDebugMacro("AddObserversToSliceCompositeNode: No sliceComposite node!"); }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::RemoveObserversFromSliceCompositeNode()
+{
+  if (!this->GetMRMLScene())
+    {
+    return;
+    }
+
+  // find the sliceComposite node
+  vtkMRMLSliceCompositeNode *sliceCompositeNode =  this->GetSliceCompositeNode();
+  if (sliceCompositeNode)
+    {
+    vtkUnObserveMRMLNodeMacro(sliceCompositeNode);
     }
 }
 
@@ -292,11 +335,13 @@ void vtkMRMLMarkupsDisplayableManager2D::SetMRMLSceneInternal(vtkMRMLScene* newS
   if (newScene)
     {
     this->AddObserversToInteractionNode();
+    this->AddObserversToSliceCompositeNode();
     }
   else
     {
     // there's no scene to get the interaction node from, so this won't do anything
     this->RemoveObserversFromInteractionNode();
+    this->RemoveObserversFromSliceCompositeNode();
     }
   vtkDebugMacro("SetMRMLSceneInternal: add observer on interaction node now?");
 
@@ -310,6 +355,7 @@ void vtkMRMLMarkupsDisplayableManager2D
   vtkMRMLMarkupsNode * markupsNode = vtkMRMLMarkupsNode::SafeDownCast(caller);
   vtkMRMLMarkupsDisplayNode *displayNode = vtkMRMLMarkupsDisplayNode::SafeDownCast(caller);
   vtkMRMLInteractionNode * interactionNode = vtkMRMLInteractionNode::SafeDownCast(caller);
+  vtkMRMLSliceCompositeNode * sliceCompositeNode = vtkMRMLSliceCompositeNode::SafeDownCast(caller);
   int *nPtr = NULL;
   int n = -1;
   if (callData != 0)
@@ -377,6 +423,17 @@ void vtkMRMLMarkupsDisplayableManager2D
       this->Helper->UpdateLockedAllWidgetsFromInteractionNode(interactionNode);
       }
     }
+  else if (sliceCompositeNode)
+    {
+    // did the background volume change? if so need to update the camera
+    // distance on the widgets
+    if (event == vtkCommand::ModifiedEvent)
+      {
+      double distance = this->CalculateCameraDistanceFromData();
+      vtkWarningMacro("Slice composite node modified, calculated camera distance now = " << distance);
+      this->UpdateCameraDistance(distance);
+      }
+    }
   else
     {
     this->Superclass::ProcessMRMLNodesEvents(caller, event, callData);
@@ -423,6 +480,12 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
   if (node->IsA("vtkMRMLInteractionNode"))
     {
     this->AddObserversToInteractionNode();
+    return;
+    }
+
+  if (node->IsA("vtkMRMLSliceCompositeNode"))
+    {
+    this->AddObserversToSliceCompositeNode();
     return;
     }
 
@@ -491,6 +554,8 @@ void vtkMRMLMarkupsDisplayableManager2D::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
 
   vtkMRMLInteractionNode *interactionNode = this->GetInteractionNode();
   this->Helper->UpdateLockedAllWidgetsFromInteractionNode(interactionNode);
+
+  // update camera on widgets?
 
   // and render again after seeds were removed
   this->RequestRender();
@@ -1089,19 +1154,7 @@ void vtkMRMLMarkupsDisplayableManager2D::OnClickInRenderWindowGetCoordinates()
     // is there a volume in the background?
     if (this->GetMRMLSliceNode())
       {
-      // find the slice composite node in the scene with the matching layout
-      // name
-      vtkMRMLSliceLogic *sliceLogic = NULL;
-      vtkMRMLSliceCompositeNode* sliceCompositeNode = NULL;
-      vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
-      if (mrmlAppLogic)
-        {
-        sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetMRMLSliceNode());
-        }
-      if (sliceLogic)
-        {
-        sliceCompositeNode = sliceLogic->GetSliceCompositeNode(this->GetMRMLSliceNode());
-        }
+      vtkMRMLSliceCompositeNode *sliceCompositeNode = this->GetSliceCompositeNode();
       if (sliceCompositeNode)
         {
         if (sliceCompositeNode->GetBackgroundVolumeID())
@@ -1135,7 +1188,7 @@ void vtkMRMLMarkupsDisplayableManager2D::PlaceSeed(double x, double y)
 {
 
   // place the seed
-  this->Helper->PlaceSeed(x,y,this->GetInteractor(),this->GetRenderer());
+  this->Helper->PlaceSeed(x,y,this->GetInteractor(),this->GetRenderer(0));
 
   this->RequestRender();
 
@@ -1565,7 +1618,7 @@ bool vtkMRMLMarkupsDisplayableManager2D::IsInLightboxMode()
 //---------------------------------------------------------------------------
 int  vtkMRMLMarkupsDisplayableManager2D::GetLightboxIndex(vtkMRMLMarkupsNode *node, int markupIndex, int pointIndex)
 {
-  int index = -1;
+  int index = 0;
 
   if (!node)
     {
@@ -1596,4 +1649,150 @@ int  vtkMRMLMarkupsDisplayableManager2D::GetLightboxIndex(vtkMRMLMarkupsNode *no
 
 
   return index;
+}
+
+//---------------------------------------------------------------------------
+vtkMRMLSliceCompositeNode *vtkMRMLMarkupsDisplayableManager2D::GetSliceCompositeNode()
+{
+  if (!this->GetMRMLScene())
+    {
+    return NULL;
+    }
+  // find the slice composite node in the scene with the matching layout name
+  vtkMRMLSliceLogic *sliceLogic = NULL;
+  vtkMRMLSliceCompositeNode* sliceCompositeNode = NULL;
+  vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
+  if (!mrmlAppLogic)
+    {
+    return NULL;
+    }
+  sliceLogic = mrmlAppLogic->GetSliceLogic(this->GetMRMLSliceNode());
+  if (!sliceLogic)
+    {
+    return NULL;
+    }
+  sliceCompositeNode = sliceLogic->GetSliceCompositeNode(this->GetMRMLSliceNode());
+  return sliceCompositeNode;
+}
+
+//---------------------------------------------------------------------------
+double vtkMRMLMarkupsDisplayableManager2D::CalculateCameraDistanceFromData()
+{
+  // the camera node uses a default position and focal point for 3d
+  double distance = 500.0;
+  const char *activeCameraID = NULL;
+  vtkMRMLCameraNode *cameraNode = NULL;
+  double position[3], focalPoint[3];
+  double viewAngle = 30.0;
+
+  // get the active camera node's parameters, need the view angle for the
+  // distance calculation
+  if (this->GetMRMLApplicationLogic())
+    {
+    vtkMRMLSelectionNode *selectionNode = this->GetMRMLApplicationLogic()->GetSelectionNode();
+    if (selectionNode)
+      {
+      activeCameraID = selectionNode->GetActiveCameraID();
+      if (activeCameraID)
+        {
+        vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID(activeCameraID);
+        if (mrmlNode)
+          {
+          cameraNode = vtkMRMLCameraNode::SafeDownCast(mrmlNode);
+          if (cameraNode)
+            {
+            viewAngle = cameraNode->GetViewAngle();
+            }
+          }
+        }
+      }
+    }
+  // find the background volume to use it to calculate the viewing distance
+  vtkMRMLSliceCompositeNode *sliceCompositeNode = this->GetSliceCompositeNode();
+  if (sliceCompositeNode)
+    {
+    const char *backgroundVolumeID = sliceCompositeNode->GetBackgroundVolumeID();
+    if (backgroundVolumeID)
+      {
+      vtkMRMLNode *mrmlNode = this->GetMRMLScene()->GetNodeByID(backgroundVolumeID);
+      if (mrmlNode)
+        {
+        vtkMRMLVolumeNode *volumeNode = vtkMRMLVolumeNode::SafeDownCast(mrmlNode);
+        if (volumeNode)
+          {
+          double bounds[6];
+          volumeNode->GetRASBounds(bounds);
+          vtkDebugMacro("Got background volume bounds: "
+                        << "xmin = " << bounds[0]
+                        << ", xmax = " << bounds[1]
+                        << ", miny = " << bounds[2]
+                        << ", maxy = " << bounds[3]
+                        << ", minz = " << bounds[4]
+                        << ", maxz = " << bounds[5]);
+          double minPoint[3] = {bounds[0], bounds[2], bounds[4]};
+          double maxPoint[3] = {bounds[1], bounds[3], bounds[5]};
+          double minMaxDiff2 = vtkMath::Distance2BetweenPoints(minPoint, maxPoint);
+          if (minMaxDiff2 != 0.0)
+            {
+            double max = sqrt(minMaxDiff2);
+            distance = (max / 2.0) / sin(viewAngle / 2.0);
+            vtkDebugMacro("Calculated distance = " << distance);
+            return distance;
+            }
+          }
+        }
+      }
+    }
+  // default case: use the default camera node to calculate it
+  if (cameraNode)
+    {
+    cameraNode->GetPosition(position);
+    cameraNode->GetFocalPoint(focalPoint);
+
+    double distance2 = vtkMath::Distance2BetweenPoints(position, focalPoint);
+    if (distance2 != 0.0)
+      {
+      distance = sqrt(distance2);
+      vtkDebugMacro("CalculateCameraDistanceFromData: failed down through to using the active camera node to calc distance: " << distance);
+      }
+    }
+  else
+    {
+    vtkWarningMacro("CalculateCameraDistanceFromData: no camera node, using default distance ");
+    }
+  return distance;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLMarkupsDisplayableManager2D::UpdateCameraDistance(double distance)
+{
+  // get the current view camera distance
+  vtkRenderer *renderer = this->GetRenderer(0);
+  vtkDebugMacro("UpdateCameraDistance: renderer 0 = " << renderer);
+  if (renderer)
+    {
+    vtkCamera *camera2d = renderer->GetActiveCamera();
+    if (camera2d)
+      {
+      double cameraPosition[3] = {0.0, 0.0, 1.0};
+      camera2d->GetPosition(cameraPosition);
+      double cameraDistance = cameraPosition[2];
+      vtkDebugMacro("UpdateCameraDistance: calc = " << distance << ", camera distance = " << cameraDistance);
+      if (!vtkMathUtilities::FuzzyCompare<double>(distance, cameraDistance))
+        {
+        // reset the camera
+        camera2d->SetPosition(0.0, 0.0, distance);
+        vtkWarningMacro("Reset the camera distance to : "<< camera2d->GetDistance());
+        // now have to make sure that the widgets update with the new camera setting
+        camera2d->Modified();
+        this->RequestRender();
+        /*
+        // not enough apparently, the seed widgets do show the new camera
+        // settings but are not updating
+        this->Helper->RemoveAllWidgetsAndNodes();
+        this->UpdateFromMRML();
+        */
+        }
+      }
+    }
 }
