@@ -54,11 +54,127 @@
 #include <vtkTransform.h>
 
 /// CTK includes
-#include <ctkUtils.h>
+/// to avoid CTK includes which pull in a dependency on Qt, rehome some CTK
+/// core utility methods here in the anonymous namespace until they get ported
+/// to VTK
 
 //----------------------------------------------------------------------------
 namespace
 {
+/// Return a "smart" number of decimals needed to display (in a gui) a floating
+/// number. 16 is the max that can be returned, -1 for NaN numbers. When the
+/// number of decimals is not obvious, it defaults to defaultDecimals if it is
+/// different from -1, 16 otherwise.
+int significantDecimals(double value, int defaultDecimals = -1)
+{
+  if (value == 0.
+      || fabs(value) == std::numeric_limits<double>::infinity())
+    {
+    return 0;
+    }
+  if (value != value) // is NaN
+    {
+    return -1;
+    }
+  std::string number;
+  std::stringstream numberStream;
+  numberStream << std::setprecision(16);
+  numberStream << std::fixed << value;
+  number = numberStream.str();
+  size_t decimalPos = number.find_last_of('.');
+  std::string fractional = number.substr(decimalPos + 1);
+  if (fractional.length() != 16)
+    {
+    return -1;
+    }
+  char previous;
+  int previousRepeat=0;
+  bool only0s = true;
+  bool isUnit = value > -1. && value < 1.;
+  for (int i = 0; i < fractional.length(); ++i)
+    {
+    char digit = fractional.at(i);
+    if (digit != '0')
+      {
+      only0s = false;
+      }
+    // Has the digit been repeated too many times ?
+    if (digit == previous && previousRepeat == 2 &&
+        !only0s)
+      {
+      if (digit == '0' || digit == '9')
+        {
+        return i - previousRepeat;
+        }
+      return i;
+      }
+    // Last digit
+    if (i == fractional.length() - 1)
+      {
+      // If we are here, that means that the right number of significant
+      // decimals for the number has not been figured out yet.
+      if (previousRepeat > 2 && !(only0s && isUnit) )
+        {
+        return i - previousRepeat;
+        }
+      // If defaultDecimals has been provided, just use it.
+      if (defaultDecimals >= 0)
+        {
+        return defaultDecimals;
+        }
+      return fractional.length();
+      }
+    // get ready for next
+    if (previous != digit)
+      {
+      previous = digit;
+      previousRepeat = 1;
+      }
+    else
+      {
+      ++previousRepeat;
+      }
+    }
+  return -1;
+//  return fractional.length();
+};
+
+/// Return the order of magnitude of a number or numeric_limits<int>::min() if
+/// the order of magnitude can't be computed (e.g. 0, inf, Nan, denorm)...
+int orderOfMagnitude(double value)
+{
+  value = fabs(value);
+  if (value == 0.
+      || value == std::numeric_limits<double>::infinity()
+      || value != value // is NaN
+      || value < std::numeric_limits<double>::epsilon() // is tool small to compute
+  )
+    {
+    return std::numeric_limits<int>::min();
+    }
+  double magnitude = 1.00000000000000001;
+  int magnitudeOrder = 0;
+
+  int magnitudeStep = 1;
+  double magnitudeFactor = 10;
+
+  if (value < 1.)
+    {
+    magnitudeOrder = -1;
+    magnitudeStep = -1;
+    magnitudeFactor = 0.1;
+    }
+
+  double epsilon = std::numeric_limits<double>::epsilon();
+  while ( (magnitudeStep > 0 && value >= magnitude) ||
+          (magnitudeStep < 0 && value < magnitude - epsilon))
+    {
+    magnitude *= magnitudeFactor;
+    magnitudeOrder += magnitudeStep;
+    }
+  // we went 1 order too far, so decrement it
+  return magnitudeOrder - magnitudeStep;
+};
 
 //----------------------------------------------------------------------------
 class vtkSlicerErrorSink : public vtkCallbackCommand
@@ -927,7 +1043,7 @@ void vtkSlicerVolumesLogic::SetCompareVolumeGeometryEpsilon(double epsilon)
     this->CompareVolumeGeometryEpsilon = positiveEpsilon;
 
     // now set the precision
-    this->CompareVolumeGeometryPrecision = ctk::significantDecimals(this->CompareVolumeGeometryEpsilon);
+    this->CompareVolumeGeometryPrecision = significantDecimals(this->CompareVolumeGeometryEpsilon);
 
     this->Modified();
     }
@@ -995,7 +1111,7 @@ vtkSlicerVolumesLogic::CompareVolumeGeometry(vtkMRMLScalarVolumeNode *volumeNode
       // in general the defaults assume that an epsilon of 1e-6 works with a min
       // spacing of 1mm, check that the epsilon is scaled appropriately for the
       // minimum spacing for these two volumes
-      double logDiff = ctk::orderOfMagnitude(minSpacing) - ctk::orderOfMagnitude(this->CompareVolumeGeometryEpsilon);
+      double logDiff = orderOfMagnitude(minSpacing) - orderOfMagnitude(this->CompareVolumeGeometryEpsilon);
       vtkDebugMacro("diff in order of mag between min spacing and epsilon = " << logDiff);
       if (logDiff < 3.0 || logDiff > 10.0)
         {
