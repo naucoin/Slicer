@@ -598,14 +598,14 @@ bool vtkMRMLApplicationLogic::SaveSceneToSlicerDataBundleDirectory(const char *s
   newSceneViewNode->StoreScene();
   this->GetMRMLScene()->AddNode(newSceneViewNode);
 
-  vtkMRMLStorageNode *newSceneViewStorageNode = 0;
+  vtkSmartPointer<vtkMRMLStorageNode> newSceneViewStorageNode;
   if (screenShot)
     {
     // assumes has been passed a screen shot of the full layout
     newSceneViewNode->SetScreenShotType(4);
     newSceneViewNode->SetScreenShot(screenShot);
     // create a storage node
-    newSceneViewStorageNode = newSceneViewNode->CreateDefaultStorageNode();
+    newSceneViewStorageNode.TakeReference(newSceneViewNode->CreateDefaultStorageNode());
     // set the file name from the node name, using a relative path, it will go
     // at the same level as the  .mrml file
     std::string sceneViewFileName = std::string(newSceneViewNode->GetName()) + std::string(".png");
@@ -630,7 +630,6 @@ bool vtkMRMLApplicationLogic::SaveSceneToSlicerDataBundleDirectory(const char *s
   if (newSceneViewStorageNode)
     {
     this->GetMRMLScene()->RemoveNode(newSceneViewStorageNode);
-    newSceneViewStorageNode->Delete();
     }
 
   // reset the storage paths
