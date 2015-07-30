@@ -313,7 +313,7 @@ void vtkMRMLSceneViewNode::UpdateStoredScene()
   // prevent data read in UpdateScene
   for (n=0; n<nnodesSanpshot; n++)
     {
-    node  = dynamic_cast < vtkMRMLNode *>(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
+    node  = vtkMRMLNode::SafeDownCast(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
     if (node)
       {
       node->SetAddToSceneNoModify(0);
@@ -323,7 +323,7 @@ void vtkMRMLSceneViewNode::UpdateStoredScene()
   // update nodes in the snapshot
   for (n=0; n<nnodesSanpshot; n++)
     {
-    node  = dynamic_cast < vtkMRMLNode *>(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
+    node  = vtkMRMLNode::SafeDownCast(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
     if (node)
       {
       node->UpdateScene(this->SnapshotScene);
@@ -334,7 +334,7 @@ void vtkMRMLSceneViewNode::UpdateStoredScene()
   // update nodes in the snapshot
   for (n=0; n<nnodesSanpshot; n++)
     {
-    node  = dynamic_cast < vtkMRMLNode *>(this->Nodes->GetNodes()->GetItemAsObject(n));
+    node  = vtkMRMLNode::SafeDownCast(this->Nodes->GetNodes()->GetItemAsObject(n));
     if (node)
       {
       node->SetAddToSceneNoModify(1);
@@ -447,7 +447,7 @@ void vtkMRMLSceneViewNode::AddMissingNodes()
   std::map<std::string, vtkMRMLNode*> snapshotMap;
   for (n=0; n<numNodesInSceneView; n++)
     {
-    node  = dynamic_cast < vtkMRMLNode *>(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
+    node  = vtkMRMLNode::SafeDownCast(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
     if (node && node->GetID())
       {
       snapshotMap[node->GetID()] = node;
@@ -523,7 +523,7 @@ void vtkMRMLSceneViewNode::RestoreScene(bool removeNodes)
   std::map<std::string, vtkMRMLNode*> snapshotMap;
   for (n=0; n<numNodesInSceneView; n++)
     {
-    node  = dynamic_cast < vtkMRMLNode *>(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
+    node  = vtkMRMLNode::SafeDownCast(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
     if (node)
       {
       /***
@@ -686,7 +686,7 @@ void vtkMRMLSceneViewNode::SetAbsentStorageFileNames()
 
   for (n=0; n<numNodesInSceneView; n++)
     {
-    node  = dynamic_cast < vtkMRMLNode *>(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
+    node  = vtkMRMLNode::SafeDownCast(this->SnapshotScene->GetNodes()->GetItemAsObject(n));
     if (node)
       {
       // for storage nodes replace full path with relative
