@@ -179,217 +179,125 @@ bool TestTerminology()
     }
   pelvisLabelCat.Print(std::cout);
   // check the strings
-  if (!CheckString(__LINE__, "TestTerminology",
+  if (!CheckString(__LINE__, "AnatomicRegion.CodeMeaning",
                    pelvisLabelCat.AnatomicRegion.CodeMeaning.c_str(),
-                   regionMeaning.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.AnatomicRegion.CodeValue.c_str(),
-                   regionValue.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.AnatomicRegion.CodingSchemeDesignator.c_str(),
-                   regionScheme.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.AnatomicRegionModifier.CodeMeaning.c_str(),
-                   regionModMeaning.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.AnatomicRegionModifier.CodeValue.c_str(),
-                   regionModValue.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.AnatomicRegionModifier.CodingSchemeDesignator.c_str(),
-                   regionModScheme.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyCategory.CodeMeaning.c_str(),
-                   catMeaning.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyCategory.CodeValue.c_str(),
-                   catValue.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyCategory.CodingSchemeDesignator.c_str(),
-                   catScheme.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyType.CodeMeaning.c_str(),
-                   typeMeaning.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyType.CodeValue.c_str(),
-                   typeValue.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyType.CodingSchemeDesignator.c_str(),
-                   typeScheme.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyTypeModifier.CodeMeaning.c_str(),
-                   modMeaning.c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology",
+                   regionMeaning.c_str())
+      || !CheckString(__LINE__, "AnatomicRegion.CodeValue",
+                      pelvisLabelCat.AnatomicRegion.CodeValue.c_str(),
+                      regionValue.c_str())
+      || !CheckString(__LINE__, "AnatomicRegion.CodingSchemeDesignator",
+                      pelvisLabelCat.AnatomicRegion.CodingSchemeDesignator.c_str(),
+                      regionScheme.c_str())
+      || !CheckString(__LINE__, "AnatomicRegionModifier.CodeMeaning.",
+                      pelvisLabelCat.AnatomicRegionModifier.CodeMeaning.c_str(),
+                      regionModMeaning.c_str())
+      || !CheckString(__LINE__, "AnatomicRegionModifier.CodeValue",
+                      pelvisLabelCat.AnatomicRegionModifier.CodeValue.c_str(),
+                      regionModValue.c_str())
+      || !CheckString(__LINE__, "AnatomicRegionModifier.CodingSchemeDesignator",
+                      pelvisLabelCat.AnatomicRegionModifier.CodingSchemeDesignator.c_str(),
+                      regionModScheme.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyCategory.CodeMeaning",
+                      pelvisLabelCat.SegmentedPropertyCategory.CodeMeaning.c_str(),
+                      catMeaning.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyCategory.CodeValue",
+                      pelvisLabelCat.SegmentedPropertyCategory.CodeValue.c_str(),
+                      catValue.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyCategory.CodingSchemeDesignator",
+                      pelvisLabelCat.SegmentedPropertyCategory.CodingSchemeDesignator.c_str(),
+                      catScheme.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyType.CodeMeaning",
+                      pelvisLabelCat.SegmentedPropertyType.CodeMeaning.c_str(),
+                      typeMeaning.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyType.CodeValue",
+                      pelvisLabelCat.SegmentedPropertyType.CodeValue.c_str(),
+                      typeValue.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyType.CodingSchemeDesignator",
+                      pelvisLabelCat.SegmentedPropertyType.CodingSchemeDesignator.c_str(),
+                      typeScheme.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyTypeModifier.CodeMeaning",
+                      pelvisLabelCat.SegmentedPropertyTypeModifier.CodeMeaning.c_str(),
+                      modMeaning.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyTypeModifier.CodeValue",
                    pelvisLabelCat.SegmentedPropertyTypeModifier.CodeValue.c_str(),
-                   modValue.c_str()))
+                   modValue.c_str())
+      || !CheckString(__LINE__, "SegmentedPropertyTypeModifier.CodingSchemeDesignator",
+                      pelvisLabelCat.SegmentedPropertyTypeModifier.CodingSchemeDesignator.c_str(),
+                      modScheme.c_str()))
     {
-    return false;
+      return false;
     }
-  if (!CheckString(__LINE__, "TestTerminology",
-                   pelvisLabelCat.SegmentedPropertyTypeModifier.CodingSchemeDesignator.c_str(),
-                   modScheme.c_str()))
-    {
-    return false;
-    }
+
   // check the utility methods to access the values
-  if (!CheckString(__LINE__, "TestTerminology accessors",
+  if (!CheckString(__LINE__, "GetAnatomicRegionCodeMeaning",
                    regionMeaning.c_str(),
-                   colorLogic->GetAnatomicRegionCodeMeaning(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   regionValue.c_str(),
-                   colorLogic->GetAnatomicRegionCodeValue(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   regionScheme.c_str(),
-                   colorLogic->GetAnatomicRegionCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   regionModMeaning.c_str(),
-                   colorLogic->GetAnatomicRegionModifierCodeMeaning(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   regionModValue.c_str(),
-                   colorLogic->GetAnatomicRegionModifierCodeValue(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   regionModScheme.c_str(),
-                   colorLogic->GetAnatomicRegionModifierCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   catMeaning.c_str(),
-                   colorLogic->GetSegmentedPropertyCategoryCodeMeaning(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   catValue.c_str(),
-                   colorLogic->GetSegmentedPropertyCategoryCodeValue(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   catScheme.c_str(),
-                   colorLogic->GetSegmentedPropertyCategoryCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   typeMeaning.c_str(),
-                   colorLogic->GetSegmentedPropertyTypeCodeMeaning(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   typeValue.c_str(),
-                   colorLogic->GetSegmentedPropertyTypeCodeValue(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   typeScheme.c_str(),
-                   colorLogic->GetSegmentedPropertyTypeCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   modMeaning.c_str(),
-                   colorLogic->GetSegmentedPropertyTypeModifierCodeMeaning(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   modValue.c_str(),
-                   colorLogic->GetSegmentedPropertyTypeModifierCodeValue(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology accessors",
-                   modScheme.c_str(),
-                   colorLogic->GetSegmentedPropertyTypeModifierCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str()))
+                   colorLogic->GetAnatomicRegionCodeMeaning(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetAnatomicRegionCodeValue",
+                      regionValue.c_str(),
+                      colorLogic->GetAnatomicRegionCodeValue(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetAnatomicRegionCodingSchemeDesignator",
+                      regionScheme.c_str(),
+                      colorLogic->GetAnatomicRegionCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetAnatomicRegionModifierCodeMeaning",
+                      regionModMeaning.c_str(),
+                      colorLogic->GetAnatomicRegionModifierCodeMeaning(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetAnatomicRegionModifierCodeValue",
+                      regionModValue.c_str(),
+                      colorLogic->GetAnatomicRegionModifierCodeValue(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetAnatomicRegionModifierCodingSchemeDesignator",
+                      regionModScheme.c_str(),
+                      colorLogic->GetAnatomicRegionModifierCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyCategoryCodeMeaning",
+                      catMeaning.c_str(),
+                      colorLogic->GetSegmentedPropertyCategoryCodeMeaning(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyCategoryCodeValue",
+                      catValue.c_str(),
+                      colorLogic->GetSegmentedPropertyCategoryCodeValue(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyCategoryCodingSchemeDesignator",
+                      catScheme.c_str(),
+                      colorLogic->GetSegmentedPropertyCategoryCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyTypeCodeMeaning",
+                      typeMeaning.c_str(),
+                      colorLogic->GetSegmentedPropertyTypeCodeMeaning(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyTypeCodeValue",
+                      typeValue.c_str(),
+                      colorLogic->GetSegmentedPropertyTypeCodeValue(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyTypeCodingSchemeDesignator",
+                      typeScheme.c_str(),
+                      colorLogic->GetSegmentedPropertyTypeCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyTypeModifierCodeMeaning",
+                      modMeaning.c_str(),
+                      colorLogic->GetSegmentedPropertyTypeModifierCodeMeaning(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyTypeModifierCodeValue",
+                      modValue.c_str(),
+                      colorLogic->GetSegmentedPropertyTypeModifierCodeValue(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyTypeModifierCodingSchemeDesignator",
+                      modScheme.c_str(),
+                      colorLogic->GetSegmentedPropertyTypeModifierCodingSchemeDesignator(1, pelvisLUTName.c_str()).c_str()))
     {
     return false;
     }
 
   // check the utility method to get the concatenated strings
-  if (!CheckString(__LINE__, "TestTerminology concat strings",
+  if (!CheckString(__LINE__, "GetSegmentedPropertyCategory",
                    category.c_str(),
-                   colorLogic->GetSegmentedPropertyCategory(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology concat strings",
-                   segmentedPropertyType.c_str(),
-                   colorLogic->GetSegmentedPropertyType(1, pelvisLUTName.c_str()).c_str()))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology concat strings",
-                   region.c_str(),
-                   colorLogic->GetAnatomicRegion(1, pelvisLUTName.c_str()).c_str()))
+                   colorLogic->GetSegmentedPropertyCategory(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetSegmentedPropertyType",
+                      segmentedPropertyType.c_str(),
+                      colorLogic->GetSegmentedPropertyType(1, pelvisLUTName.c_str()).c_str())
+      || !CheckString(__LINE__, "GetAnatomicRegion",
+                      region.c_str(),
+                      colorLogic->GetAnatomicRegion(1, pelvisLUTName.c_str()).c_str()))
     {
     return false;
     }
   // check the utility methods getting concatenated terminology strings where the values haven't been set
   std::string regionMods = colorLogic->GetAnatomicRegionModifier(1, pelvisLUTName.c_str());
   std::string typeMods = colorLogic->GetSegmentedPropertyTypeModifier(1, pelvisLUTName.c_str());
-  if (!CheckString(__LINE__, "TestTerminology concat empty region mod strings",
-                   regionMods.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology concat empty type mod strings",
-                   typeMods.c_str(), ""))
+  if (!CheckString(__LINE__, "Empty Region modifier",
+                   regionMods.c_str(), "")
+      || !CheckString(__LINE__, "Empty type modifier",
+                      typeMods.c_str(), ""))
     {
     return false;
     }
@@ -415,78 +323,36 @@ bool TestTerminology()
     }
   missingPelvisLabelCat.Print(std::cout);
   // check all are empty strings
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.AnatomicRegion.CodeMeaning.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.AnatomicRegion.CodeValue.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.AnatomicRegion.CodingSchemeDesignator.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.AnatomicRegionModifier.CodeMeaning.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.AnatomicRegionModifier.CodeValue.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.AnatomicRegionModifier.CodingSchemeDesignator.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyCategory.CodeMeaning.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyCategory.CodeValue.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyCategory.CodingSchemeDesignator.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyType.CodeMeaning.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyType.CodeValue.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyType.CodingSchemeDesignator.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyTypeModifier.CodeMeaning.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyTypeModifier.CodeValue.c_str(), ""))
-    {
-    return false;
-    }
-  if (!CheckString(__LINE__, "TestTerminology missing label",
-                   missingPelvisLabelCat.SegmentedPropertyTypeModifier.CodingSchemeDesignator.c_str(), ""))
+  if (!CheckString(__LINE__, ".CodeMeaning",
+                   missingPelvisLabelCat.AnatomicRegion.CodeMeaning.c_str(), "")
+      || !CheckString(__LINE__, "TestTerminology missing label",
+                      missingPelvisLabelCat.AnatomicRegion.CodeValue.c_str(), "")
+      || !CheckString(__LINE__, "TestTerminology missing label",
+                      missingPelvisLabelCat.AnatomicRegion.CodingSchemeDesignator.c_str(), "")
+      || !CheckString(__LINE__, ".CodeMeaning",
+                      missingPelvisLabelCat.AnatomicRegionModifier.CodeMeaning.c_str(), "")
+      || !CheckString(__LINE__, ".CodeValue",
+                      missingPelvisLabelCat.AnatomicRegionModifier.CodeValue.c_str(), "")
+      || !CheckString(__LINE__, ".CodingSchemeDesignator",
+                      missingPelvisLabelCat.AnatomicRegionModifier.CodingSchemeDesignator.c_str(), "")
+      || !CheckString(__LINE__, ".CodeMeaning",
+                      missingPelvisLabelCat.SegmentedPropertyCategory.CodeMeaning.c_str(), "")
+      || !CheckString(__LINE__, ".CodeValue",
+                      missingPelvisLabelCat.SegmentedPropertyCategory.CodeValue.c_str(), "")
+      || !CheckString(__LINE__, ".CodingSchemeDesignator",
+                      missingPelvisLabelCat.SegmentedPropertyCategory.CodingSchemeDesignator.c_str(), "")
+      || !CheckString(__LINE__, ".CodeMeaning",
+                      missingPelvisLabelCat.SegmentedPropertyType.CodeMeaning.c_str(), "")
+      || !CheckString(__LINE__, ".CodeValue",
+                      missingPelvisLabelCat.SegmentedPropertyType.CodeValue.c_str(), "")
+      || !CheckString(__LINE__, ".CodingSchemeDesignator",
+                      missingPelvisLabelCat.SegmentedPropertyType.CodingSchemeDesignator.c_str(), "")
+      || !CheckString(__LINE__, ".CodeMeaning",
+                      missingPelvisLabelCat.SegmentedPropertyTypeModifier.CodeMeaning.c_str(), "")
+      || !CheckString(__LINE__, ".CodeValue",
+                      missingPelvisLabelCat.SegmentedPropertyTypeModifier.CodeValue.c_str(), "")
+      || !CheckString(__LINE__, ".CodingSchemeDesignator",
+                      missingPelvisLabelCat.SegmentedPropertyTypeModifier.CodingSchemeDesignator.c_str(), ""))
     {
     return false;
     }
