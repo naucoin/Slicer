@@ -214,7 +214,7 @@ bool qMRMLTableView::transposed()const
 //------------------------------------------------------------------------------
 void qMRMLTableView::setTransposed(bool transposed)
 {
-  VERIFY_TABLE_MODEL_AND_NODE(setTransposed);
+  VERIFY_TABLE_MODEL_AND_NODE(setTransposed,);
   tableModel()->setTransposed(transposed);
 }
 
@@ -237,10 +237,10 @@ void qMRMLTableView::keyPressEvent(QKeyEvent *event)
   // row and user press the Up key, the focus goes from the table to the previous
   // widget in the tab order)
   if (model() && (
-    event->key() == Qt::Key_Left && currentIndex().column() == 0
-    || event->key() == Qt::Key_Up && currentIndex().row() == 0
-    || event->key() == Qt::Key_Right && currentIndex().column() == model()->columnCount()-1
-    || event->key() == Qt::Key_Down && currentIndex().row() == model()->rowCount()-1 ))
+                  (event->key() == Qt::Key_Left && currentIndex().column() == 0)
+                  || (event->key() == Qt::Key_Up && currentIndex().row() == 0)
+                  || (event->key() == Qt::Key_Right && currentIndex().column() == model()->columnCount()-1)
+                  || (event->key() == Qt::Key_Down && currentIndex().row() == model()->rowCount()-1) ))
     {
     return;
     }
@@ -250,8 +250,7 @@ void qMRMLTableView::keyPressEvent(QKeyEvent *event)
 //-----------------------------------------------------------------------------
 void qMRMLTableView::copySelection()
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(copySelection);
+  VERIFY_TABLE_MODEL_AND_NODE(copySelection,);
 
   if (!selectionModel()->hasSelection())
     {
@@ -303,8 +302,7 @@ void qMRMLTableView::copySelection()
 //-----------------------------------------------------------------------------
 void qMRMLTableView::pasteSelection()
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(pasteSelection);
+  VERIFY_TABLE_MODEL_AND_NODE(pasteSelection,);
 
   QString text = QApplication::clipboard()->text();
   if (text.isEmpty())
@@ -351,8 +349,7 @@ void qMRMLTableView::pasteSelection()
 //-----------------------------------------------------------------------------
 void qMRMLTableView::insertColumn()
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(insertColumn);
+  VERIFY_TABLE_MODEL_AND_NODE(insertColumn,);
   if (tableModel()->transposed())
     {
     mrmlTableNode()->AddEmptyRow();
@@ -366,8 +363,7 @@ void qMRMLTableView::insertColumn()
 //-----------------------------------------------------------------------------
 void qMRMLTableView::deleteColumn()
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(deleteColumn);
+  VERIFY_TABLE_MODEL_AND_NODE(deleteColumn,);
   tableModel()->removeSelectionFromMRML(selectionModel()->selectedIndexes(), false);
   clearSelection();
 }
@@ -375,8 +371,7 @@ void qMRMLTableView::deleteColumn()
 //-----------------------------------------------------------------------------
 void qMRMLTableView::insertRow()
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(insertRow);
+  VERIFY_TABLE_MODEL_AND_NODE(insertRow,);
   if (tableModel()->transposed())
     {
     mrmlTableNode()->AddColumn();
@@ -390,8 +385,7 @@ void qMRMLTableView::insertRow()
 //-----------------------------------------------------------------------------
 void qMRMLTableView::deleteRow()
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(deleteRow);
+  VERIFY_TABLE_MODEL_AND_NODE(deleteRow,);
   tableModel()->removeSelectionFromMRML(selectionModel()->selectedIndexes(), true);
   clearSelection();
 }
@@ -399,7 +393,6 @@ void qMRMLTableView::deleteRow()
 //-----------------------------------------------------------------------------
 bool qMRMLTableView::firstRowLocked()const
 {
-  Q_D(const qMRMLTableView);
   VERIFY_TABLE_MODEL_AND_NODE(firstRowLocked, false);
   if (tableModel()->transposed())
     {
@@ -415,8 +408,7 @@ bool qMRMLTableView::firstRowLocked()const
 //-----------------------------------------------------------------------------
 void qMRMLTableView::setFirstRowLocked(bool locked)
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(firstRowLocked);
+  VERIFY_TABLE_MODEL_AND_NODE(firstRowLocked,);
   if (tableModel()->transposed())
     {
     if (mrmlTableNode()->GetUseFirstColumnAsRowHeader()==locked)
@@ -441,7 +433,6 @@ void qMRMLTableView::setFirstRowLocked(bool locked)
 //-----------------------------------------------------------------------------
 bool qMRMLTableView::firstColumnLocked()const
 {
-  Q_D(const qMRMLTableView);
   VERIFY_TABLE_MODEL_AND_NODE(firstColumnLocked, false);
   if (tableModel()->transposed())
     {
@@ -456,8 +447,7 @@ bool qMRMLTableView::firstColumnLocked()const
 //-----------------------------------------------------------------------------
 void qMRMLTableView::setFirstColumnLocked(bool locked)
 {
-  Q_D(qMRMLTableView);
-  VERIFY_TABLE_MODEL_AND_NODE(setFirstColumnLocked);
+  VERIFY_TABLE_MODEL_AND_NODE(setFirstColumnLocked,);
   if (tableModel()->transposed())
     {
     if (mrmlTableNode()->GetUseColumnNameAsColumnHeader()==locked)
