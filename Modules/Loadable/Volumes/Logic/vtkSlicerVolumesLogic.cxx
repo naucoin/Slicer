@@ -563,7 +563,7 @@ void vtkSlicerVolumesLogic::InitializeStorageNode(
     }
   if (useURI)
     {
-    vtkDebugMacro("AddArchetypeVolume: input filename '" << filename << "' is a URI");
+    vtkDebugMacro("InitializeStorageNode: input filename '" << filename << "' is a URI");
     // need to set the scene on the storage node so that it can look for file handlers
     storageNode->SetURI(filename);
     storageNode->SetScene(mrmlScene);
