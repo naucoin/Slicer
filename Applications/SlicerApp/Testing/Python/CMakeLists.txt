@@ -230,6 +230,7 @@ if(Slicer_USE_QtTesting AND Slicer_USE_PYTHONQT)
   slicer_add_python_unittest(SCRIPT KneeAtlasTest.py)
   slicer_add_python_unittest(SCRIPT fiber_visibility_crash2438.py)
   slicer_add_python_unittest(SCRIPT test_tractography_display.py)
+  slicer_add_python_unittest(SCRIPT testSaveLabelMapsAsPNG4091.py)
   slicer_add_python_unittest(SCRIPT sceneImport2428.py)
   slicer_add_python_unittest(SCRIPT SlicerMRBTest.py)
   slicer_add_python_unittest(SCRIPT SlicerMRBMultipleSaveRestoreLoopTest.py)
@@ -255,6 +256,7 @@ if(Slicer_USE_QtTesting AND Slicer_USE_PYTHONQT)
     DTINotReproducibleIssue3977.py
     fiber_visibility_crash2438.py
     test_tractography_display.py
+    testSaveLabelMapsAsPNG4091.py
     sceneImport2428.py
     SlicerMRBTest.py
     SlicerMRBMultipleSaveRestoreLoopTest.py
