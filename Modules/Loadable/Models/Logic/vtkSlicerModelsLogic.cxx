@@ -378,9 +378,7 @@ vtkMRMLStorageNode* vtkSlicerModelsLogic::AddScalar(const char* filename, vtkMRM
     {
     this->GetMRMLScene()->SaveStateForUndo();
     this->GetMRMLScene()->AddNode(storageNode);
-    // now add this as another storage node on the model
-    modelNode->AddAndObserveStorageNodeID(storageNode->GetID());
-
+    // ReadData will add this storage node to the model node
     // now read, since all the id's are set up
     vtkDebugMacro("AddScalar: calling read data now.");
     if (this->GetDebug()) { storageNode->DebugOn(); }

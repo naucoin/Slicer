@@ -1561,7 +1561,17 @@ vtkMRMLNode* vtkMRMLNode::SetAndObserveNodeReferenceID(const char* referenceRole
 //----------------------------------------------------------------------------
 vtkMRMLNode* vtkMRMLNode::AddAndObserveNodeReferenceID(const char* referenceRole, const char *referencedNodeID, vtkIntArray *events)
 {
-  return this->SetAndObserveNthNodeReferenceID(referenceRole, this->GetNumberOfNodeReferences(referenceRole), referencedNodeID, events);
+  // does this reference already exist?
+  if (this->HasNodeReferenceID(referenceRole, referencedNodeID))
+    {
+    vtkErrorMacro("AddAndObserveNodeReferenceID: referenced node id "
+      << referencedNodeID << " already exists with role " << referenceRole);
+    return NULL;
+    }
+  else
+    {
+    return this->SetAndObserveNthNodeReferenceID(referenceRole, this->GetNumberOfNodeReferences(referenceRole), referencedNodeID, events);
+    }
 }
 
 //----------------------------------------------------------------------------

@@ -1075,7 +1075,10 @@ int vtkMRMLStorageNode::ReadData(vtkMRMLNode* refNode, bool temporary)
     vtkMRMLStorableNode* storableNode = vtkMRMLStorableNode::SafeDownCast(refNode);
     if (storableNode)
       {
-      storableNode->SetAndObserveStorageNodeID(this->GetID());
+      // this may not be the only storage node for this storable node, so add
+      // it rather than setting the first one (see case of adding scalar
+      // overlays to model nodes)
+      storableNode->AddAndObserveStorageNodeID(this->GetID());
       }
     this->SetReadStateIdle();
     if (!temporary)
