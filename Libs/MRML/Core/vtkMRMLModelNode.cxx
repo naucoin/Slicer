@@ -239,6 +239,12 @@ void vtkMRMLModelNode::AddScalars(vtkDataArray *array, int location)
     // set the scalars
     data->SetActiveScalars(array->GetName());
     }
+
+  // mark it as modified since it will need to be saved as a new .vtk file
+  // including the overlays
+  // Note: not working, and neither does calling Modified on the node or the
+  // polydata
+  this->StorableModified();
 }
 
 //---------------------------------------------------------------------------

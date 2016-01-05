@@ -232,6 +232,13 @@ class ModelsAddMultipleScalarOverlaysLogic:
       self.delayDisplay('Have repeated storage node ids! Expected %d unique storage node ids, got %d' % (numStorageNodes, uniqueIDCount))
       return False
 
+    # make sure that the model node has been marked as modified since
+    # read, since it will need to be written as a new .vtk file with
+    # the scalar overlays included
+    if not modelNode.GetModifiedSinceRead():
+      self.delayDisplay('Model node is not marked as modified since read!')
+      return False
+
     return True
 
 
@@ -266,7 +273,7 @@ class ModelsAddMultipleScalarOverlaysTest(unittest.TestCase):
     """Run as few or as many tests as needed here.
     """
     self.setUp()
-    self.test_ModelsAddMultipleScalarOverlays1()
+    return self.test_ModelsAddMultipleScalarOverlays1()
 
   def test_ModelsAddMultipleScalarOverlays1(self):
 
@@ -277,5 +284,8 @@ class ModelsAddMultipleScalarOverlaysTest(unittest.TestCase):
 
     if result:
       self.delayDisplay('Test passed!')
+      return True
     else:
       self.delayDisplay('Test failed!')
+      slicer.testing.exitFailure('Models add multiple scalar overlays test failed.')
+      return False
