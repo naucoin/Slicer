@@ -29,12 +29,15 @@
 #include "vtkSlicerModelsLogic.h"
 
 // MRML includes
+#include <vtkMRMLFreeSurferModelOverlayStorageNode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLStorageNode.h>
 
 // VTK includes
+#include <vtkNew.h>
 #include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
 
 //-----------------------------------------------------------------------------
 class qSlicerScalarOverlayReaderPrivate
@@ -86,7 +89,22 @@ qSlicerIO::IOFileType qSlicerScalarOverlayReader::fileType()const
 //-----------------------------------------------------------------------------
 QStringList qSlicerScalarOverlayReader::extensions()const
 {
-  return QStringList() << "*.*";
+  vtkNew<vtkMRMLFreeSurferModelOverlayStorageNode> fsmoNode;
+  vtkStringArray *supportedTypes = fsmoNode->GetSupportedReadFileTypes();
+  if (!supportedTypes ||
+      !supportedTypes->GetNumberOfValues())
+    {
+    return QStringList() << "*.*";
+    }
+  QStringList extensions;
+  extensions << "Scalar Overlay (";
+  for (vtkIdType i = 0; i < supportedTypes->GetNumberOfValues(); ++i)
+    {
+    extensions << " " << supportedTypes->GetValue(i).c_str();
+    }
+  extensions << ")";
+
+  return extensions;
 }
 
 //-----------------------------------------------------------------------------
