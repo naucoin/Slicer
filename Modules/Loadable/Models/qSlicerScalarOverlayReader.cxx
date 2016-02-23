@@ -96,15 +96,26 @@ QStringList qSlicerScalarOverlayReader::extensions()const
     {
     return QStringList() << "*.*";
     }
-  QStringList extensions;
-  extensions << "Scalar Overlay (";
-  for (vtkIdType i = 0; i < supportedTypes->GetNumberOfValues(); ++i)
-    {
-    extensions << " " << supportedTypes->GetValue(i).c_str();
-    }
-  extensions << ")";
 
-  return extensions;
+  QString extensions;
+  extensions = QString("Scalar Overlay (");
+  vtkIdType numTypes = supportedTypes->GetNumberOfValues();
+  for (vtkIdType i = 0; i < numTypes; ++i)
+    {
+    // the supported types don't have the *.xxx formulation, just .xxx
+    QString thisExtension = QString("*") + QString(supportedTypes->GetValue(i).c_str());
+    extensions += thisExtension;
+    if (i < numTypes - 1)
+      {
+      // space separated list
+      extensions += QString(" ");
+      }
+    }
+  extensions += ")";
+
+  QStringList scalarOverlayExtensions;
+  scalarOverlayExtensions << extensions;
+  return scalarOverlayExtensions;
 }
 
 //-----------------------------------------------------------------------------
