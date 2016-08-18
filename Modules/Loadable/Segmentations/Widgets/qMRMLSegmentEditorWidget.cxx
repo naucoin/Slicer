@@ -56,16 +56,20 @@
 #include <vtkWeakPointer.h>
 
 // Slicer includes
-#include "qSlicerApplication.h"
-#include "vtkSlicerApplicationLogic.h"
-#include "qSlicerLayoutManager.h"
-#include "vtkMRMLSliceLogic.h"
+#include "qMRMLColorPickerWidget.h"
 #include "qMRMLSliceWidget.h"
 #include "qMRMLSliceView.h"
 #include "qMRMLThreeDWidget.h"
 #include "qMRMLThreeDView.h"
+#include "qSlicerAbstractCoreModule.h"
+#include "qSlicerApplication.h"
+#include "qSlicerLayoutManager.h"
+#include "vtkSlicerColorLogic.h"
+#include "vtkMRMLSliceLogic.h"
+#include "vtkSlicerApplicationLogic.h"
 
 // MRML includes
+#include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLLabelMapVolumeNode.h>
 #include <vtkMRMLSelectionNode.h>
 #include <vtkMRMLScene.h>
@@ -1587,6 +1591,36 @@ void qMRMLSegmentEditorWidget::onSegmentationNodeChanged(vtkMRMLNode* node)
 
   setActiveEffect(NULL); // deactivate current effect when we switch to a different segmentation
   d->ParameterSetNode->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(node));
+
+  vtkMRMLSegmentationNode *segmentationNode = vtkMRMLSegmentationNode::SafeDownCast(node);
+  qDebug() << "SegmentEditorWidget: on segmentation node changed";
+  if (segmentationNode->GetDisplayNode() &&
+      segmentationNode->GetDisplayNode()->GetColorNodeID())
+    {
+    // Set color picker to use this display node's color table
+    qDebug() << "onSegmentationNodeChanged updateWidgetFromDisplayNode: setting " << segmentationNode->GetID() << " color node to "
+             << segmentationNode->GetDisplayNode()->GetColorNodeID();
+    vtkMRMLNode *colorNode = this->mrmlScene()->GetNodeByID(segmentationNode->GetDisplayNode()->GetColorNodeID());
+    vtkSlicerApplicationLogic* appLogic = qSlicerCoreApplication::application()->applicationLogic();
+    vtkSlicerColorLogic *colorLogic = NULL;
+    vtkMRMLColorLogic *mrmlColorLogic = NULL;
+    if (appLogic && appLogic->GetColorLogic())
+      {
+      mrmlColorLogic = appLogic->GetColorLogic();
+      }
+    if (mrmlColorLogic)
+      {
+      colorLogic = vtkSlicerColorLogic::SafeDownCast(mrmlColorLogic);
+      }
+    if (colorLogic)
+      {
+      colorLogic->setColorDialogColorNode(colorNode);
+      }
+    }
+  else
+    {
+    qDebug() << "onSegmentationNodeChanged updateWidgetFromDisplayNode: no display node or color node not set!";
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1650,6 +1684,53 @@ void qMRMLSegmentEditorWidget::onSegmentSelectionChanged(const QItemSelection &s
   // Show selected segment as fill only, all the others as outline only for per-segment effects,
   // otherwise show all segments as fill only
   d->showSelectedSegment();
+
+
+  qDebug() << "SegmentEditorWidget: onSegmentSelectionChanged";
+  vtkMRMLSegmentationNode* segmentationNode = d->ParameterSetNode->GetSegmentationNode();
+  qDebug() << "\tsegmentation = " << segmentationNode->GetID();
+  if (segmentationNode->GetDisplayNode() &&
+      segmentationNode->GetDisplayNode()->GetColorNodeID())
+    {
+    qDebug() << "\tcolor node id = "
+             << segmentationNode->GetDisplayNode()->GetColorNodeID();
+    qDebug() << "\t\tSetting color node id on picker";
+    // ctkColorDialog::setDefaultTab(0);
+    vtkMRMLNode *colorNode = this->mrmlScene()->GetNodeByID(segmentationNode->GetDisplayNode()->GetColorNodeID());
+    if (colorNode)
+      {
+      qDebug() << "\t\tcolor node direct id is  " << colorNode->GetID();
+      }
+    vtkSlicerApplicationLogic* appLogic = qSlicerCoreApplication::application()->applicationLogic();
+    vtkSlicerColorLogic *colorLogic = NULL;
+    vtkMRMLColorLogic *mrmlColorLogic = NULL;
+    if (appLogic && appLogic->GetColorLogic())
+      {
+      mrmlColorLogic = appLogic->GetColorLogic();
+      }
+    if (mrmlColorLogic)
+      {
+      colorLogic = vtkSlicerColorLogic::SafeDownCast(mrmlColorLogic);
+      }
+    if (colorLogic)
+      {
+      colorLogic->setColorDialogColorNode(colorNode);
+      }
+    // set the selected color
+    qDebug() << "\tselected segment id = " << d->ParameterSetNode->GetSelectedSegmentID();
+    // find the color name that corresponds to the segment id
+    std::string colorIndexStr;
+    bool tagFound = segmentationNode->GetSegmentation()->GetSegment(d->ParameterSetNode->GetSelectedSegmentID())->GetTag(vtkMRMLSegmentationDisplayNode::GetColorIndexTag(), colorIndexStr);
+    int colorIndex = atoi(colorIndexStr.c_str());
+    qDebug() << "\t\tcolor index str = " << colorIndexStr.c_str()
+             << ", index = " << colorIndex
+             << ", number of colours = "
+             << vtkMRMLColorTableNode::SafeDownCast(colorNode)->GetNumberOfColors();
+    // add one since the color table starts indexing at 0 with the
+    // background, while the color dialog starts at 1
+    colorIndex += 1;
+    colorLogic->setColorDialogColorEntry(colorIndex);
+    }
 }
 
 //-----------------------------------------------------------------------------
